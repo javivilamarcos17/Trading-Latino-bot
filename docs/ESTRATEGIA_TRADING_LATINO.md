@@ -140,7 +140,7 @@ en su rebote ilusorio.
 | **Stop Loss siempre** | Puesto en el exchange en el mismo instante de abrir. Nunca una operación sin SL. |
 | **SL estructural** | Detrás del último mínimo (Long) / máximo (Short), pegado al POC. NO un % fijo arbitrario. ⚠️ Ruckard tope ~2,4% de distancia. |
 | **No promediar (no DCA)** | Si toca SL, se asume la pérdida. Jamás meter capital para salvar una posición perdedora. |
-| **Break-even** | Tras una vela 4H ganadora, mover el SL al precio de entrada → riesgo cero. ⚠️ Ruckard lo dispara a +1%. |
+| **Break-even (NETO, con costes)** | Tras una vela 4H ganadora, mover el SL al **break-even real con costes** = entrada + comisiones ida/vuelta + funding + slippage (Long) / − lo mismo (Short). **NUNCA a la entrada cruda** (eso deja pérdida oculta por comisiones). Ver §13. |
 | **Guillotina del tiempo** | 6-8 velas de 4H (24-32h): si el ciclo se completa y el precio sigue plano → cierre inmediato a mercado. |
 | **Filtro horario** | No abrir nada entre **15:15 y 15:45 (Madrid)** (apertura de Nueva York). |
 
@@ -173,6 +173,74 @@ en su rebote ilusorio.
 - Ventana exacta del Perfil de Volumen para calcular el POC.
 - La lista cerrada concreta de altcoins que vigila.
 - Si aplica toma parcial de beneficios y en qué %.
+
+## 13. ⭐ Principio rector: RENTABILIDAD NETA después de costes
+
+> **Regla de diseño nº1:** la única métrica que importa es el beneficio **NETO**, después
+> de comisiones, funding y slippage. Una estrategia que gana en bruto puede perder en
+> neto. Todo —entradas, break-even, objetivos, backtest— se mide en neto.
+
+**Costes de cada operación (perpetuos en Hyperliquid):**
+- **Comisiones:** al abrir y al cerrar (ida y vuelta), sobre el *nocional* (= margen ×
+  apalancamiento). Bajas (~0,02-0,045% por lado según maker/taker). 🔎 Confirmar esquema vigente.
+- **Funding:** pago periódico por mantener la posición; en Hyperliquid es **cada hora** →
+  en 24-32h son 24-32 cobros/pagos. Pequeños, pero suman (y en mercados "cargados", grandes).
+- **Slippage:** las órdenes a mercado no entran al precio exacto.
+
+**El break-even real NO es el precio de entrada:**
+- **Long:**  `BE = entrada × (1 + comisiones_ida_vuelta + funding + slippage)` → un pelín *por encima*.
+- **Short:** `BE = entrada × (1 − comisiones_ida_vuelta − funding − slippage)` → un pelín *por debajo*.
+
+Si te sacan en el BE real, sales **a cero de verdad**, no con pérdida oculta.
+
+> Matiz: el BE en *precio* (~0,09% por comisiones) es igual a 3x o 5x; el apalancamiento no
+> cambia ese precio, pero amplifica el impacto en la cuenta y acerca la liquidación → backtestear 3x y 5x.
+
+**Consecuencias de diseño (obligatorias):**
+1. **Filtro de entrada por ventaja real:** no abrir si la distancia al objetivo no supera
+   holgadamente el coste ida/vuelta (p. ej. objetivo ≥ 2-3× los costes).
+2. **Break-even ajustado a costes** (fórmula de arriba), nunca a la entrada cruda.
+3. **Take-profit neto:** el objetivo deja beneficio *después* de costes.
+4. **Backtest 100% en neto:** todas las métricas restan comisiones + funding + slippage.
+
+**Palanca de rentabilidad:** órdenes **límite (maker)** en el gatillo abaratan comisiones
+frente a ir a mercado (taker), a cambio de arriesgar no entrar. El backtest medirá la mejora.
+
+## 14. 🔍 Huecos del método detectados (pendientes de cerrar)
+
+**🔴 Críticos (sin esto no se puede backtestear bien):**
+- **Salida en beneficio** (¿dónde se toman ganancias?): agotamiento del impulso (Squeeze se
+  gira), siguiente muralla de volumen, o toma parcial. *Propuesta:* agotamiento + BE neto +
+  guillotina; toma parcial a probar.
+- **Cortacircuitos de pérdida** (kill-switch diario/semanal/mensual). 🔎 A derivar del backtest, no a ojo.
+- **Máx. posiciones simultáneas y exposición total** (las alts están correlacionadas → tope conjunto).
+- **Qué hacer con posiciones abiertas al cambiar el semáforo.**
+
+**🟡 Mejoras que él usa (valorar v2):**
+- Dominancia (USDT.D / BTC.D / TOTAL3) como contexto risk-on/off para shorts de alts.
+- Perfil de Volumen completo: Área de Valor (VAH/VAL) y POC virgen, además del POC.
+
+**⚪ Fuera de la v1 (demasiado subjetivo para automatizar fiable):** Wyckoff completo,
+ondas de Elliott, RSI/MACD, Fibonacci, mapas de liquidaciones.
+
+## 15. 🪙 Universo de altcoins (lista de vigilancia)
+
+Elegidas por criterio profesional: cotizan en Hyperliquid, alta liquidez, alts establecidas
+que Merino sigue, y variedad de sectores.
+
+| Sector | Monedas |
+|--------|---------|
+| Majors / L1 grandes | ETH, SOL, BNB, XRP, ADA |
+| L1 alternativas | AVAX, NEAR, APT, SUI |
+| L2 / escalado | ARB, OP, POL |
+| DeFi / oráculos | LINK, UNI, AAVE |
+| Veteranas líquidas | LTC, BCH |
+| Interoperabilidad | DOT |
+| Infra / modular | TIA |
+| Meme líquida | DOGE |
+
+Es la **lista de vigilancia**, NO se shortean todas a la vez: el filtro (bajo EMA55 diaria +
+BTC bajista) elige solo las "enfermas". 🔎 Verificar disponibilidad real en Hyperliquid.
 
 ## Fuentes
 - invertirenbolsa.wiki — Jaime Merino: ¿cómo invierte?
