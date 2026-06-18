@@ -63,9 +63,16 @@ leyes 🟦 (5% por trade, SL estructural, break-even neto, guillotina del tiempo
 Motor event-driven (vela a vela, sin lookahead) + **modelo de costes** (comisiones, funding
 cada hora, slippage, apalancamiento). Registra cada operación.
 
-**Fase 5 — Primer backtest + informe**
-Métricas **en neto**: curva de capital, drawdown, win rate, profit factor, rachas de
-pérdidas. **Calibrar los topes de pérdida con estos datos** (no a ojo).
+**Fase 5 — Primer backtest + informe** *(por módulos separados, decisión del dueño)*
+Probamos los dos motores **por separado** y siempre **en neto** (con comisiones+funding+slippage):
+- **5a · BTC solo Longs** — cuando el diario de BTC está alcista. Es el primero: datos más
+  largos (BTC tiene años de histórico) y la lógica más simple. A Bitcoin nunca se le hace short.
+- **5b · Altcoins solo Shorts** — solo en momentos bajistas de BTC, sobre alts débiles. Menos
+  operaciones y periodo más corto (las alts son recientes).
+- **5c · Combinado** — una vez validados los dos por su cuenta.
+
+Métricas en neto: curva de capital, drawdown, win rate, profit factor, rachas de pérdidas.
+**Calibrar los topes de pérdida con estos datos** (no a ojo). Saber qué módulo aporta la ventaja.
 
 **Fase 6 — Paper trading** · **Fase 7 — Real** (detalle cuando lleguemos).
 

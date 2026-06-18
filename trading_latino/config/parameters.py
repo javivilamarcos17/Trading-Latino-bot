@@ -132,6 +132,15 @@ class Backtest:
     FECHA_FIN: str = "2025-12-31"
     EXCHANGE_DATOS: str = "binance"     # 🟨 fuente de histórico largo (no es donde operamos)
 
+    # 🟦 Decisión del dueño: probar los dos motores POR SEPARADO antes de combinarlos.
+    #   "btc_longs"  -> solo Longs de BTC (diario alcista). Datos largos, lógica simple. Empezar por aquí.
+    #   "alt_shorts" -> solo Shorts de altcoins débiles (diario bajista de BTC).
+    #   "combinado"  -> los dos juntos, una vez validados por separado.
+    MODO: str = "btc_longs"
+
+    # 🟨 Cada altcoin empieza su backtest en su fecha real de listado (no antes de existir).
+    RESPETAR_FECHA_LISTADO: bool = True
+
 
 # ───────────────────────────── Configuración global ─────────────────────────────
 @dataclass(frozen=True)
