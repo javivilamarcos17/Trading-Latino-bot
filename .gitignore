@@ -1,0 +1,42 @@
+# Variables de entorno — NUNCA subir a GitHub
+.env
+.env.local
+.env.development
+.env.production
+.env.*
+!.env.example
+
+# Dependencias — se reinstalan con el comando de instalación
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Builds — se generan con el comando de build
+dist/
+build/
+.next/
+out/
+
+# Logs de auditoría local (opcionales — quitar si quieres subirlos)
+.claude/audit/
+
+# IDEs y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Archivos temporales
+*.tmp
+*.temp
+*.log
+
+# Claves y certificados
+*.pem
+*.key
+*.cert
+*.p12

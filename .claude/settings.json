@@ -1,0 +1,62 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "deny": [
+      ".env*",
+      "**/*.env",
+      "**/secrets/**",
+      "**/*secret*",
+      "**/*password*",
+      "**/*credential*",
+      "git push --force",
+      "git reset --hard",
+      "git clean -f",
+      "rm -rf /"
+    ],
+    "allow": [
+      "Bash(git status)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git checkout*)",
+      "Bash(git branch*)",
+      "Bash(git fetch*)",
+      "Bash(git pull*)",
+      "Bash(git push origin*)"
+    ]
+  },
+  "includeGitInstructions": true,
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "bash .claude/hooks/SessionStart.sh"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "bash .claude/hooks/PreToolUse.sh"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "bash .claude/hooks/PostToolUse.sh"
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "bash .claude/hooks/Stop.sh"
+      }
+    ],
+    "SubagentStart": [
+      {
+        "type": "command",
+        "command": "python .claude/hooks/log-subagent-spawn.py"
+      }
+    ]
+  }
+}

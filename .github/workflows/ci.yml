@@ -1,0 +1,125 @@
+name: CI — Verificación del proyecto
+
+# Se ejecuta en cada push y en cada Pull Request hacia la rama principal.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ════════════════════════════════════════════════════════════════════════
+  #  CHECKS DE DOCUMENTACIÓN  (siempre activos)
+  #
+  #  Este job NO comprueba que el producto funcione. Comprueba que el proyecto
+  #  esté bien documentado y honesto sobre su estado. Pasar este job en verde
+  #  significa "la documentación está en orden", NO "el producto funciona".
+  # ════════════════════════════════════════════════════════════════════════
+  documentacion:
+    name: Documentación y estado del proyecto
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Comprobar que existen los archivos obligatorios
+        run: |
+          echo "→ Comprobando archivos obligatorios..."
+          obligatorios="README.md SYSTEM_VISION.md PROJECT_STATUS.md CLAUDE.md .claude/CLAUDE.md docs/ESTADOS_DEL_PROYECTO.md docs/ONBOARDING_NO_TECNICO.md docs/ANTES_DE_COMPARTIR.md docs/PROMPTS_BASE.md"
+          falta=0
+          for f in $obligatorios; do
+            if [ -f "$f" ]; then
+              echo "  ✅ $f"
+            else
+              echo "  ❌ FALTA: $f"
+              falta=1
+            fi
+          done
+          if [ "$falta" -eq 1 ]; then
+            echo ""
+            echo "ERROR: faltan archivos obligatorios del proyecto. Revisa la lista de arriba."
+            exit 1
+          fi
+          echo "Todos los archivos obligatorios existen."
+
+      - name: Avisar si README o PROJECT_STATUS siguen genéricos
+        # Solo AVISA (no rompe el CI): un proyecto recién creado todavía tiene
+        # plantillas sin rellenar, y eso es normal. Pero deja el aviso visible
+        # para que nadie comparta el repo creyendo que está personalizado.
+        run: |
+          echo "→ Buscando contenido de plantilla sin rellenar..."
+          aviso=0
+
+          # Marcas típicas de texto sin rellenar.
+          if grep -qE '\[Escribe aquí|\[rellenar|\[Claude rellena|\[fecha\]|\[nombre\]|\[Descripción\]|\[Tipo de usuario' README.md SYSTEM_VISION.md PROJECT_STATUS.md 2>/dev/null; then
+            echo "  ⚠️  Hay marcas de plantilla sin rellenar (ej: [Escribe aquí], [rellenar], [fecha])."
+            aviso=1
+          fi
+
+          # El título genérico del README de la plantilla.
+          if head -n 1 README.md | grep -qE 'Claude Project Template'; then
+            echo "  ⚠️  El README todavía tiene el título genérico de la plantilla."
+            aviso=1
+          fi
+
+          if [ "$aviso" -eq 1 ]; then
+            echo ""
+            echo "::warning::El proyecto aún tiene documentación genérica sin personalizar."
+            echo "Esto es NORMAL al empezar. Pero NO compartas el repo con terceros hasta"
+            echo "personalizar README.md y PROJECT_STATUS.md (ver docs/ANTES_DE_COMPARTIR.md)."
+          else
+            echo "  ✅ No se detectó contenido de plantilla sin rellenar."
+          fi
+
+      - name: Recordatorio sobre el estado del CI
+        run: |
+          echo "════════════════════════════════════════════════════════════════"
+          echo " Este CI comprueba DOCUMENTACIÓN, no funcionamiento del producto."
+          echo " Un check verde aquí NO significa que el producto funcione ni que"
+          echo " esté testeado. Cuando el proyecto tenga código, añade tests reales"
+          echo " en el job 'tests' de abajo (está desactivado a propósito)."
+          echo "════════════════════════════════════════════════════════════════"
+
+  # ════════════════════════════════════════════════════════════════════════
+  #  TESTS DEL PRODUCTO  (DESACTIVADO hasta que exista stack técnico)
+  #
+  #  Mientras esté así, NO hay verificación automática de que el producto
+  #  funcione — y eso queda dicho honestamente. Cuando el proyecto tenga código:
+  #    1. Borra la línea `if: false` de abajo para activarlo.
+  #    2. Descomenta el bloque del lenguaje que uses (Node o Python).
+  #    3. Pon los comandos reales de instalar, compilar y testear.
+  #  Pídeselo a Claude: "Activa el job de tests del CI para nuestro stack".
+  # ════════════════════════════════════════════════════════════════════════
+  tests:
+    name: Tests del producto (pendiente de configurar)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: false   # ← BORRA esta línea cuando haya tests reales que ejecutar.
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      # --- Node.js (descomenta si tu proyecto usa Node/JavaScript) ---
+      # - uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '20'
+      # - run: npm install
+      # - run: npm run build
+      # - run: npm test
+
+      # --- Python (descomenta si tu proyecto usa Python) ---
+      # - uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.12'
+      # - run: pip install -r requirements.txt
+      # - run: python -m pytest
+
+      - name: Sin tests configurados
+        run: |
+          echo "Este job está desactivado porque el proyecto aún no tiene tests."
+          exit 1
