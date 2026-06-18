@@ -22,7 +22,7 @@ real. Solo cambian las "piezas de enchufe" (de dónde vienen los datos y a dónd
 
 | Capa | Tecnología | Por qué |
 |------|-----------|---------|
-| Lenguaje | **Python 3.12** (en entorno aislado `venv`) | rey de datos/finanzas; 3.12 es estable y compatible con todas las librerías (el equipo tiene 3.14, demasiado nuevo para algunas) |
+| Lenguaje | **Python 3.14** (en entorno aislado `.venv`) | rey de datos/finanzas. ✅ Verificado: pandas 3.0, numpy 2.4, ccxt 4.5, pyarrow 24, matplotlib 3.11 instalan y funcionan en 3.14 |
 | Datos / cálculo | **pandas + numpy + pyarrow** | manejo de velas y cálculo de indicadores; parquet para guardar |
 | Datos históricos | **ccxt** (descarga de velas) | acceso unificado a exchanges; histórico largo para el backtest |
 | Backtesting | **motor propio event-driven** | la estrategia (multi-temporal + perpetuos + funding + SL estructural + guillotina) es muy específica; un motor propio da control total y evita errores de "mirar el futuro" |
@@ -103,11 +103,17 @@ Ver `SYSTEM_VISION.md` (decisiones de negocio) y
 ## Cómo arrancar en local
 
 ```bash
-# (se completará en la Fase 1, cuando exista código ejecutable)
+# 1) crear el entorno aislado (una sola vez)
 python -m venv .venv
-# activar el entorno e instalar dependencias
-pip install -r requirements.txt
+
+# 2) instalar dependencias dentro del entorno
+.venv/Scripts/python.exe -m pip install -r requirements.txt   # Windows
+# (en Linux/Mac sería:  .venv/bin/python -m pip install -r requirements.txt)
+
+# 3) comprobar que todo funciona
+.venv/Scripts/python.exe -c "from trading_latino.config import CONFIG; print('alts:', len(CONFIG.altcoins))"
 ```
+✅ Verificado el 2026-06-18 en Windows con Python 3.14.
 
 ---
 

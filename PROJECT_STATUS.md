@@ -38,6 +38,8 @@ ni haga un backtest. *(Elegimos la etapa menor: hay cimientos, no producto.)*
 - La **documentación**: visión, biblia de la estrategia, roadmap y arquitectura.
 - El **esqueleto del proyecto** importa correctamente y la **configuración carga** (probado:
   el comando de la sección 4 imprime los parámetros sin error).
+- El **entorno está montado y verificado**: librerías (pandas, ccxt, etc.) instaladas y
+  funcionando en Python 3.14.
 - Eso es todo. **No opera, no descarga datos, no backtestea todavía.**
 
 ---
