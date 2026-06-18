@@ -16,6 +16,17 @@
 - ⚠️ **Interpretación** — de terceros (community), razonable pero no oficial.
 - 🔎 **A validar** — hay que comprobarlo en un directo concreto antes de codificarlo en firme.
 
+> ## ⚖️ Principio de gobierno: FIDELIDAD A MERINO ("no irse de la pinza")
+> El proyecto es "Trading Latino **Purista**": el objetivo es **clonar el método de Merino**,
+> no inventar uno nuevo. Toda regla se etiqueta y se respeta su etiqueta:
+> - 🟦 **NÚCLEO MERINO** — su método. **Sagrado, no se toca ni se "mejora".**
+> - 🟨 **REALIDAD TÉCNICA** — neutral y obligatorio (comisiones/funding/slippage, conexión,
+>   datos). No cambia ninguna decisión suya; solo refleja el mundo real.
+> - 🟥 **AÑADIDO NUESTRO** — propuesta opcional. **Nunca contamina el núcleo.** Solo se
+>   activa si el dueño lo aprueba y el backtest lo justifica.
+>
+> **Ante la duda → se hace lo que hace Merino, no lo que parezca "mejor".**
+
 ---
 
 ## 1. Quién es (y por qué su método encaja con un bot)
@@ -134,7 +145,7 @@ en su rebote ilusorio.
 
 | Ley | Detalle |
 |---|---|
-| **Tamaño fijo** | Capital en 20 partes → **5% por operación**, siempre igual. ⚠️ (a veces dice 10 partes; 20 es lo conservador) |
+| **Tamaño fijo** 🟦 | Capital en 20 partes → **5% por operación, siempre igual** (NÚCLEO Merino). ⚠️ (a veces dice 10 partes; 20 es lo conservador). El "riesgo fijo por trade" que barajé es 🟥 AÑADIDO a testear, NO su método. |
 | **Interés simple** | Nunca compuesto. No se reinvierten ganancias para arriesgar más. *"Tú controlas tu cuenta, no el mercado."* |
 | **Apalancamiento** | **3x-5x en margen aislado**. Cruzado prohibido. (Algún vídeo antiguo dice ≤10x; usamos 3-5x del SYSTEM_VISION.) |
 | **Stop Loss siempre** | Puesto en el exchange en el mismo instante de abrir. Nunca una operación sin SL. |
@@ -196,15 +207,18 @@ Si te sacan en el BE real, sales **a cero de verdad**, no con pérdida oculta.
 > Matiz: el BE en *precio* (~0,09% por comisiones) es igual a 3x o 5x; el apalancamiento no
 > cambia ese precio, pero amplifica el impacto en la cuenta y acerca la liquidación → backtestear 3x y 5x.
 
-**Consecuencias de diseño (obligatorias):**
-1. **Filtro de entrada por ventaja real:** no abrir si la distancia al objetivo no supera
-   holgadamente el coste ida/vuelta (p. ej. objetivo ≥ 2-3× los costes).
-2. **Break-even ajustado a costes** (fórmula de arriba), nunca a la entrada cruda.
-3. **Take-profit neto:** el objetivo deja beneficio *después* de costes.
-4. **Backtest 100% en neto:** todas las métricas restan comisiones + funding + slippage.
+**Consecuencias de diseño (clasificadas):**
+1. 🟨🟦 **Break-even ajustado a costes** (fórmula de arriba), nunca a la entrada cruda.
+   *(El dueño lo pidió expresamente: el break-even tiene que contar las comisiones.)*
+2. 🟨 **Backtest 100% en neto:** todas las métricas restan comisiones + funding + slippage.
+   *(Realidad técnica obligatoria; no cambia el método de Merino, solo lo mide honesto.)*
+3. 🟥 **Filtro de entrada por ventaja real** (objetivo ≥ 2-3× costes) — AÑADIDO opcional,
+   a validar en backtest. NO es del método de Merino; no se activa sin aprobación.
+4. 🟥 **Take-profit neto** como criterio explícito — refinamiento; el núcleo es su regla de salida.
 
-**Palanca de rentabilidad:** órdenes **límite (maker)** en el gatillo abaratan comisiones
-frente a ir a mercado (taker), a cambio de arriesgar no entrar. El backtest medirá la mejora.
+**Palanca de rentabilidad (🟥 AÑADIDO):** órdenes **límite (maker)** en el gatillo abaratan
+comisiones frente a ir a mercado, a cambio de arriesgar no entrar. **Merino entra a mercado
+(taker): ese es el comportamiento por defecto del clon.** El backtest puede medir la mejora.
 
 ## 14. 🔍 Huecos del método detectados (pendientes de cerrar)
 
