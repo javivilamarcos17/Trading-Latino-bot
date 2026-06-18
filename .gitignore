@@ -19,6 +19,10 @@ build/
 .next/
 out/
 
+# Datos de mercado descargados (se vuelven a bajar con el comando de datos)
+data_store/
+*.parquet
+
 # Logs de auditoría local (opcionales — quitar si quieres subirlos)
 .claude/audit/
 

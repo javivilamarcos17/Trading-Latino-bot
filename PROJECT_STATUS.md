@@ -16,82 +16,92 @@
 ## 1. Estado actual
 
 > Marca con una **X** la casilla real. Solo una. Si dudas entre dos, elige la MENOR.
-> ¿No sabes qué significa cada una? → lee [docs/ESTADOS_DEL_PROYECTO.md](docs/ESTADOS_DEL_PROYECTO.md)
 
-- [X] 💡 **Idea** — Solo existe la idea en tu cabeza o en notas sueltas.
-- [ ] 📄 **Documentación** — Está escrito qué se quiere hacer, pero no hay nada construido.
-- [ ] 🎬 **Demo** — Hay algo que se puede *enseñar*, pero NO sirve para usar de verdad.
-- [ ] 🛠️ **Prototipo funcional** — Funciona en partes, pero no es fiable ni completo.
-- [ ] 🚀 **MVP** — Versión mínima usable por usuarios reales, con lo justo para aportar valor.
-- [ ] 🏭 **Producción** — En uso real, con datos reales y gente dependiendo de ello.
+- [ ] 💡 **Idea**
+- [X] 📄 **Documentación** — Está escrito qué se quiere hacer y cómo, pero el producto aún no funciona.
+- [ ] 🎬 **Demo**
+- [ ] 🛠️ **Prototipo funcional**
+- [ ] 🚀 **MVP**
+- [ ] 🏭 **Producción**
 
-**Estado actual del template recién copiado: 💡 Idea.**
-*(Acabas de copiar la plantilla. Todavía no has construido nada. Esto es normal y correcto.)*
+**Estado: 📄 Documentación.** Tenemos la estrategia investigada y documentada (la "biblia"),
+el plan por fases, la arquitectura, y el **esqueleto del proyecto montado con los parámetros
+escritos en código**. Pero todavía NO existe nada que descargue datos, calcule indicadores
+ni haga un backtest. *(Elegimos la etapa menor: hay cimientos, no producto.)*
 
 ---
 
 ## 2. ✅ Qué funciona HOY
 
-> Lista SOLO lo que has probado tú mismo y funciona de verdad.
-> Si no lo has visto funcionar con tus propios ojos, no va aquí.
+> Solo lo comprobado de verdad.
 
-- _(Todavía nada. Aún no se ha construido nada del proyecto.)_
+- La **documentación**: visión, biblia de la estrategia, roadmap y arquitectura.
+- El **esqueleto del proyecto** importa correctamente y la **configuración carga** (probado:
+  el comando de la sección 4 imprime los parámetros sin error).
+- Eso es todo. **No opera, no descarga datos, no backtestea todavía.**
 
 ---
 
 ## 3. ❌ Qué NO funciona todavía
 
-> Todo lo planeado pero no construido o no fiable. Sé generoso aquí: más vale
-> sobre-listar que dar falsa sensación de avance.
-
-- Todo el producto: aún no se ha empezado a construir.
+- Descarga de datos históricos (Fase 1).
+- Indicadores: EMA / ADX / Squeeze / Perfil de Volumen (Fase 2).
+- El "cerebro" de la estrategia y la gestión de riesgo (Fase 3).
+- El motor de backtesting y el modelo de costes (Fase 4).
+- El informe de resultados en neto (Fase 5).
+- Conexión a Hyperliquid, paper trading y operativa real (Fases 6-7).
+- **En resumen: aún no sabemos si la estrategia es rentable. Eso lo dirá la Fase 5.**
 
 ---
 
 ## 4. 🧪 Cómo probarlo
 
-> Pasos EXACTOS para que cualquiera vea el estado actual con sus propios ojos.
-> Si no se puede probar todavía, dilo claramente.
+Lo único comprobable hoy (que el esqueleto y la configuración funcionan):
 
-- _Aún no hay nada que probar. Cuando exista una demo o MVP, Claude pondrá aquí
-  los pasos exactos (qué instalar, qué comando ejecutar, qué deberías ver)._
+```bash
+# desde la carpeta del proyecto
+python -c "from trading_latino.config import CONFIG; print('Altcoins vigiladas:', len(CONFIG.altcoins), '| Tamaño por trade:', CONFIG.riesgo.TAMANO_POSICION_PCT)"
+# Debe imprimir: Altcoins vigiladas: 20 | Tamaño por trade: 0.05
+```
 
 ---
 
 ## 5. 🔚 Última decisión tomada
 
-> La decisión más reciente que mueve el proyecto. Con fecha.
-
-- **[fecha]** — _(Aún ninguna. La primera será normalmente "qué vamos a construir".)_
+- **2026-06-18** — Cerrado el diseño de la Fase 0: arquitectura "un cerebro, tres mundos",
+  stack (Python 3.12 + pandas/ccxt + motor de backtest propio + Hyperliquid), **principio de
+  fidelidad a Merino** (🟦🟨🟥), y parámetros escritos en `trading_latino/config/parameters.py`.
 
 ---
 
 ## 6. ⏭️ Próxima decisión necesaria
 
-> Qué hay que decidir AHORA para poder avanzar. Quién la decide.
-
-- **Definir qué es el proyecto** → rellenar [SYSTEM_VISION.md](SYSTEM_VISION.md). Decide: tú.
+- **Confirmar capital inicial y periodo del backtest** (ahora: 10.000 $, 2021-2025). Decide: tú.
+- **Variante de tamaño**: 20 partes (5%) fijo — confirmado por defecto. (10 partes queda como opción.)
+- Tras eso → arrancar **Fase 1 (capa de datos)**: descargar el histórico. Decide/hace: Claude.
 
 ---
 
 ## 7. ⚠️ Riesgos abiertos
 
-> Cosas que podrían salir mal: dependencias de terceros, datos sensibles,
-> decisiones sin cerrar, plazos, costes. Sin esconder nada.
-
-- _(Ninguno registrado todavía. Claude irá añadiendo riesgos según aparezcan.)_
+- **No está demostrado que la estrategia sea rentable** — la única referencia codificada
+  (Ruckard) reporta retornos modestos. Por eso el objetivo nº1 es un backtest honesto.
+- **Datos:** Hyperliquid tiene poco histórico; usaremos otro exchange (Binance) para el backtest.
+- **Costes reales:** comisiones + funding pueden comerse el beneficio si no se modelan bien.
+- **Riesgo financiero:** es trading apalancado con dinero real (fases finales). Empezaremos
+  con capital mínimo y solo tras validar en backtest + paper.
+- **Dependencia de terceros:** APIs de exchanges (límites, cambios, caídas).
 
 ---
 
 ## 8. 🎯 Nivel de confianza del estado actual
 
-> ¿Cómo de seguro estás de que lo descrito arriba es verdad?
-
-- [ ] 🟢 **Alto** — Lo he probado y estoy seguro de que funciona como digo.
-- [ ] 🟡 **Medio** — Funciona, pero no lo he probado a fondo o hay zonas grises.
-- [X] 🔴 **Bajo** — Recién empezado / sin probar / mucha incertidumbre todavía.
+- [ ] 🟢 Alto
+- [X] 🟡 **Medio** — Lo construido (docs + esqueleto + config) está probado y es sólido; pero
+  el producto en sí (backtest, operativa) aún no existe, así que la incertidumbre sigue siendo alta.
+- [ ] 🔴 Bajo
 
 ---
 
-*Última actualización: [fecha] por [nombre]*
+*Última actualización: 2026-06-18 por Claude.*
 *Mantiene: Claude (con validación del dueño del proyecto).*
