@@ -83,7 +83,10 @@ class Costes:
     COMISION_MAKER: float = 0.00015   # 🟨 0.015% por lado (órdenes límite)
     SLIPPAGE_ESTIMADO: float = 0.0005 # 🟨 deslizamiento estimado en órdenes a mercado
     FUNDING_CADA_HORAS: int = 1       # 🟨 Hyperliquid liquida funding CADA HORA (1/8 del ritmo 8h)
-    # El funding real por hora se toma del histórico/feed; esto es solo la frecuencia.
+    # 🔎 ESTIMACIÓN: no bajamos funding histórico (solo precio), así que asumimos un funding
+    # medio por hora que el Long PAGA. Se somete a sensibilidad en el barrido de costes.
+    # ~0,01% cada 8h ≈ 0,00125%/h (régimen alcista típico).
+    FUNDING_HORARIO_ESTIMADO: float = 0.0000125
     # Nota: en shorts el funding suele ir a favor cuando el funding es positivo.
 
 

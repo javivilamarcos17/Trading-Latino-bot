@@ -113,3 +113,21 @@ class Decision:
     accion: Accion
     motivo: str
     stop_loss: float | None = None   # solo al abrir o al mover a break-even
+
+
+@dataclass
+class OperacionCerrada:
+    """El registro de una operación ya cerrada (para el informe del backtest)."""
+    simbolo: str
+    lado: Lado
+    abierta_en: datetime
+    cerrada_en: datetime
+    precio_entrada: float
+    precio_salida: float
+    cantidad: float
+    pnl_bruto: float        # antes de costes
+    comisiones: float       # entrada + salida
+    funding: float          # acumulado mientras estuvo abierta
+    pnl_neto: float         # lo que de verdad queda
+    motivo_cierre: str
+    velas_4h: int
