@@ -40,13 +40,16 @@ ni haga un backtest. *(Elegimos la etapa menor: hay cimientos, no producto.)*
   el comando de la sección 4 imprime los parámetros sin error).
 - El **entorno está montado y verificado**: librerías (pandas, ccxt, etc.) instaladas y
   funcionando en Python 3.14.
-- Eso es todo. **No opera, no descarga datos, no backtestea todavía.**
+- **Descarga de datos (Fase 1) funcionando para BTC:** se bajan velas de 1h/4h/1d/1w de
+  Binance y se guardan en disco. Verificadas: 43.800 velas de 1h (2021-2025) **sin huecos,
+  sin duplicados, sin velas inválidas**.
+- Eso es todo. **No calcula indicadores, no opera y no backtestea todavía.**
 
 ---
 
 ## 3. ❌ Qué NO funciona todavía
 
-- Descarga de datos históricos (Fase 1).
+- Descarga de las 20 altcoins (de momento solo BTC; las alts se bajan para el módulo 5b).
 - Indicadores: EMA / ADX / Squeeze / Perfil de Volumen (Fase 2).
 - El "cerebro" de la estrategia y la gestión de riesgo (Fase 3).
 - El motor de backtesting y el modelo de costes (Fase 4).
@@ -61,9 +64,15 @@ ni haga un backtest. *(Elegimos la etapa menor: hay cimientos, no producto.)*
 Lo único comprobable hoy (que el esqueleto y la configuración funcionan):
 
 ```bash
-# desde la carpeta del proyecto
-python -c "from trading_latino.config import CONFIG; print('Altcoins vigiladas:', len(CONFIG.altcoins), '| Tamaño por trade:', CONFIG.riesgo.TAMANO_POSICION_PCT)"
-# Debe imprimir: Altcoins vigiladas: 20 | Tamaño por trade: 0.05
+# (1) que el esqueleto y la configuración cargan:
+.venv/Scripts/python.exe -c "from trading_latino.config import CONFIG; print('Altcoins:', len(CONFIG.altcoins))"
+
+# (2) descargar el histórico de BTC (1h/4h/1d/1w):
+.venv/Scripts/python.exe -m trading_latino.data.download
+
+# (3) verificar la calidad de los datos descargados:
+.venv/Scripts/python.exe -m trading_latino.data.quality
+# Debe salir "OK ✅" en las 4 temporalidades, con huecos=0 y invalidas=0.
 ```
 
 ---
