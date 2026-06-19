@@ -18,16 +18,18 @@
 > Marca con una **X** la casilla real. Solo una. Si dudas entre dos, elige la MENOR.
 
 - [ ] 💡 **Idea**
-- [X] 📄 **Documentación** — Está escrito qué se quiere hacer y cómo, pero el producto aún no funciona.
+- [ ] 📄 **Documentación**
 - [ ] 🎬 **Demo**
-- [ ] 🛠️ **Prototipo funcional**
+- [X] 🛠️ **Prototipo funcional** — Funciona de punta a punta, pero NO es fiable ni completo.
 - [ ] 🚀 **MVP**
 - [ ] 🏭 **Producción**
 
-**Estado: 📄 Documentación.** Tenemos la estrategia investigada y documentada (la "biblia"),
-el plan por fases, la arquitectura, y el **esqueleto del proyecto montado con los parámetros
-escritos en código**. Pero todavía NO existe nada que descargue datos, calcule indicadores
-ni haga un backtest. *(Elegimos la etapa menor: hay cimientos, no producto.)*
+**Estado: 🛠️ Prototipo funcional.** El backtest de BTC solo-Longs **corre end-to-end**:
+descarga datos, calcula indicadores, el cerebro decide, el broker simula con costes en neto
+y saca un informe. Resultado del primer backtest (2021-2025): **+4,54% neto** (vs **+204,86%**
+de comprar y mantener BTC). Es decir: la máquina funciona, pero **como estrategia todavía no
+aporta** — gana poquísimo y rinde muchísimo peor que limitarse a comprar BTC. Falta validar
+fuera de muestra, probar las otras reglas de salida y, sobre todo, el módulo de alt-shorts.
 
 ---
 
