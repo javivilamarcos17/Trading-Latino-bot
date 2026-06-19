@@ -53,6 +53,18 @@ def main() -> None:
         pf_txt = "inf" if pf == float("inf") else f"{pf:.2f}"
         print(f"  {mult:>7.1f}x | {rr['rentabilidad']*100:>8.2f}% | {pf_txt:>9} | {rr['operaciones']:>5}")
 
+    # Comparación de las reglas de salida (a costes reales 1x)
+    print("\n-- Comparación de reglas de salida (costes 1x) --")
+    print(f"  {'regla':>20} | {'rent.':>9} | {'profit f.':>9} | {'win':>6} | {'ops':>5} | {'maxDD':>7}")
+    for regla in CONFIG.estrategia.REGLAS_SALIDA_A_PROBAR:
+        res = correr(args.simbolo, args.modo, args.capital, multiplicador_costes=1.0,
+                     datos=datos, regla_salida=regla)
+        rr = resumen(res)
+        pf = rr["profit_factor"]
+        pf_txt = "inf" if pf == float("inf") else f"{pf:.2f}"
+        print(f"  {regla:>20} | {rr['rentabilidad']*100:>8.2f}% | {pf_txt:>9} | "
+              f"{rr['win_rate']*100:>5.1f}% | {rr['operaciones']:>5} | {rr['max_drawdown']*100:>6.2f}%")
+
     print("\nNota: en neto (comisiones + funding + slippage). Resultado a interpretar con los gates de")
     print("docs/RIESGOS_RENTABILIDAD.md (verde/ámbar/rojo). NO es una recomendación de inversión.")
 

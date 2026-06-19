@@ -100,7 +100,7 @@ def _estado_tf_arr(A: dict, i: int) -> EstadoTF:
 
 def correr(simbolo: str = "BTC", modo: str | None = None,
            capital: float | None = None, multiplicador_costes: float = 1.0,
-           datos: dict | None = None) -> dict:
+           datos: dict | None = None, regla_salida: str | None = None) -> dict:
     """Corre el backtest. Devuelve operaciones, curva de capital y resumen."""
     modo = modo or CONFIG.backtest.MODO
     capital = capital or CONFIG.backtest.CAPITAL_INICIAL
@@ -135,7 +135,7 @@ def correr(simbolo: str = "BTC", modo: str | None = None,
             h4=_estado_tf_arr(A["4h"], i), h1=_estado_tf_arr(A["1h"], i),
         )
 
-        decision = decidir(estado, broker.posicion, modo)
+        decision = decidir(estado, broker.posicion, modo, regla_salida)
 
         if decision.accion is Accion.ABRIR_LARGO and broker.posicion is None:
             apalanc = apalancamiento_semana(estado.semanal.cierre, estado.semanal.ema_lenta)
@@ -155,6 +155,14 @@ def correr(simbolo: str = "BTC", modo: str | None = None,
                 broker.cerrar(p.stop_loss, ts, "stop loss")
             elif p.lado is Lado.CORTO and mx[i] >= p.stop_loss:
                 broker.cerrar(p.stop_loss, ts, "stop loss")
+
+        # actualizar el máximo a favor (para la salida trailing), con la vela ya vista
+        if broker.posicion is not None:
+            p = broker.posicion
+            if p.lado is Lado.LARGO:
+                p.max_favorable = max(p.max_favorable, mx[i])
+            else:
+                p.max_favorable = min(p.max_favorable, mn[i])
 
         # marca a mercado de la equity (incluye P&L no realizado)
         equity_mtm = broker.equity

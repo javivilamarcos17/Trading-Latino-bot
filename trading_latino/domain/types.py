@@ -65,6 +65,8 @@ class Posicion:
     abierta_en: datetime
     break_even_aplicado: bool = False
     velas_4h_transcurridas: int = 0   # para la guillotina del tiempo
+    stop_inicial: float | None = None    # riesgo inicial (para la salida por múltiplo de R)
+    max_favorable: float | None = None   # precio máximo alcanzado a favor (para la salida trailing)
 
 
 @dataclass(frozen=True)

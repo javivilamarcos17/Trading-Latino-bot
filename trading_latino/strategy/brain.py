@@ -29,11 +29,17 @@ from trading_latino.risk.manager import (
 _NADA = Decision(Accion.NADA, "sin cambios")
 
 
-def decidir(estado: EstadoMercado, posicion: Posicion | None, modo: str | None = None) -> Decision:
-    """Decide qué hacer con `estado` dada la `posicion` actual (o None)."""
+def decidir(estado: EstadoMercado, posicion: Posicion | None, modo: str | None = None,
+            regla_salida: str | None = None) -> Decision:
+    """Decide qué hacer con `estado` dada la `posicion` actual (o None).
+
+    `regla_salida` permite forzar una regla concreta (para comparar en el backtest); si es
+    None se usa la de la configuración.
+    """
     modo = modo or CONFIG.backtest.MODO
+    regla_salida = regla_salida or CONFIG.estrategia.REGLA_SALIDA
     if modo == "btc_longs":
-        return _gestionar_largo(estado, posicion) if posicion else _entrada_largo(estado)
+        return _gestionar_largo(estado, posicion, regla_salida) if posicion else _entrada_largo(estado)
     if modo == "alt_shorts":
         raise NotImplementedError("El módulo de alt-shorts (5b) se implementa más adelante.")
     if modo == "combinado":
@@ -84,13 +90,13 @@ def _entrada_largo(estado: EstadoMercado) -> Decision:
 
 
 # ───────────────────────── Gestión de la posición (Long) ─────────────────────────
-def _gestionar_largo(estado: EstadoMercado, posicion: Posicion) -> Decision:
+def _gestionar_largo(estado: EstadoMercado, posicion: Posicion, regla_salida: str) -> Decision:
     """Mientras hay un Long abierto: salida, guillotina y break-even."""
     e = CONFIG.estrategia
     r = CONFIG.riesgo
 
-    # 1) Salida en beneficio (regla por defecto: agotamiento del impulso).
-    salida = _salida(estado, posicion, e.REGLA_SALIDA)
+    # 1) Salida en beneficio (según la regla elegida).
+    salida = _salida(estado, posicion, regla_salida)
     if salida is not None:
         return salida
 
@@ -110,12 +116,35 @@ def _gestionar_largo(estado: EstadoMercado, posicion: Posicion) -> Decision:
 
 
 def _salida(estado: EstadoMercado, posicion: Posicion, regla: str) -> Decision | None:
-    """Despacha la regla de salida configurada. Devuelve Decision(CERRAR) o None."""
+    """Despacha la regla de salida. Devuelve Decision(CERRAR) o None. (Para Longs.)"""
+    e = CONFIG.estrategia
+
     if regla == "agotamiento_impulso":
-        # En un Long, el impulso alcista se agota cuando el Squeeze de 4H pasa a verde oscuro.
+        # El impulso alcista se agota cuando el Squeeze de 4H pasa a verde oscuro.
         if estado.h4.sqz_color is ColorSqueeze.VERDE_OSCURO:
             return Decision(Accion.CERRAR, "agotamiento del impulso: Squeeze 4H giró a verde oscuro")
         return None
-    # Las otras reglas (siguiente_poc, trailing, multiplo_r) se implementan en la Fase 5
-    # para compararlas en el backtest, como pidió el dueño.
-    raise NotImplementedError(f"Regla de salida '{regla}' pendiente de implementar (Fase 5).")
+
+    if regla == "trailing":
+        # Salir si el precio retrocede X% desde el máximo alcanzado a favor.
+        if posicion.max_favorable is not None:
+            if estado.precio <= posicion.max_favorable * (1 - e.TRAILING_RETROCESO):
+                return Decision(Accion.CERRAR, f"trailing: retroceso {e.TRAILING_RETROCESO*100:.0f}% desde el máximo")
+        return None
+
+    if regla == "siguiente_poc":
+        # Tomar beneficio al llegar a la resistencia más cercana (swing alto de 4H).
+        objetivo = estado.h4.swing_max
+        if objetivo is not None and estado.precio >= objetivo:
+            return Decision(Accion.CERRAR, "llegó a la resistencia (muralla de volumen / swing alto 4H)")
+        return None
+
+    if regla == "multiplo_r":
+        # Objetivo = N veces el riesgo inicial (entrada - stop inicial).
+        if posicion.stop_inicial is not None:
+            objetivo = posicion.precio_entrada + e.MULTIPLO_R * (posicion.precio_entrada - posicion.stop_inicial)
+            if estado.precio >= objetivo:
+                return Decision(Accion.CERRAR, f"objetivo {e.MULTIPLO_R:.0f}R alcanzado")
+        return None
+
+    raise ValueError(f"Regla de salida desconocida: {regla}")

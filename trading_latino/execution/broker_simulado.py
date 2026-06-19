@@ -49,6 +49,7 @@ class BrokerSimulado:
         self.posicion = Posicion(
             simbolo=simbolo, lado=lado, precio_entrada=precio_eff, cantidad=cantidad,
             apalancamiento=apalancamiento, stop_loss=stop_loss, abierta_en=momento,
+            stop_inicial=stop_loss, max_favorable=precio_eff,
         )
 
     def aplicar_funding(self, precio_actual: float) -> None:
