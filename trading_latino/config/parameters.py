@@ -78,12 +78,13 @@ class Riesgo:
 # ───────────────────────────── Costes (🟨 REALIDAD TÉCNICA) ─────────────────────────────
 @dataclass(frozen=True)
 class Costes:
-    # 🔎 Confirmar el esquema de comisiones vigente de Hyperliquid antes de fiarse.
-    COMISION_TAKER: float = 0.00045   # 🟨 ~0.045% por lado (órdenes a mercado)
-    COMISION_MAKER: float = 0.00015   # 🟨 ~0.015% por lado (órdenes límite)
+    # ✅ Confirmado (Hyperliquid, tramo de entrada <5M$ volumen 14d), junio 2026.
+    COMISION_TAKER: float = 0.00045   # 🟨 0.045% por lado (órdenes a mercado, lo que usa Merino)
+    COMISION_MAKER: float = 0.00015   # 🟨 0.015% por lado (órdenes límite)
     SLIPPAGE_ESTIMADO: float = 0.0005 # 🟨 deslizamiento estimado en órdenes a mercado
-    FUNDING_CADA_HORAS: int = 1       # 🟨 en Hyperliquid el funding se paga cada hora
+    FUNDING_CADA_HORAS: int = 1       # 🟨 Hyperliquid liquida funding CADA HORA (1/8 del ritmo 8h)
     # El funding real por hora se toma del histórico/feed; esto es solo la frecuencia.
+    # Nota: en shorts el funding suele ir a favor cuando el funding es positivo.
 
 
 # ───────────────────────────── Universo (🟦 lista de vigilancia) ─────────────────────────────
@@ -140,6 +141,14 @@ class Backtest:
 
     # 🟨 Cada altcoin empieza su backtest en su fecha real de listado (no antes de existir).
     RESPETAR_FECHA_LISTADO: bool = True
+
+    # 🟨 ANTI-SOBREAJUSTE: validación fuera de muestra. Se ajusta en 'entrenamiento'
+    #    (inicio → esta fecha) y se valida en 'test' (esta fecha → fin), que el bot NO vio al calibrar.
+    FECHA_FIN_ENTRENAMIENTO: str = "2023-12-31"
+
+    # 🟨 SENSIBILIDAD A COSTES: correr el backtest multiplicando los costes por estos factores,
+    #    para ver a partir de qué nivel de coste deja de ser rentable (margen sobre el muro de costes).
+    BARRIDO_COSTES: tuple = (0.0, 0.5, 1.0, 2.0)
 
 
 # ───────────────────────────── Configuración global ─────────────────────────────
