@@ -24,12 +24,14 @@
 - [ ] 🚀 **MVP**
 - [ ] 🏭 **Producción**
 
-**Estado: 🛠️ Prototipo funcional.** El backtest de BTC solo-Longs **corre end-to-end**:
-descarga datos, calcula indicadores, el cerebro decide, el broker simula con costes en neto
-y saca un informe. Resultado del primer backtest (2021-2025): **+4,54% neto** (vs **+204,86%**
-de comprar y mantener BTC). Es decir: la máquina funciona, pero **como estrategia todavía no
-aporta** — gana poquísimo y rinde muchísimo peor que limitarse a comprar BTC. Falta validar
-fuera de muestra, probar las otras reglas de salida y, sobre todo, el módulo de alt-shorts.
+**Estado: 🛠️ Prototipo funcional.** El backtest de BTC solo-Longs **corre end-to-end** y, tras
+aislar el fallo (la condición de ADX estaba invertida; corregida a pendiente positiva), la
+estrategia es ahora **robusta en walk-forward**: positiva en 4 de los 5 años y **plana en el
+oso de 2022** (0% mientras comprar-y-mantener hizo −64,5%). Perfil = **preservación de capital**:
+ganancias pequeñas y consistentes, drawdown ~−3%, evita los desplomes. Pero el retorno absoluto
+es **modesto** (~+5-10% en 5 años) y no compite con aguantar BTC en un mercado alcista — algo
+esperable en "comprar el retroceso". El motor de retorno fuerte sería el módulo de **alt-shorts**
+(los osos que esta mitad evita a propósito), aún BLOQUEADO hasta validar bien la parte de BTC.
 
 ---
 

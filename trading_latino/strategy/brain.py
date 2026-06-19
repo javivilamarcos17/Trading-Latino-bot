@@ -65,9 +65,11 @@ def _entrada_largo(estado: EstadoMercado) -> Decision:
     if estado.h4.sqz_color is not ColorSqueeze.ROJO_OSCURO:
         return Decision(Accion.NADA, "Squeeze 4H no confirma giro alcista (no es rojo oscuro)")
 
-    # 4) 4H: ADX con pendiente negativa (vendedores sin fuerza).
-    if estado.h4.adx_pendiente >= 0:
-        return Decision(Accion.NADA, "ADX 4H sin pendiente negativa")
+    # 4) 4H: ADX con pendiente POSITIVA (el impulso de fondo se reactiva en el retroceso).
+    #    [Corregido 2026-06-19] Antes exigíamos pendiente NEGATIVA y rompía la robustez
+    #    fuera de muestra (ver lessons-learned y docs/RIESGOS_RENTABILIDAD.md).
+    if estado.h4.adx_pendiente <= 0:
+        return Decision(Accion.NADA, "ADX 4H sin pendiente positiva")
 
     # 5) Gatillo 1H: el monitor de 1H completa su corrección menor (rojo oscuro).
     if estado.h1.sqz_color is not ColorSqueeze.ROJO_OSCURO:

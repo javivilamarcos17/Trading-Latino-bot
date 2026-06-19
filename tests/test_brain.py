@@ -20,7 +20,7 @@ BLOQUEO = datetime(2025, 7, 1, 13, 30, tzinfo=timezone.utc)  # 15:30 Madrid -> b
 
 
 def _tf(sqz_color=ColorSqueeze.ROJO_OSCURO, ema_rapida=110.0, ema_lenta=100.0,
-        adx_pendiente=-1.0, poc=100.0, swing_min=98.0, swing_max=104.0):
+        adx_pendiente=1.0, poc=100.0, swing_min=98.0, swing_max=104.0):
     return EstadoTF(
         cierre=100.0, ema_rapida=ema_rapida, ema_lenta=ema_lenta, adx=25.0,
         adx_pendiente=adx_pendiente, di_pos=20.0, di_neg=15.0, sqz_valor=-1.0,
@@ -33,7 +33,7 @@ def _estado(precio=100.0, ts=LIBRE, diario=None, h4=None, h1=None):
         simbolo="BTC", timestamp=ts, precio=precio,
         semanal=_tf(),
         diario=diario or _tf(ema_rapida=110.0, ema_lenta=100.0),       # alcista
-        h4=h4 or _tf(sqz_color=ColorSqueeze.ROJO_OSCURO, adx_pendiente=-1.0, poc=100.0, swing_min=98.0),
+        h4=h4 or _tf(sqz_color=ColorSqueeze.ROJO_OSCURO, adx_pendiente=1.0, poc=100.0, swing_min=98.0),
         h1=h1 or _tf(sqz_color=ColorSqueeze.ROJO_OSCURO),
     )
 

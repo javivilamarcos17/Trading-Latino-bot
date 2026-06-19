@@ -44,3 +44,17 @@ inventar uno nuevo.
 Ante la duda → se hace lo que hace Merino, no lo que yo creo "mejor".
 **Contexto:** Siempre, en todo el diseño y código del bot.
 
+## 2026-06-19 — Confundimos el papel del ADX en la entrada
+
+**Error o aprendizaje:** La entrada de BTC-longs exigía ADX con pendiente NEGATIVA
+("vendedores agotados"). La ablación + walk-forward mostraron que esa condición era el
+fallo: rompía la robustez fuera de muestra (única variante que perdía en 2024). Invertirla
+a pendiente POSITIVA (o quitarla) da una estrategia robusta: positiva en 4 de 5 años.
+**Causa raíz:** Traducción mecánica errónea del método discrecional (el riesgo nº1 que ya
+habíamos marcado). El ADX mide fuerza sin dirección; en un retroceso dentro de tendencia
+alcista, que el ADX SUBA capta que el impulso de fondo se reactiva.
+**Lección:** Validar cada condición de entrada por ABLACIÓN (quitar/invertir una a una) y
+con WALK-FORWARD (varios años), nunca asumir que nuestra lectura del método es correcta.
+Separar la operativa en partes y aislar el fallo es el método de trabajo.
+**Contexto:** Entrada del cerebro; y método general para validar cualquier regla nueva.
+
