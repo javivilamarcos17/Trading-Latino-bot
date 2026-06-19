@@ -151,6 +151,27 @@ class Backtest:
     BARRIDO_COSTES: tuple = (0.0, 0.5, 1.0, 2.0)
 
 
+# ───────────────────────────── Estrategia (entrada/salida) ─────────────────────────────
+@dataclass(frozen=True)
+class Estrategia:
+    # 🟦 Regla de salida en beneficio POR DEFECTO (elegida por el dueño): agotamiento del impulso.
+    REGLA_SALIDA: str = "agotamiento_impulso"
+    # 🟨 Decisión del dueño: el backtest COMPARA todas estas reglas de salida.
+    REGLAS_SALIDA_A_PROBAR: tuple = (
+        "agotamiento_impulso",   # cerrar cuando el Squeeze de 4H se gira en contra (purista)
+        "siguiente_poc",          # cerrar en la siguiente muralla de volumen
+        "trailing",               # dejar correr; salir si retrocede X% desde el máximo
+        "multiplo_r",             # objetivo = N veces el riesgo del stop
+    )
+    TRAILING_RETROCESO: float = 0.02   # 🟥 para 'trailing': retroceso del 2% desde el máximo
+    MULTIPLO_R: float = 2.0            # 🟥 para 'multiplo_r': objetivo 2x el riesgo
+
+    # Umbrales de entrada (🔎 a afinar/tunear en el backtest)
+    PROXIMIDAD_POC: float = 0.015      # "cerca del POC" = dentro del 1,5%
+    GUILLOTINA_PLANITUD: float = 0.01  # "precio plano" para la guillotina = dentro del 1% de la entrada
+    SWING_LOOKBACK_VELAS: int = 10     # velas para el mínimo/máximo estructural del stop
+
+
 # ───────────────────────────── Configuración global ─────────────────────────────
 @dataclass(frozen=True)
 class Config:
@@ -159,6 +180,7 @@ class Config:
     riesgo: Riesgo = field(default_factory=Riesgo)
     costes: Costes = field(default_factory=Costes)
     backtest: Backtest = field(default_factory=Backtest)
+    estrategia: Estrategia = field(default_factory=Estrategia)
     anadidos: AnadidosOpcionales = field(default_factory=AnadidosOpcionales)
     btc: str = BTC
     altcoins: list[str] = field(default_factory=lambda: list(ALTCOINS))

@@ -65,3 +65,51 @@ class Posicion:
     abierta_en: datetime
     break_even_aplicado: bool = False
     velas_4h_transcurridas: int = 0   # para la guillotina del tiempo
+
+
+@dataclass(frozen=True)
+class EstadoTF:
+    """Foto de una temporalidad en un instante: indicadores ya calculados de velas cerradas."""
+    cierre: float
+    ema_rapida: float
+    ema_lenta: float
+    adx: float
+    adx_pendiente: float            # cambio del ADX en las últimas N barras (signo = dirección)
+    di_pos: float
+    di_neg: float
+    sqz_valor: float
+    sqz_color: ColorSqueeze | None
+    poc: float | None = None
+    swing_min: float | None = None   # mínimo estructural reciente (para el SL en Largos)
+    swing_max: float | None = None   # máximo estructural reciente (para el SL en Cortos)
+
+
+@dataclass(frozen=True)
+class EstadoMercado:
+    """Lo que 've' el cerebro en un instante: el precio y las 4 temporalidades alineadas.
+
+    Regla anti-'mirar el futuro': cada EstadoTF refleja solo velas YA CERRADAS hasta `timestamp`.
+    """
+    simbolo: str
+    timestamp: datetime
+    precio: float
+    semanal: EstadoTF
+    diario: EstadoTF
+    h4: EstadoTF
+    h1: EstadoTF
+
+
+class Accion(str, Enum):
+    NADA = "nada"
+    ABRIR_LARGO = "abrir_largo"
+    ABRIR_CORTO = "abrir_corto"
+    CERRAR = "cerrar"
+    MOVER_BREAKEVEN = "mover_breakeven"
+
+
+@dataclass(frozen=True)
+class Decision:
+    """La salida del cerebro: qué hacer y por qué."""
+    accion: Accion
+    motivo: str
+    stop_loss: float | None = None   # solo al abrir o al mover a break-even
