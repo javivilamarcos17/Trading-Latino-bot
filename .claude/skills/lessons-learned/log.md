@@ -58,3 +58,16 @@ con WALK-FORWARD (varios años), nunca asumir que nuestra lectura del método es
 Separar la operativa en partes y aislar el fallo es el método de trabajo.
 **Contexto:** Entrada del cerebro; y método general para validar cualquier regla nueva.
 
+## 2026-06-20 — Bug de NaN: abríamos operaciones con datos de calentamiento
+
+**Error o aprendizaje:** En la revisión de realidad detecté que producción daba más
+operaciones que el experimento. Causa: los filtros usaban `x <= 0` y `x is None`, que
+NO atrapan NaN (`NaN <= 0` es False; un NaN de numpy no es None). Así, durante el
+calentamiento de los indicadores, se colaban entradas con POC/ADX/stop = NaN → ¡operaciones
+con stop NaN que nunca saltan bien!
+**Causa raíz:** Confiar en comparaciones ingenuas con datos que pueden ser NaN.
+**Lección:** Todo filtro numérico sobre indicadores debe usar un guard NaN-safe
+(`x is not None and not isnan(x)`). Y reconciliar SIEMPRE producción vs experimento: si
+no dan el mismo número de operaciones, hay un bug.
+**Contexto:** Cualquier condición numérica del cerebro/estrategia.
+

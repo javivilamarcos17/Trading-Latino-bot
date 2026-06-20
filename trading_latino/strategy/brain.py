@@ -11,6 +11,8 @@ Los Shorts de altcoins (5b) y las otras reglas de salida se añaden en su fase.
 
 from __future__ import annotations
 
+import math
+
 from trading_latino.config import CONFIG
 from trading_latino.domain.types import (
     Accion,
@@ -27,6 +29,11 @@ from trading_latino.risk.manager import (
 )
 
 _NADA = Decision(Accion.NADA, "sin cambios")
+
+
+def _num(x) -> bool:
+    """True si x es un número válido (no None, no NaN). Evita operar con datos de calentamiento."""
+    return x is not None and not (isinstance(x, float) and math.isnan(x))
 
 
 def decidir(estado: EstadoMercado, posicion: Posicion | None, modo: str | None = None,
@@ -58,7 +65,7 @@ def _entrada_largo(estado: EstadoMercado) -> Decision:
 
     # 2) 4H: el precio ha corregido a una zona de soporte de volumen (cerca del POC).
     poc4 = estado.h4.poc
-    if poc4 is None or abs(estado.precio - poc4) / poc4 > e.PROXIMIDAD_POC:
+    if not _num(poc4) or abs(estado.precio - poc4) / poc4 > e.PROXIMIDAD_POC:
         return Decision(Accion.NADA, "precio fuera de la zona de soporte (POC 4H)")
 
     # 3) 4H: giro alcista del Squeeze (rojo oscuro = se agota la bajada).
@@ -68,7 +75,7 @@ def _entrada_largo(estado: EstadoMercado) -> Decision:
     # 4) 4H: ADX con pendiente POSITIVA (el impulso de fondo se reactiva en el retroceso).
     #    [Corregido 2026-06-19] Antes exigíamos pendiente NEGATIVA y rompía la robustez
     #    fuera de muestra (ver lessons-learned y docs/RIESGOS_RENTABILIDAD.md).
-    if estado.h4.adx_pendiente <= 0:
+    if not (_num(estado.h4.adx_pendiente) and estado.h4.adx_pendiente > 0):
         return Decision(Accion.NADA, "ADX 4H sin pendiente positiva")
 
     # 5) Gatillo 1H: el monitor de 1H completa su corrección menor (rojo oscuro).
@@ -80,7 +87,7 @@ def _entrada_largo(estado: EstadoMercado) -> Decision:
         return Decision(Accion.NADA, "ventana de bloqueo horario (15:15-15:45 Madrid)")
 
     # 7) Stop estructural: bajo el mínimo reciente de 4H, con holgura.
-    if estado.h4.swing_min is None:
+    if not _num(estado.h4.swing_min):
         return Decision(Accion.NADA, "sin mínimo estructural para colocar el stop")
     stop = estado.h4.swing_min * (1 - 0.003)
 
