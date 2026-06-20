@@ -98,6 +98,11 @@ def _entrada(estado: EstadoMercado, p: dict) -> Decision:
         if not _num_ok(h4.ema_lenta) or abs(estado.precio - h4.ema_lenta) / h4.ema_lenta > p.get("prox_ema55", 0.02):
             return _NADA
 
+    # VWAP semanal: long solo con el precio por encima del VWAP (posicionamiento alcista real).
+    if p.get("usar_vwap"):
+        if not _num_ok(h4.vwap) or estado.precio < h4.vwap:
+            return _NADA
+
     if p.get("usar_bloqueo", True) and en_bloqueo_horario(estado.timestamp):
         return _NADA
     if not _num_ok(h4.swing_min):

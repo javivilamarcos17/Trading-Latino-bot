@@ -87,6 +87,7 @@ class EstadoTF:
     sqz_color_prev: ColorSqueeze | None = None   # color del Squeeze en la vela anterior (para detectar el giro)
     rsi: float | None = None                      # RSI (sobrecompra/sobreventa)
     volumen_rel: float | None = None              # volumen / su media (volumen relativo)
+    vwap: float | None = None                     # VWAP anclado a la semana (precio medio ponderado por volumen)
 
 
 @dataclass(frozen=True)
