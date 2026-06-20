@@ -86,9 +86,11 @@ def _entrada(estado: EstadoMercado, p: dict) -> Decision:
 
 
 def _hacer_cerebro(p: dict):
+    salida = p.get("salida", "agotamiento_impulso")
+
     def cerebro(estado: EstadoMercado, posicion: Posicion | None) -> Decision:
         if posicion is not None:
-            return _gestionar_largo(estado, posicion, "agotamiento_impulso")
+            return _gestionar_largo(estado, posicion, salida)
         return _entrada(estado, p)
     return cerebro
 
@@ -121,7 +123,6 @@ def main() -> None:
     datos = preparar("BTC")
     h1 = datos["h1"]
     bh = h1["cierre"].iloc[-1] / h1["cierre"].iloc[0] - 1
-    bh_in = h1.loc[pd.DatetimeIndex(h1["timestamp"]) < _CORTE, "cierre"]
     print(f"Referencia comprar-y-mantener BTC: total {bh*100:+.1f}%\n")
     print(f"  {'variante':<26} | {'TOTAL':>8} | {'train 21-23':>11} | {'TEST 24-25':>11} | {'ops':>4}")
     print("  " + "-" * 74)

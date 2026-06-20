@@ -101,7 +101,7 @@ def _estado_tf_arr(A: dict, i: int) -> EstadoTF:
 def correr(simbolo: str = "BTC", modo: str | None = None,
            capital: float | None = None, multiplicador_costes: float = 1.0,
            datos: dict | None = None, regla_salida: str | None = None,
-           cerebro=None) -> dict:
+           cerebro=None, pct_posicion: float | None = None) -> dict:
     """Corre el backtest. Devuelve operaciones, curva de capital y resumen.
 
     `cerebro`: función opcional (estado, posicion) -> Decision para experimentar con
@@ -145,7 +145,7 @@ def correr(simbolo: str = "BTC", modo: str | None = None,
 
         if decision.accion is Accion.ABRIR_LARGO and broker.posicion is None:
             apalanc = apalancamiento_semana(estado.semanal.cierre, estado.semanal.ema_lenta)
-            cantidad = tamano_posicion(broker.equity, precio, apalanc)
+            cantidad = tamano_posicion(broker.equity, precio, apalanc, pct_posicion)
             broker.abrir("BTC" if simbolo == "BTC" else simbolo, Lado.LARGO, cantidad,
                          apalanc, decision.stop_loss, precio, ts)
         elif decision.accion is Accion.CERRAR and broker.posicion is not None:
