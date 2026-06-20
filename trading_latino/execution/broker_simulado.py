@@ -19,11 +19,14 @@ from trading_latino.domain.types import Lado, OperacionCerrada, Posicion
 
 
 class BrokerSimulado:
-    def __init__(self, capital_inicial: float, multiplicador_costes: float = 1.0):
+    def __init__(self, capital_inicial: float, multiplicador_costes: float = 1.0,
+                 maker_entrada: bool = False, horas_por_barra: float = 1.0):
         self.equity: float = capital_inicial
         self.posicion: Posicion | None = None
         self.operaciones: list[OperacionCerrada] = []
         self._mult = multiplicador_costes
+        self._maker_entrada = maker_entrada   # entrada con orden límite (maker, sin slippage)
+        self._horas_barra = horas_por_barra   # para escalar el funding según el marco base
         self._c = CONFIG.costes
         # acumuladores de la posición abierta
         self._comision_entrada = 0.0
@@ -39,10 +42,15 @@ class BrokerSimulado:
     # ---- operaciones ----
     def abrir(self, simbolo: str, lado: Lado, cantidad: float, apalancamiento: int,
               stop_loss: float, precio: float, momento: datetime) -> None:
-        # slippage adverso: un Long compra un poco más caro
-        slip = self._slippage()
-        precio_eff = precio * (1 + slip) if lado is Lado.LARGO else precio * (1 - slip)
-        comision = self._comision(cantidad * precio_eff)
+        # Entrada: con orden límite (maker) no hay slippage adverso y la comisión es menor;
+        # con orden a mercado (taker) sí hay slippage. Merino entra con límite (el "gatillo fino").
+        if self._maker_entrada:
+            precio_eff = precio
+            comision = cantidad * precio_eff * self._c.COMISION_MAKER * self._mult
+        else:
+            slip = self._slippage()
+            precio_eff = precio * (1 + slip) if lado is Lado.LARGO else precio * (1 - slip)
+            comision = self._comision(cantidad * precio_eff)
         self.equity -= comision
         self._comision_entrada = comision
         self._funding_acumulado = 0.0
@@ -56,7 +64,7 @@ class BrokerSimulado:
         """Funding de una hora. El Long lo paga (coste); el Short lo cobra (signo contrario)."""
         if self.posicion is None:
             return
-        tasa = self._c.FUNDING_HORARIO_ESTIMADO * self._mult
+        tasa = self._c.FUNDING_HORARIO_ESTIMADO * self._mult * self._horas_barra
         coste = self.posicion.cantidad * precio_actual * tasa
         signo = 1 if self.posicion.lado is Lado.LARGO else -1
         self.equity -= coste * signo

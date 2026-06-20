@@ -1,8 +1,6 @@
 """
-Validación walk-forward (BTC-longs).
-
-Evaluamos la rentabilidad neta AÑO A AÑO. Una estrategia robusta debe ser positiva (o al
-menos no perder) en VARIOS años, no solo en uno. Así detectamos el sobreajuste.
+Validación walk-forward (BTC-longs): rentabilidad neta AÑO A AÑO + operaciones + drawdown.
+Una estrategia robusta debe ser positiva en VARIOS años, no solo en uno.
 
 Uso:  python -m trading_latino.research.walkforward
 """
@@ -14,11 +12,10 @@ import sys
 import pandas as pd
 
 from trading_latino.backtest.engine import correr, preparar
+from trading_latino.reports.metrics import resumen
 from trading_latino.research.experiments import _BASE, _hacer_cerebro
 
 ANIOS = [2021, 2022, 2023, 2024, 2025]
-
-# Entrada ya corregida (ADX pendiente positiva).
 CORREGIDA = {**_BASE, "usar_adx": True, "adx_signo": "pos"}
 
 
@@ -30,19 +27,20 @@ def _rent_por_anio(curva: pd.Series) -> dict:
     return out
 
 
-def _tabla(titulo: str, datos: dict, variantes: list) -> None:
-    print(f"\n== {titulo} ==")
-    cab = " | ".join(f"{y:>7}" for y in ANIOS)
-    print(f"  {'variante':<26} | {cab} | {'TOTAL':>7} | {'ops':>4}")
-    print("  " + "-" * 92)
+def _tabla(titulo: str, datos: dict, variantes: list, mult: float = 1.0, maker: bool = False) -> None:
+    coste = "MAKER (límite)" if maker else f"{mult:.2f}x (taker)"
+    print(f"\n== {titulo}  [costes: {coste}] ==")
+    print(f"  {'variante':<26} | " + " | ".join(f"{y:>7}" for y in ANIOS) + f" | {'TOTAL':>7} | {'ops':>5} | {'maxDD':>6}")
+    print("  " + "-" * 104)
     for nombre, p in variantes:
-        r = correr("BTC", "btc_longs", 10000, 1.0, datos=datos, cerebro=_hacer_cerebro(p))
+        r = correr("BTC", "btc_longs", capital=10000, datos=datos,
+                   cerebro=_hacer_cerebro(p), multiplicador_costes=mult, maker_entrada=maker)
         rpa = _rent_por_anio(r["curva"])
-        total = r["curva"].iloc[-1] / r["curva"].iloc[0] - 1
+        rr = resumen(r)
         cells = " | ".join(f"{rpa[y]*100:>6.2f}%" for y in ANIOS)
         pos = sum(1 for y in ANIOS if rpa[y] > 0)
-        marca = "  <-- robusto (4+/5)" if pos >= 4 else ""
-        print(f"  {nombre:<26} | {cells} | {total*100:>6.2f}% | {len(r['operaciones']):>4}{marca}")
+        marca = "  <-- robusto" if pos >= 4 else ""
+        print(f"  {nombre:<26} | {cells} | {rr['rentabilidad']*100:>6.2f}% | {len(r['operaciones']):>5} | {rr['max_drawdown']*100:>5.1f}%{marca}")
 
 
 def main() -> None:
@@ -54,16 +52,17 @@ def main() -> None:
     datos = preparar("BTC")
     h1 = datos["h1"]
     bh = _rent_por_anio(pd.Series(h1["cierre"].to_numpy(), index=pd.DatetimeIndex(h1["timestamp"])))
-    cells = " | ".join(f"{bh[y]*100:>6.1f}%" for y in ANIOS)
-    bh_total = h1["cierre"].iloc[-1] / h1["cierre"].iloc[0] - 1
-    print(f"Referencia comprar-y-mantener: {cells} | total {bh_total*100:.1f}%")
+    print("Referencia comprar-y-mantener: " + " | ".join(f"{bh[y]*100:>6.1f}%" for y in ANIOS))
 
-    _tabla("Reglas de salida sobre la ENTRADA CORREGIDA (ADX pendiente positiva)", datos, [
-        ("salida: agotamiento",   {**CORREGIDA, "salida": "agotamiento_impulso"}),
-        ("salida: trailing",      {**CORREGIDA, "salida": "trailing"}),
-        ("salida: multiplo_r",    {**CORREGIDA, "salida": "multiplo_r"}),
-        ("salida: siguiente_poc", {**CORREGIDA, "salida": "siguiente_poc"}),
-    ])
+    # Operativa de CICLO de 1H (entra cada giro de 1H, sale en cada techo de 1H) a costes maker.
+    ciclo = {**_BASE, "salida": "ciclo_1h"}
+    _tabla("Operativa de ciclo 1H (varias entradas por tendencia 4H)", datos, [
+        ("swing 4H+1H (agotam.)",   {**CORREGIDA, "salida": "agotamiento_impulso"}),
+        ("ciclo: 1H+4H+POC+ADX",    {**ciclo, "usar_adx": True, "adx_signo": "pos"}),
+        ("ciclo: 1H+POC+ADX",       {**ciclo, "usar_adx": True, "adx_signo": "pos", "usar_squeeze4h": False}),
+        ("ciclo: 1H+POC",           {**ciclo, "usar_squeeze4h": False}),
+        ("ciclo: 1H solo (daily)",  {**ciclo, "usar_poc": False, "usar_squeeze4h": False}),
+    ], maker=True)
 
 
 if __name__ == "__main__":

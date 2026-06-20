@@ -149,4 +149,12 @@ def _salida(estado: EstadoMercado, posicion: Posicion, regla: str) -> Decision |
                 return Decision(Accion.CERRAR, f"objetivo {e.MULTIPLO_R:.0f}R alcanzado")
         return None
 
+    if regla == "ciclo_1h":
+        # Operar el ciclo de 1H: cerrar cuando el Squeeze de 1H se agota al alza
+        # (pasa a verde oscuro = techo del micro-impulso). Permite varias operaciones
+        # dentro de una misma tendencia de 4H.
+        if estado.h1.sqz_color is ColorSqueeze.VERDE_OSCURO:
+            return Decision(Accion.CERRAR, "ciclo 1H agotado: Squeeze 1H giró a verde oscuro")
+        return None
+
     raise ValueError(f"Regla de salida desconocida: {regla}")

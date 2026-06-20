@@ -27,6 +27,7 @@ from trading_latino.risk.manager import apalancamiento_semana, tamano_posicion
 from trading_latino.strategy.brain import decidir
 
 _DURACION = {
+    "5m": pd.Timedelta(minutes=5), "15m": pd.Timedelta(minutes=15), "30m": pd.Timedelta(minutes=30),
     "1h": pd.Timedelta(hours=1), "4h": pd.Timedelta(hours=4),
     "1d": pd.Timedelta(days=1), "1w": pd.Timedelta(weeks=1),
 }
@@ -64,20 +65,28 @@ def _color(valor) -> ColorSqueeze | None:
         return None
 
 
-def preparar(simbolo: str, exchange: str = "binance") -> dict:
-    """Carga datos, calcula indicadores y los alinea todos sobre la rejilla de 1h."""
-    h1 = cargar(exchange, simbolo, "1h")
-    ind = {
-        "1h": _indicadores_tf(cargar(exchange, simbolo, "1h"), "1h"),
-        "4h": _indicadores_tf(cargar(exchange, simbolo, "4h"), "4h", con_poc=True, con_swing=True),
-        "1d": _indicadores_tf(cargar(exchange, simbolo, "1d"), "1d"),
-        "1w": _indicadores_tf(cargar(exchange, simbolo, "1w"), "1w"),
-    }
-    master = pd.DatetimeIndex(h1["timestamp"])
-    alineado = {tf: ind[tf].reindex(master, method="ffill") for tf in ind}
-    # marca de qué vela de 4h estamos usando, para contar las velas de 4h transcurridas
-    ct_4h = pd.Series(ind["4h"].index, index=ind["4h"].index).reindex(master, method="ffill")
-    return {"h1": h1, "master": master, "al": alineado, "ct_4h": ct_4h}
+# Asignación de roles -> temporalidad real. Por defecto = el marco swing actual.
+# Se puede desplazar para probar marcos intradía, p.ej.:
+#   {"semanal":"1d","diario":"4h","h4":"1h","h1":"15m"}  (4H/1H/15m)
+_DEFAULT_TFS = {"semanal": "1w", "diario": "1d", "h4": "4h", "h1": "1h"}
+_HORAS = {"5m": 1 / 12, "15m": 0.25, "30m": 0.5, "1h": 1.0, "4h": 4.0, "1d": 24.0, "1w": 168.0}
+
+
+def preparar(simbolo: str, exchange: str = "binance", tfs: dict | None = None) -> dict:
+    """Carga datos, calcula indicadores y los alinea por ROL sobre la rejilla del marco base.
+
+    `tfs` mapea roles (semanal/diario/h4/h1) a temporalidades reales. El rol 'h1' es el marco
+    base (el reloj); el rol 'h4' es el operativo (donde se calculan POC, swing y el contador).
+    """
+    tfs = tfs or _DEFAULT_TFS
+    base = cargar(exchange, simbolo, tfs["h1"])
+    ind = {rol: _indicadores_tf(cargar(exchange, simbolo, tf), tf,
+                                con_poc=(rol == "h4"), con_swing=(rol == "h4"))
+           for rol, tf in tfs.items()}
+    master = pd.DatetimeIndex(base["timestamp"])
+    alineado = {rol: ind[rol].reindex(master, method="ffill") for rol in ind}
+    ct_4h = pd.Series(ind["h4"].index, index=ind["h4"].index).reindex(master, method="ffill")
+    return {"h1": base, "master": master, "al": alineado, "ct_4h": ct_4h, "base_tf": tfs["h1"]}
 
 
 _COLS = ["cierre", "ema_rapida", "ema_lenta", "adx", "adx_pendiente", "di_pos", "di_neg",
@@ -101,7 +110,8 @@ def _estado_tf_arr(A: dict, i: int) -> EstadoTF:
 def correr(simbolo: str = "BTC", modo: str | None = None,
            capital: float | None = None, multiplicador_costes: float = 1.0,
            datos: dict | None = None, regla_salida: str | None = None,
-           cerebro=None, pct_posicion: float | None = None) -> dict:
+           cerebro=None, pct_posicion: float | None = None,
+           maker_entrada: bool = False) -> dict:
     """Corre el backtest. Devuelve operaciones, curva de capital y resumen.
 
     `cerebro`: función opcional (estado, posicion) -> Decision para experimentar con
@@ -121,7 +131,8 @@ def correr(simbolo: str = "BTC", modo: str | None = None,
     A = {tf: _arrays(al[tf]) for tf in al}
     ct = ct_4h.to_numpy()
 
-    broker = BrokerSimulado(capital, multiplicador_costes)
+    horas_barra = _HORAS.get(d.get("base_tf", "1h"), 1.0)
+    broker = BrokerSimulado(capital, multiplicador_costes, maker_entrada, horas_barra)
     curva = np.full(len(master), capital, dtype=float)
     ct_prev = None
 
@@ -136,8 +147,8 @@ def correr(simbolo: str = "BTC", modo: str | None = None,
 
         estado = EstadoMercado(
             simbolo=simbolo, timestamp=ts, precio=precio,
-            semanal=_estado_tf_arr(A["1w"], i), diario=_estado_tf_arr(A["1d"], i),
-            h4=_estado_tf_arr(A["4h"], i), h1=_estado_tf_arr(A["1h"], i),
+            semanal=_estado_tf_arr(A["semanal"], i), diario=_estado_tf_arr(A["diario"], i),
+            h4=_estado_tf_arr(A["h4"], i), h1=_estado_tf_arr(A["h1"], i),
         )
 
         decision = (cerebro(estado, broker.posicion) if cerebro is not None
