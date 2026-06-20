@@ -18,9 +18,10 @@ import sys
 import pandas as pd
 
 from trading_latino.backtest.engine import correr, preparar
-from trading_latino.domain.types import Accion, ColorSqueeze, Decision, EstadoMercado, Posicion
+from trading_latino.domain.types import Accion, ColorSqueeze, Decision, EstadoMercado, Lado, Posicion
+from trading_latino.config import CONFIG
 from trading_latino.risk.manager import en_bloqueo_horario
-from trading_latino.strategy.brain import _gestionar_largo
+from trading_latino.strategy.brain import _gestionar_corto, _gestionar_largo
 
 _CORTE = pd.Timestamp("2024-01-01", tz="UTC")
 _NADA = Decision(Accion.NADA, "no entra")
@@ -73,12 +74,31 @@ def _entrada(estado: EstadoMercado, p: dict) -> Decision:
         if not mayor and not (h4.adx < umbral):
             return _NADA
 
+    # Gatillo 1H: por ESTADO (está en ese color) o por GIRO (acaba de cambiar a ese color).
     if p.get("usar_gatillo1h"):
         objetivo = ColorSqueeze.VERDE_CLARO if tendencia else ColorSqueeze.ROJO_OSCURO
-        if h1.sqz_color is not objetivo:
+        if p.get("gatillo_giro"):
+            if not (h1.sqz_color is objetivo and h1.sqz_color_prev is not objetivo):
+                return _NADA
+        elif h1.sqz_color is not objetivo:
             return _NADA
 
-    if en_bloqueo_horario(estado.timestamp):
+    # Volumen relativo: confirmación de interés real (volumen por encima de su media).
+    if p.get("usar_volumen"):
+        if not _num_ok(h4.volumen_rel) or h4.volumen_rel < p.get("vol_factor", 1.0):
+            return _NADA
+
+    # RSI (1H): para longs, no entrar sobrecomprado.
+    if p.get("usar_rsi"):
+        if not _num_ok(h1.rsi) or h1.rsi > p.get("rsi_umbral", 50):
+            return _NADA
+
+    # Posición vs EMA55 de 4H: precio cerca de la "media imán" (soporte dinámico).
+    if p.get("usar_ema55"):
+        if not _num_ok(h4.ema_lenta) or abs(estado.precio - h4.ema_lenta) / h4.ema_lenta > p.get("prox_ema55", 0.02):
+            return _NADA
+
+    if p.get("usar_bloqueo", True) and en_bloqueo_horario(estado.timestamp):
         return _NADA
     if not _num_ok(h4.swing_min):
         return _NADA
@@ -92,6 +112,70 @@ def _hacer_cerebro(p: dict):
         if posicion is not None:
             return _gestionar_largo(estado, posicion, salida)
         return _entrada(estado, p)
+    return cerebro
+
+
+def _entrada_corto(estado: EstadoMercado, p: dict) -> Decision:
+    """Entrada SHORT parametrizable (para ablación). Espejo de _entrada. Nunca BTC."""
+    if estado.simbolo == CONFIG.btc:
+        return _NADA
+    d, h4, h1 = estado.diario, estado.h4, estado.h1
+
+    if p["semaforo"] == "ema_cross":
+        if not (d.ema_rapida < d.ema_lenta):       # activo débil = diario bajista
+            return _NADA
+
+    if p.get("usar_poc"):
+        if not _num_ok(h4.poc) or abs(estado.precio - h4.poc) / h4.poc > p["proximidad"]:
+            return _NADA
+
+    if p.get("usar_squeeze4h"):
+        if h4.sqz_color is not ColorSqueeze.VERDE_OSCURO:    # giro bajista
+            return _NADA
+
+    if p.get("usar_adx"):
+        if not _num_ok(h4.adx_pendiente):
+            return _NADA
+        signo = p.get("adx_signo", "pos")
+        if signo == "pos" and not (h4.adx_pendiente > 0):
+            return _NADA
+        if signo == "neg" and not (h4.adx_pendiente < 0):
+            return _NADA
+
+    if p.get("usar_gatillo1h"):
+        if h1.sqz_color is not ColorSqueeze.VERDE_OSCURO:
+            return _NADA
+
+    if en_bloqueo_horario(estado.timestamp):
+        return _NADA
+    if not _num_ok(h4.swing_max):
+        return _NADA
+    return Decision(Accion.ABRIR_CORTO, "exp short", stop_loss=h4.swing_max * (1 + 0.003))
+
+
+def _hacer_cerebro_corto(p: dict):
+    salida = p.get("salida", "agotamiento_impulso")
+
+    def cerebro(estado: EstadoMercado, posicion: Posicion | None) -> Decision:
+        if posicion is not None:
+            return _gestionar_corto(estado, posicion, salida)
+        return _entrada_corto(estado, p)
+    return cerebro
+
+
+def _hacer_cerebro_combinado(p_long: dict, p_short: dict):
+    """Combinado: largo si el diario del activo es alcista, corto si bajista (configs distintas)."""
+    sl_l = p_long.get("salida", "agotamiento_impulso")
+    sl_s = p_short.get("salida", "agotamiento_impulso")
+
+    def cerebro(estado: EstadoMercado, posicion: Posicion | None) -> Decision:
+        if posicion is not None:
+            if posicion.lado is Lado.LARGO:
+                return _gestionar_largo(estado, posicion, sl_l)
+            return _gestionar_corto(estado, posicion, sl_s)
+        if estado.diario.ema_rapida > estado.diario.ema_lenta:
+            return _entrada(estado, p_long)
+        return _entrada_corto(estado, p_short)
     return cerebro
 
 

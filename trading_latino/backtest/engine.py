@@ -47,13 +47,25 @@ def _indicadores_tf(df: pd.DataFrame, tf: str, con_poc=False, con_swing=False) -
         "di_neg": a["di_neg"].to_numpy(),
         "sqz_valor": s["valor"].to_numpy(),
         "sqz_color": s["color"].to_numpy(),
+        "sqz_color_prev": s["color"].shift(1).to_numpy(),
         "poc": poc(df).to_numpy() if con_poc else np.full(len(df), np.nan),
     })
     n = CONFIG.estrategia.SWING_LOOKBACK_VELAS
     out["swing_min"] = df["minimo"].rolling(n).min().to_numpy() if con_swing else np.nan
     out["swing_max"] = df["maximo"].rolling(n).max().to_numpy() if con_swing else np.nan
+    out["rsi"] = _rsi(df["cierre"]).to_numpy()
+    out["volumen_rel"] = (df["volumen"] / df["volumen"].rolling(20).mean()).to_numpy()
     out.index = pd.DatetimeIndex(df["timestamp"]) + _DURACION[tf]   # hora de cierre
     return out
+
+
+def _rsi(serie: pd.Series, periodo: int = 14) -> pd.Series:
+    """RSI de Wilder."""
+    delta = serie.diff()
+    ag = delta.clip(lower=0).ewm(alpha=1 / periodo, adjust=False).mean()
+    ap = (-delta.clip(upper=0)).ewm(alpha=1 / periodo, adjust=False).mean()
+    rs = ag / ap.replace(0, np.nan)
+    return 100 - 100 / (1 + rs)
 
 
 def _color(valor) -> ColorSqueeze | None:
@@ -90,7 +102,8 @@ def preparar(simbolo: str, exchange: str = "binance", tfs: dict | None = None) -
 
 
 _COLS = ["cierre", "ema_rapida", "ema_lenta", "adx", "adx_pendiente", "di_pos", "di_neg",
-         "sqz_valor", "sqz_color", "poc", "swing_min", "swing_max"]
+         "sqz_valor", "sqz_color", "sqz_color_prev", "poc", "swing_min", "swing_max",
+         "rsi", "volumen_rel"]
 
 
 def _arrays(al_tf: pd.DataFrame) -> dict:
@@ -104,6 +117,7 @@ def _estado_tf_arr(A: dict, i: int) -> EstadoTF:
         adx=A["adx"][i], adx_pendiente=A["adx_pendiente"][i], di_pos=A["di_pos"][i], di_neg=A["di_neg"][i],
         sqz_valor=A["sqz_valor"][i], sqz_color=_color(A["sqz_color"][i]),
         poc=A["poc"][i], swing_min=A["swing_min"][i], swing_max=A["swing_max"][i],
+        sqz_color_prev=_color(A["sqz_color_prev"][i]), rsi=A["rsi"][i], volumen_rel=A["volumen_rel"][i],
     )
 
 

@@ -84,6 +84,9 @@ class EstadoTF:
     poc: float | None = None
     swing_min: float | None = None   # mínimo estructural reciente (para el SL en Largos)
     swing_max: float | None = None   # máximo estructural reciente (para el SL en Cortos)
+    sqz_color_prev: ColorSqueeze | None = None   # color del Squeeze en la vela anterior (para detectar el giro)
+    rsi: float | None = None                      # RSI (sobrecompra/sobreventa)
+    volumen_rel: float | None = None              # volumen / su media (volumen relativo)
 
 
 @dataclass(frozen=True)

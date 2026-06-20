@@ -193,9 +193,8 @@ def _entrada_corto(estado: EstadoMercado) -> Decision:
     if estado.h4.sqz_color is not ColorSqueeze.VERDE_OSCURO:
         return Decision(Accion.NADA, "Squeeze 4H no confirma giro bajista (no es verde oscuro)")
 
-    # 4) 4H: ADX con pendiente positiva (impulso de fondo reactivándose, en este caso a la baja).
-    if not (_num(estado.h4.adx_pendiente) and estado.h4.adx_pendiente > 0):
-        return Decision(Accion.NADA, "ADX 4H sin pendiente positiva")
+    # 4) Sin filtro de ADX en shorts: la ablación mostró que estorba (a diferencia del long).
+    #    [Calibrado 2026-06-21] ver lessons-learned.
 
     # 5) Gatillo 1H: el monitor de 1H se gira a la baja (verde oscuro).
     if estado.h1.sqz_color is not ColorSqueeze.VERDE_OSCURO:

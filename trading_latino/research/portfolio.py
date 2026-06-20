@@ -52,7 +52,8 @@ def _alinear(simbolo: str, master: pd.DatetimeIndex, tfs: dict, exchange="binanc
 
 
 def correr_cartera(simbolos: list[str], tfs: dict | None = None, capital=10000.0,
-                   maker_entrada=True, max_posiciones=8, pct=0.05, modo="combinado") -> dict:
+                   maker_entrada=True, max_posiciones=8, pct=0.05, modo="combinado",
+                   cerebro=None) -> dict:
     tfs = tfs or _DEFAULT_TFS
     c = CONFIG.costes
     horas = _HORAS.get(tfs["h1"], 1.0)
@@ -113,7 +114,7 @@ def correr_cartera(simbolos: list[str], tfs: dict | None = None, capital=10000.0
             estado = EstadoMercado(simbolo=s, timestamp=ts, precio=precio,
                                    semanal=_estado_tf(A["semanal"], i), diario=_estado_tf(A["diario"], i),
                                    h4=_estado_tf(A["h4"], i), h1=_estado_tf(A["h1"], i))
-            d = decidir(estado, pos, modo)
+            d = cerebro(estado, pos) if cerebro is not None else decidir(estado, pos, modo)
 
             if d.accion in (Accion.ABRIR_LARGO, Accion.ABRIR_CORTO) and pos is None and len(posiciones) < max_posiciones:
                 lado = Lado.LARGO if d.accion is Accion.ABRIR_LARGO else Lado.CORTO
