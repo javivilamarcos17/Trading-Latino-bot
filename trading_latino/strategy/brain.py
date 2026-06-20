@@ -48,9 +48,15 @@ def decidir(estado: EstadoMercado, posicion: Posicion | None, modo: str | None =
     if modo == "btc_longs":
         return _gestionar_largo(estado, posicion, regla_salida) if posicion else _entrada_largo(estado)
     if modo == "alt_shorts":
-        raise NotImplementedError("El módulo de alt-shorts (5b) se implementa más adelante.")
+        return _gestionar_corto(estado, posicion, regla_salida) if posicion else _entrada_corto(estado)
     if modo == "combinado":
-        raise NotImplementedError("El módulo combinado (5c) se implementa tras validar 5a y 5b.")
+        if posicion is not None:
+            return (_gestionar_largo(estado, posicion, regla_salida) if posicion.lado is Lado.LARGO
+                    else _gestionar_corto(estado, posicion, regla_salida))
+        # Sin posición: la dirección la marca el semáforo diario del propio activo.
+        if semaforo_diario(estado.diario.ema_rapida, estado.diario.ema_lenta) == "alcista":
+            return _entrada_largo(estado)
+        return _entrada_corto(estado)
     raise ValueError(f"Modo de backtest desconocido: {modo}")
 
 
@@ -164,4 +170,89 @@ def _salida(estado: EstadoMercado, posicion: Posicion, regla: str) -> Decision |
             return Decision(Accion.CERRAR, "ciclo 1H agotado: Squeeze 1H giró a verde oscuro")
         return None
 
+    raise ValueError(f"Regla de salida desconocida: {regla}")
+
+
+# ───────────────────────── Entrada (Short) — espejo del Long ─────────────────────────
+def _entrada_corto(estado: EstadoMercado) -> Decision:
+    """Patrón de venta de Trading Latino sobre una altcoin débil (rebote a resistencia)."""
+    e = CONFIG.estrategia
+
+    # 1) Activo débil: su diario es bajista (EMA10 < EMA55). 🚫 A BTC nunca se le hace short.
+    if estado.simbolo == CONFIG.btc:
+        return Decision(Accion.NADA, "a Bitcoin no se le hace short (regla inquebrantable)")
+    if semaforo_diario(estado.diario.ema_rapida, estado.diario.ema_lenta) != "bajista":
+        return Decision(Accion.NADA, "el activo no está débil (diario no bajista)")
+
+    # 2) Precio rebotó hasta una resistencia de volumen (cerca del POC 4H).
+    poc4 = estado.h4.poc
+    if not _num(poc4) or abs(estado.precio - poc4) / poc4 > e.PROXIMIDAD_POC:
+        return Decision(Accion.NADA, "precio fuera de la zona de resistencia (POC 4H)")
+
+    # 3) 4H: giro bajista del Squeeze (verde oscuro = se agota la subida).
+    if estado.h4.sqz_color is not ColorSqueeze.VERDE_OSCURO:
+        return Decision(Accion.NADA, "Squeeze 4H no confirma giro bajista (no es verde oscuro)")
+
+    # 4) 4H: ADX con pendiente positiva (impulso de fondo reactivándose, en este caso a la baja).
+    if not (_num(estado.h4.adx_pendiente) and estado.h4.adx_pendiente > 0):
+        return Decision(Accion.NADA, "ADX 4H sin pendiente positiva")
+
+    # 5) Gatillo 1H: el monitor de 1H se gira a la baja (verde oscuro).
+    if estado.h1.sqz_color is not ColorSqueeze.VERDE_OSCURO:
+        return Decision(Accion.NADA, "gatillo 1H no confirma (Squeeze 1H no es verde oscuro)")
+
+    if en_bloqueo_horario(estado.timestamp):
+        return Decision(Accion.NADA, "ventana de bloqueo horario (15:15-15:45 Madrid)")
+
+    if not _num(estado.h4.swing_max):
+        return Decision(Accion.NADA, "sin máximo estructural para colocar el stop")
+    stop = estado.h4.swing_max * (1 + 0.003)
+    return Decision(Accion.ABRIR_CORTO,
+                    "patrón Trading Latino short (alt débil + POC 4H + Squeeze verde oscuro + ADX + gatillo 1H)",
+                    stop_loss=stop)
+
+
+def _gestionar_corto(estado: EstadoMercado, posicion: Posicion, regla_salida: str) -> Decision:
+    """Mientras hay un Short abierto: salida, guillotina y break-even (espejo del Long)."""
+    e = CONFIG.estrategia
+    r = CONFIG.riesgo
+
+    salida = _salida_corto(estado, posicion, regla_salida)
+    if salida is not None:
+        return salida
+
+    if posicion.velas_4h_transcurridas >= r.GUILLOTINA_VELAS_4H_MAX:
+        if abs(estado.precio - posicion.precio_entrada) / posicion.precio_entrada <= e.GUILLOTINA_PLANITUD:
+            return Decision(Accion.CERRAR, "guillotina del tiempo: ciclo agotado y precio plano")
+
+    if not posicion.break_even_aplicado and posicion.velas_4h_transcurridas >= r.BREAKEVEN_VELAS_4H:
+        if estado.precio < posicion.precio_entrada:   # en ganancias (short)
+            be = break_even_neto(posicion.precio_entrada, Lado.CORTO)
+            return Decision(Accion.MOVER_BREAKEVEN, "break-even neto tras vela de 4H ganadora", stop_loss=be)
+
+    return _NADA
+
+
+def _salida_corto(estado: EstadoMercado, posicion: Posicion, regla: str) -> Decision | None:
+    """Reglas de salida para Shorts (espejo de las de Long)."""
+    e = CONFIG.estrategia
+
+    if regla == "agotamiento_impulso":
+        if estado.h4.sqz_color is ColorSqueeze.ROJO_OSCURO:
+            return Decision(Accion.CERRAR, "agotamiento del impulso: Squeeze 4H giró a rojo oscuro")
+        return None
+    if regla == "ciclo_1h":
+        if estado.h1.sqz_color is ColorSqueeze.ROJO_OSCURO:
+            return Decision(Accion.CERRAR, "ciclo 1H agotado: Squeeze 1H giró a rojo oscuro")
+        return None
+    if regla == "trailing":
+        if posicion.max_favorable is not None and estado.precio >= posicion.max_favorable * (1 + e.TRAILING_RETROCESO):
+            return Decision(Accion.CERRAR, f"trailing: rebote {e.TRAILING_RETROCESO*100:.0f}% desde el mínimo")
+        return None
+    if regla == "multiplo_r":
+        if posicion.stop_inicial is not None:
+            objetivo = posicion.precio_entrada - e.MULTIPLO_R * (posicion.stop_inicial - posicion.precio_entrada)
+            if estado.precio <= objetivo:
+                return Decision(Accion.CERRAR, f"objetivo {e.MULTIPLO_R:.0f}R alcanzado")
+        return None
     raise ValueError(f"Regla de salida desconocida: {regla}")

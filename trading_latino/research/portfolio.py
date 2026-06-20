@@ -52,7 +52,7 @@ def _alinear(simbolo: str, master: pd.DatetimeIndex, tfs: dict, exchange="binanc
 
 
 def correr_cartera(simbolos: list[str], tfs: dict | None = None, capital=10000.0,
-                   maker_entrada=True, max_posiciones=8, pct=0.05) -> dict:
+                   maker_entrada=True, max_posiciones=8, pct=0.05, modo="combinado") -> dict:
     tfs = tfs or _DEFAULT_TFS
     c = CONFIG.costes
     horas = _HORAS.get(tfs["h1"], 1.0)
@@ -113,12 +113,13 @@ def correr_cartera(simbolos: list[str], tfs: dict | None = None, capital=10000.0
             estado = EstadoMercado(simbolo=s, timestamp=ts, precio=precio,
                                    semanal=_estado_tf(A["semanal"], i), diario=_estado_tf(A["diario"], i),
                                    h4=_estado_tf(A["h4"], i), h1=_estado_tf(A["h1"], i))
-            d = decidir(estado, pos, "btc_longs")
+            d = decidir(estado, pos, modo)
 
-            if d.accion is Accion.ABRIR_LARGO and pos is None and len(posiciones) < max_posiciones:
+            if d.accion in (Accion.ABRIR_LARGO, Accion.ABRIR_CORTO) and pos is None and len(posiciones) < max_posiciones:
+                lado = Lado.LARGO if d.accion is Accion.ABRIR_LARGO else Lado.CORTO
                 apalanc = apalancamiento_semana(estado.semanal.cierre, estado.semanal.ema_lenta)
                 cantidad = tamano_posicion(equity, precio, apalanc, pct)
-                _abrir(s, Lado.LARGO, cantidad, apalanc, d.stop_loss, precio, ts)
+                _abrir(s, lado, cantidad, apalanc, d.stop_loss, precio, ts)
             elif d.accion is Accion.CERRAR and pos is not None:
                 _cerrar(s, precio, ts, d.motivo)
             elif d.accion is Accion.MOVER_BREAKEVEN and pos is not None:
@@ -131,10 +132,16 @@ def correr_cartera(simbolos: list[str], tfs: dict | None = None, capital=10000.0
                 signo = 1 if pos.lado is Lado.LARGO else -1
                 equity -= funding * signo
                 funding_ac[s] += funding * signo
-                if pos.lado is Lado.LARGO and ohlc["l"][i] <= pos.stop_loss:
-                    _cerrar(s, pos.stop_loss, ts, "stop loss")
-                elif pos.lado is Lado.LARGO:
-                    pos.max_favorable = max(pos.max_favorable, ohlc["h"][i])
+                if pos.lado is Lado.LARGO:
+                    if ohlc["l"][i] <= pos.stop_loss:
+                        _cerrar(s, pos.stop_loss, ts, "stop loss")
+                    else:
+                        pos.max_favorable = max(pos.max_favorable, ohlc["h"][i])
+                else:
+                    if ohlc["h"][i] >= pos.stop_loss:
+                        _cerrar(s, pos.stop_loss, ts, "stop loss")
+                    else:
+                        pos.max_favorable = min(pos.max_favorable, ohlc["l"][i])
 
         # marca a mercado de la cartera
         mtm = equity
