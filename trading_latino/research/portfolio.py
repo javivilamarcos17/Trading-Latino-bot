@@ -34,6 +34,8 @@ def _estado_tf(A: dict, i: int) -> EstadoTF:
         adx=A["adx"][i], adx_pendiente=A["adx_pendiente"][i], di_pos=A["di_pos"][i], di_neg=A["di_neg"][i],
         sqz_valor=A["sqz_valor"][i], sqz_color=_color(A["sqz_color"][i]),
         poc=A["poc"][i], swing_min=A["swing_min"][i], swing_max=A["swing_max"][i],
+        sqz_color_prev=_color(A["sqz_color_prev"][i]), rsi=A["rsi"][i],
+        volumen_rel=A["volumen_rel"][i], vwap=A["vwap"][i],
     )
 
 
