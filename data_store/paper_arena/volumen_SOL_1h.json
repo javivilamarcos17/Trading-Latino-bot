@@ -9,6 +9,11 @@
     "estr": "volumen",
     "coin": "SOL",
     "tf": "1h",
-    "fecha": "2026-06-21 21:00:00"
+    "fecha": "2026-06-21 21:00:00",
+    "funding": 9.2162e-06,
+    "oi": 5196362.360000006,
+    "pos_rango": 0.77,
+    "liq_arriba_%": 0.21,
+    "liq_abajo_%": 0.02
   }
 ]

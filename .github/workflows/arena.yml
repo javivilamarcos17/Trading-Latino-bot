@@ -1,17 +1,16 @@
-# Recolector de la ARENA en la NUBE (GitHub Actions) — corre 24/7 sin depender del portátil.
-# Cada 15 min: ejecuta la arena (paper-trading) y guarda los datos en la rama "arena-data".
-# Para verlos: en GitHub, cambia a la rama "arena-data" -> carpeta data_store/paper_arena.
+# Recolector de la ARENA en la NUBE — patrón BUCLE-EN-JOB (robusto al cron errático de GitHub).
+# Un disparo lanza un job que recoge cada 15 min durante ~6 horas seguidas. Se relanza cada 6h.
+# Así NO dependemos de que GitHub dispare cada 15 min (que no lo hace de forma fiable).
+# Datos -> rama "arena-data", carpeta data_store/paper_arena.
 #
-# NOTA de coste: si el repo es PÚBLICO, los minutos de Actions son gratis. Si es PRIVADO, hay
-# 2000 min/mes gratis -> cada 15 min se pasa; en ese caso cambia el cron a '0 * * * *' (cada hora)
-# o haz el repo público.
+# Para arrancar YA (sin esperar al cron): pestaña Actions -> Arena Paper Collector -> Run workflow.
 
 name: Arena Paper Collector
 
 on:
   schedule:
-    - cron: "*/15 * * * *"     # cada 15 minutos (best-effort; GitHub puede retrasarlo algo)
-  workflow_dispatch: {}         # permite lanzarlo a mano desde la pestaña Actions
+    - cron: "0 */6 * * *"     # cada 6h (best-effort; con que dispare 1 vez tenemos 6h de recogida)
+  workflow_dispatch: {}
 
 permissions:
   contents: write
@@ -23,6 +22,7 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-latest
+    timeout-minutes: 355        # tope ~5.9h (máximo de GitHub es 6h)
     steps:
       - name: Descargar el código
         uses: actions/checkout@v4
@@ -39,16 +39,21 @@ jobs:
       - name: Recuperar datos previos (rama arena-data)
         run: |
           git fetch origin arena-data || true
-          git checkout origin/arena-data -- data_store/paper_arena 2>/dev/null || echo "primera ejecución, sin datos previos"
+          git checkout origin/arena-data -- data_store/paper_arena 2>/dev/null || echo "primera vez, sin datos previos"
 
-      - name: Ejecutar la arena (paper-trading)
-        run: python -m trading_latino.live.arena
-
-      - name: Guardar datos en la rama arena-data
+      - name: BUCLE de recogida (~5.7h, una pasada cada 15 min)
         run: |
           git config user.name "arena-bot"
           git config user.email "actions@users.noreply.github.com"
           git checkout -B arena-data
-          git add -f data_store/paper_arena
-          git commit -m "arena: datos $(date -u +%FT%TZ) [skip ci]" || { echo "sin cambios"; exit 0; }
-          git push origin arena-data --force
+          fin=$(( $(date +%s) + 20400 ))     # ~5.7 horas
+          n=0
+          while [ "$(date +%s)" -lt "$fin" ]; do
+            n=$((n+1))
+            echo "===== pasada $n  $(date -u +%FT%TZ) ====="
+            python -m trading_latino.live.arena || echo "fallo en una pasada, sigo"
+            git add -f data_store/paper_arena
+            git commit -m "arena: datos $(date -u +%FT%TZ) [skip ci]" || echo "sin cambios"
+            git push origin arena-data --force || echo "push falló, reintento la próxima"
+            sleep 900
+          done

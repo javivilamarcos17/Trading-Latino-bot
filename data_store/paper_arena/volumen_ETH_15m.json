@@ -10,10 +10,10 @@
     "coin": "ETH",
     "tf": "15m",
     "fecha": "2026-06-21 21:15:00",
-    "funding": 8.4411e-06,
-    "oi": 779258.8255999997,
-    "pos_rango": 0.31,
-    "liq_arriba_%": 0.07,
-    "liq_abajo_%": 0.09
+    "funding": 9.8461e-06,
+    "oi": 808807.9009999994,
+    "pos_rango": 0.28,
+    "liq_arriba_%": 0.14,
+    "liq_abajo_%": 0.01
   }
 ]

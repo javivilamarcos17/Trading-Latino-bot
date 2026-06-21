@@ -10,10 +10,10 @@
     "coin": "BTC",
     "tf": "15m",
     "fecha": "2026-06-21 21:15:00",
-    "funding": -1.16514e-05,
-    "oi": 30871.73792,
-    "pos_rango": 0.12,
-    "liq_arriba_%": 0.24,
-    "liq_abajo_%": 0.08
+    "funding": -7.6962e-06,
+    "oi": 30787.68908,
+    "pos_rango": 0.21,
+    "liq_arriba_%": 0.08,
+    "liq_abajo_%": 0.06
   }
 ]
