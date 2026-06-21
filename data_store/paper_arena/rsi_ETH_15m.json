@@ -1,1 +1,41 @@
-[]
+[
+  {
+    "dir": "largo",
+    "entry": 1719.8,
+    "stop": 1715.5,
+    "target": 1728.3999999999999,
+    "status": "cerrada",
+    "ts": 1782045000000,
+    "estr": "rsi",
+    "coin": "ETH",
+    "tf": "15m",
+    "fecha": "2026-06-21 12:30:00",
+    "funding": 8.4411e-06,
+    "oi": 779258.8255999997,
+    "pos_rango": 0.31,
+    "liq_arriba_%": 0.07,
+    "liq_abajo_%": 0.09,
+    "exit": 1728.3999999999999,
+    "pnl": 0.004200581462960784,
+    "mfe_R": 2.44,
+    "mae_R": 0.74,
+    "res": "1m"
+  },
+  {
+    "dir": "largo",
+    "entry": 1713.6,
+    "stop": 1701.6,
+    "target": 1737.6,
+    "status": "abierta",
+    "ts": 1782076500000,
+    "estr": "rsi",
+    "coin": "ETH",
+    "tf": "15m",
+    "fecha": "2026-06-21 21:15:00",
+    "funding": 8.4411e-06,
+    "oi": 779258.8255999997,
+    "pos_rango": 0.31,
+    "liq_arriba_%": 0.07,
+    "liq_abajo_%": 0.09
+  }
+]

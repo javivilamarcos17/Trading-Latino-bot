@@ -1,1 +1,41 @@
-[]
+[
+  {
+    "dir": "largo",
+    "entry": 63853.0,
+    "stop": 63585.351,
+    "target": 64388.297999999995,
+    "status": "cerrada",
+    "ts": 1782077400000,
+    "estr": "rsidiv",
+    "coin": "BTC",
+    "tf": "15m",
+    "fecha": "2026-06-21 21:30:00",
+    "funding": -1.16514e-05,
+    "oi": 30871.73792,
+    "pos_rango": 0.12,
+    "liq_arriba_%": 0.24,
+    "liq_abajo_%": 0.08,
+    "exit": 63585.351,
+    "pnl": -0.004991643305717752,
+    "mfe_R": 0.25,
+    "mae_R": 1.15,
+    "res": "1m"
+  },
+  {
+    "dir": "largo",
+    "entry": 63593.0,
+    "stop": 63477.459,
+    "target": 63824.081999999995,
+    "status": "abierta",
+    "ts": 1782079200000,
+    "estr": "rsidiv",
+    "coin": "BTC",
+    "tf": "15m",
+    "fecha": "2026-06-21 22:00:00",
+    "funding": -1.16514e-05,
+    "oi": 30871.73792,
+    "pos_rango": 0.12,
+    "liq_arriba_%": 0.24,
+    "liq_abajo_%": 0.08
+  }
+]

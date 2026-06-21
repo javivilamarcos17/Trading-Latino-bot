@@ -10,5 +10,22 @@
     "coin": "SOL",
     "tf": "15m",
     "fecha": "2026-06-21 21:45:00"
+  },
+  {
+    "dir": "corto",
+    "entry": 73.008,
+    "stop": 73.3463065,
+    "target": 72.33138699999999,
+    "status": "abierta",
+    "ts": 1782079200000,
+    "estr": "fvg",
+    "coin": "SOL",
+    "tf": "15m",
+    "fecha": "2026-06-21 22:00:00",
+    "funding": -8.711e-07,
+    "oi": 5189849.02,
+    "pos_rango": 0.34,
+    "liq_arriba_%": 0.07,
+    "liq_abajo_%": 0.01
   }
 ]

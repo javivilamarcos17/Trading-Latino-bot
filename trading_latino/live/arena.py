@@ -305,6 +305,32 @@ def detectar(estr, ex, coin, tf):
     return None, L
 
 
+def detectar_cerr(estr, cerr, coin):
+    """Ejecuta el detector (no-SMC) sobre un frame cuya ÚLTIMA fila es la vela a evaluar.
+    Permite revisar bar a bar las velas que cerraron desde la última ejecución (backfill)."""
+    if estr == "merino":
+        return det_merino(cerr, coin)
+    if estr == "sweep":
+        return det_sweep(cerr)
+    if estr == "fvg":
+        return det_fvg(cerr)
+    if estr == "ob":
+        return det_ob(cerr)
+    if estr == "rsi":
+        return det_rsi(cerr)
+    if estr == "volumen":
+        return det_volumen(cerr)
+    if estr == "adx":
+        return det_adx(cerr)
+    if estr == "rsidiv":
+        return det_rsidiv(cerr)
+    if estr == "scalp_sqz":
+        return det_scalp_sqz(cerr)
+    if estr == "scalp_rev":
+        return det_scalp_rev(cerr)
+    return None
+
+
 def contexto(ex, coin, L, cache):
     """Contexto NO-precio + liquidez de cada operación, para entender luego qué la hace funcionar.
     funding/OI = posicionamiento (independiente del precio). pos_rango = premium/discount (0=suelo,
@@ -331,23 +357,33 @@ def contexto(ex, coin, L, cache):
     return {"funding": fr, "oi": oi, "pos_rango": pos, "liq_arriba_%": dliq_up, "liq_abajo_%": dliq_dn}
 
 
-def actualizar(ops, L):
-    hi = L["maximo"].to_numpy(); lo = L["minimo"].to_numpy(); ts = L["t"].to_numpy()
+def actualizar(ops, L, m1=None):
+    """Resuelve las operaciones abiertas. Usa el detalle de 1 MINUTO (m1) cuando cubre la entrada,
+    para saber el ORDEN REAL (stop vs objetivo) y el RECORRIDO (excursión máx a favor/en contra),
+    no solo apertura/cierre. Si 1m no cubre la entrada (operación vieja), usa la TF de la estrategia."""
     for o in ops:
         if o["status"] != "abierta":
             continue
+        res = m1 if (m1 is not None and len(m1) and int(m1["t"].iloc[0]) <= o["ts"]) else L
+        hi = res["maximo"].to_numpy(); lo = res["minimo"].to_numpy(); ts = res["t"].to_numpy()
+        D = abs(o["entry"] - o["stop"]) or 1e-9
+        mfe = mae = 0.0; largo = o["dir"] == "largo"
         for k in range(len(ts)):
             if ts[k] <= o["ts"]:
                 continue
-            if o["dir"] == "largo":
+            if largo:
+                mfe = max(mfe, (hi[k] - o["entry"]) / D); mae = max(mae, (o["entry"] - lo[k]) / D)
                 if lo[k] <= o["stop"]: o.update(status="cerrada", exit=o["stop"]); break
                 if hi[k] >= o["target"]: o.update(status="cerrada", exit=o["target"]); break
             else:
+                mfe = max(mfe, (o["entry"] - lo[k]) / D); mae = max(mae, (hi[k] - o["entry"]) / D)
                 if hi[k] >= o["stop"]: o.update(status="cerrada", exit=o["stop"]); break
                 if lo[k] <= o["target"]: o.update(status="cerrada", exit=o["target"]); break
         if o["status"] == "cerrada":
-            signo = 1 if o["dir"] == "largo" else -1
+            signo = 1 if largo else -1
             o["pnl"] = signo * (o["exit"] / o["entry"] - 1) - COSTE
+            o["mfe_R"] = round(mfe, 2); o["mae_R"] = round(mae, 2)   # recorrido real (para diseñar salidas)
+            o["res"] = "1m" if res is m1 else "tf"
 
 
 def main():
@@ -360,26 +396,49 @@ def main():
     print("ARENA EN VIVO (paper) — estrategias x temporalidades. Sin órdenes, sin dinero.\n")
     tabla = []
     ctx_cache = {}      # funding/OI por moneda, una sola vez por tick
+    m1_cache = {}       # velas de 1m por moneda (para resolver con el recorrido real)
     for estr, tfs_estr in ESTRATEGIAS_TF.items():
         for coin in COINS:
             for tf in tfs_estr:
                 f = REG / f"{estr}_{coin}_{tf}.json"
                 ops = json.loads(f.read_text()) if f.exists() else []
+                last_ts = max((o["ts"] for o in ops), default=0)
+                nuevos = []     # (ts, setup) de TODAS las velas cerradas desde la última ejecución
                 try:
-                    setup, L = detectar(estr, ex, coin, tf)
+                    if estr == "smc":
+                        s, L = det_smc(ex, coin, tf)
+                        tsl = int(L["t"].iloc[-2])
+                        if s and tsl > last_ts:
+                            nuevos.append((tsl, s))
+                    else:
+                        L = velas(ex, coin, tf, 500)
+                        closed = L.iloc[:-1].reset_index(drop=True)   # velas YA cerradas
+                        tsa = closed["t"].to_numpy()
+                        for p in range(max(0, len(closed) - 50), len(closed)):
+                            if tsa[p] <= last_ts:                      # ya registrada antes
+                                continue
+                            s = detectar_cerr(estr, closed.iloc[:p + 1], coin)   # evalúa esa vela
+                            if s:
+                                nuevos.append((int(tsa[p]), s))
                 except Exception as e:
                     print(f"  {estr}/{coin}/{tf}: error {type(e).__name__}: {e}"); continue
-                actualizar(ops, L)
-                ts_last = int(L["t"].iloc[-2])
-                if setup and not any(o["ts"] == ts_last for o in ops):
-                    setup.update(status="abierta", ts=ts_last, estr=estr, coin=coin, tf=tf,
-                                 fecha=str(pd.to_datetime(ts_last, unit="ms")))
+                if coin not in m1_cache:
                     try:
-                        setup.update(contexto(ex, coin, L, ctx_cache))
+                        m1_cache[coin] = velas(ex, coin, "1m", 5000)
+                    except Exception:
+                        m1_cache[coin] = None
+                actualizar(ops, L, m1_cache[coin])
+                for ts_p, s in nuevos:
+                    if any(o["ts"] == ts_p for o in ops):
+                        continue
+                    s.update(status="abierta", ts=ts_p, estr=estr, coin=coin, tf=tf,
+                             fecha=str(pd.to_datetime(ts_p, unit="ms")))
+                    try:
+                        s.update(contexto(ex, coin, L, ctx_cache))
                     except Exception:
                         pass
-                    ops.append(setup)
-                    print(f"  NUEVO {estr}/{coin}/{tf} {setup['dir'].upper()} @ {setup['entry']:.4f} stop {setup['stop']:.4f} obj {setup['target']:.4f}")
+                    ops.append(s)
+                    print(f"  NUEVO {estr}/{coin}/{tf} {s['dir'].upper()} @ {s['entry']:.4f} stop {s['stop']:.4f} obj {s['target']:.4f}")
                 f.write_text(json.dumps(ops, indent=2))
                 cerr = [o for o in ops if o["status"] == "cerrada"]
                 ab = [o for o in ops if o["status"] == "abierta"]
