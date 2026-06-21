@@ -1,0 +1,19 @@
+[
+  {
+    "dir": "largo",
+    "entry": 63760.0,
+    "stop": 63397.539,
+    "target": 64484.922000000006,
+    "status": "abierta",
+    "ts": 1782075600000,
+    "estr": "volumen",
+    "coin": "BTC",
+    "tf": "1h",
+    "fecha": "2026-06-21 21:00:00",
+    "funding": -7.6962e-06,
+    "oi": 30787.68908,
+    "pos_rango": 0.4,
+    "liq_arriba_%": 0.0,
+    "liq_abajo_%": 0.01
+  }
+]

@@ -305,23 +305,111 @@ def detectar(estr, ex, coin, tf):
     return None, L
 
 
-def actualizar(ops, L):
-    hi = L["maximo"].to_numpy(); lo = L["minimo"].to_numpy(); ts = L["t"].to_numpy()
+def detectar_cerr(estr, cerr, coin):
+    """Ejecuta el detector (no-SMC) sobre un frame cuya ÚLTIMA fila es la vela a evaluar.
+    Permite revisar bar a bar las velas que cerraron desde la última ejecución (backfill)."""
+    if estr == "merino":
+        return det_merino(cerr, coin)
+    if estr == "sweep":
+        return det_sweep(cerr)
+    if estr == "fvg":
+        return det_fvg(cerr)
+    if estr == "ob":
+        return det_ob(cerr)
+    if estr == "rsi":
+        return det_rsi(cerr)
+    if estr == "volumen":
+        return det_volumen(cerr)
+    if estr == "adx":
+        return det_adx(cerr)
+    if estr == "rsidiv":
+        return det_rsidiv(cerr)
+    if estr == "scalp_sqz":
+        return det_scalp_sqz(cerr)
+    if estr == "scalp_rev":
+        return det_scalp_rev(cerr)
+    return None
+
+
+def contexto(ex, coin, L, cache):
+    """Contexto NO-precio + liquidez de cada operación, para entender luego qué la hace funcionar.
+    funding/OI = posicionamiento (independiente del precio). pos_rango = premium/discount (0=suelo,
+    1=techo). dist_liq = % a la liquidez (swing) más cercana arriba/abajo."""
+    if coin not in cache:
+        try:
+            fr = ex.fetch_funding_rate(f"{coin}/USDC:USDC").get("fundingRate")
+        except Exception:
+            fr = None
+        try:
+            oi = ex.fetch_open_interest(f"{coin}/USDC:USDC").get("openInterestAmount")
+        except Exception:
+            oi = None
+        cache[coin] = (fr, oi)
+    fr, oi = cache[coin]
+    cerr = L.iloc[:-1]
+    px = float(cerr["cierre"].iloc[-1])
+    hi = cerr["maximo"].tail(100); lo = cerr["minimo"].tail(100)
+    rh = float(hi.max()); rl = float(lo.min())
+    pos = round((px - rl) / (rh - rl), 2) if rh > rl else 0.5
+    arr = hi[hi > px]; aba = lo[lo < px]
+    dliq_up = round((arr.min() / px - 1) * 100, 2) if len(arr) else None
+    dliq_dn = round((1 - aba.max() / px) * 100, 2) if len(aba) else None
+    return {"funding": fr, "oi": oi, "pos_rango": pos, "liq_arriba_%": dliq_up, "liq_abajo_%": dliq_dn}
+
+
+POLITICAS = ("fixed", "be05", "be10", "t125", "trail")
+
+
+def actualizar(ops, L, m1=None):
+    """Resuelve las operaciones abiertas sobre el camino REAL de 1 minuto (m1) cuando cubre la entrada
+    (orden correcto stop-vs-objetivo). Mide EN PARALELO 5 políticas de salida para tener datos reales:
+      fixed (stop/objetivo fijos) · be05/be10 (break-even al llegar a 0.5R/1R) · t125 (objetivo 1.25R)
+      · trail (trailing stop a 1R del máximo). Guarda el resultado NETO en R de cada una."""
     for o in ops:
         if o["status"] != "abierta":
             continue
+        res = m1 if (m1 is not None and len(m1) and int(m1["t"].iloc[0]) <= o["ts"]) else L
+        hi = res["maximo"].to_numpy(); lo = res["minimo"].to_numpy(); ts = res["t"].to_numpy()
+        entry = o["entry"]; stop0 = o["stop"]; target = o["target"]
+        D = abs(entry - stop0) or 1e-9
+        largo = o["dir"] == "largo"
+        cost_R = COSTE / (D / entry)
+        t125 = entry + (1.25 * D if largo else -1.25 * D)
+        st = {p: stop0 for p in POLITICAS}
+        armed = {"be05": False, "be10": False}
+        best = entry; cerr = {}; mfe = mae = 0.0
         for k in range(len(ts)):
             if ts[k] <= o["ts"]:
                 continue
-            if o["dir"] == "largo":
-                if lo[k] <= o["stop"]: o.update(status="cerrada", exit=o["stop"]); break
-                if hi[k] >= o["target"]: o.update(status="cerrada", exit=o["target"]); break
-            else:
-                if hi[k] >= o["stop"]: o.update(status="cerrada", exit=o["stop"]); break
-                if lo[k] <= o["target"]: o.update(status="cerrada", exit=o["target"]); break
-        if o["status"] == "cerrada":
-            signo = 1 if o["dir"] == "largo" else -1
-            o["pnl"] = signo * (o["exit"] / o["entry"] - 1) - COSTE
+            fav = (hi[k] - entry) / D if largo else (entry - lo[k]) / D
+            adv = (entry - lo[k]) / D if largo else (hi[k] - entry) / D
+            mfe = max(mfe, fav); mae = max(mae, adv)
+            for p in POLITICAS:
+                if p in cerr:
+                    continue
+                tgt = t125 if p == "t125" else target
+                stop_hit = (lo[k] <= st[p]) if largo else (hi[k] >= st[p])
+                tgt_hit = (hi[k] >= tgt) if largo else (lo[k] <= tgt)
+                if stop_hit:
+                    cerr[p] = (st[p] - entry) / D if largo else (entry - st[p]) / D
+                elif tgt_hit:
+                    cerr[p] = (tgt - entry) / D if largo else (entry - tgt) / D
+            if not armed["be05"] and fav >= 0.5:
+                armed["be05"] = True; st["be05"] = entry
+            if not armed["be10"] and fav >= 1.0:
+                armed["be10"] = True; st["be10"] = entry
+            best = max(best, hi[k]) if largo else min(best, lo[k])
+            tl = (best - D) if largo else (best + D)
+            st["trail"] = max(st["trail"], tl) if largo else min(st["trail"], tl)
+            if "fixed" in cerr:
+                break
+        if "fixed" in cerr:
+            ex = cerr["fixed"]
+            o.update(status="cerrada", exit=entry + ex * D if largo else entry - ex * D)
+            o["pnl"] = ex * (D / entry) - COSTE
+            o["mfe_R"] = round(mfe, 2); o["mae_R"] = round(mae, 2)
+            o["res"] = "1m" if res is m1 else "tf"
+            o["exits"] = {p: round(cerr.get(p, ex) - cost_R, 3) for p in POLITICAS}   # R NETO real por salida
 
 
 def main():
@@ -333,22 +421,50 @@ def main():
     REG.mkdir(parents=True, exist_ok=True)
     print("ARENA EN VIVO (paper) — estrategias x temporalidades. Sin órdenes, sin dinero.\n")
     tabla = []
+    ctx_cache = {}      # funding/OI por moneda, una sola vez por tick
+    m1_cache = {}       # velas de 1m por moneda (para resolver con el recorrido real)
     for estr, tfs_estr in ESTRATEGIAS_TF.items():
         for coin in COINS:
             for tf in tfs_estr:
                 f = REG / f"{estr}_{coin}_{tf}.json"
                 ops = json.loads(f.read_text()) if f.exists() else []
+                last_ts = max((o["ts"] for o in ops), default=0)
+                nuevos = []     # (ts, setup) de TODAS las velas cerradas desde la última ejecución
                 try:
-                    setup, L = detectar(estr, ex, coin, tf)
+                    if estr == "smc":
+                        s, L = det_smc(ex, coin, tf)
+                        tsl = int(L["t"].iloc[-2])
+                        if s and tsl > last_ts:
+                            nuevos.append((tsl, s))
+                    else:
+                        L = velas(ex, coin, tf, 500)
+                        closed = L.iloc[:-1].reset_index(drop=True)   # velas YA cerradas
+                        tsa = closed["t"].to_numpy()
+                        for p in range(max(0, len(closed) - 50), len(closed)):
+                            if tsa[p] <= last_ts:                      # ya registrada antes
+                                continue
+                            s = detectar_cerr(estr, closed.iloc[:p + 1], coin)   # evalúa esa vela
+                            if s:
+                                nuevos.append((int(tsa[p]), s))
                 except Exception as e:
                     print(f"  {estr}/{coin}/{tf}: error {type(e).__name__}: {e}"); continue
-                actualizar(ops, L)
-                ts_last = int(L["t"].iloc[-2])
-                if setup and not any(o["ts"] == ts_last for o in ops):
-                    setup.update(status="abierta", ts=ts_last, estr=estr, coin=coin, tf=tf,
-                                 fecha=str(pd.to_datetime(ts_last, unit="ms")))
-                    ops.append(setup)
-                    print(f"  NUEVO {estr}/{coin}/{tf} {setup['dir'].upper()} @ {setup['entry']:.4f} stop {setup['stop']:.4f} obj {setup['target']:.4f}")
+                if coin not in m1_cache:
+                    try:
+                        m1_cache[coin] = velas(ex, coin, "1m", 5000)
+                    except Exception:
+                        m1_cache[coin] = None
+                actualizar(ops, L, m1_cache[coin])
+                for ts_p, s in nuevos:
+                    if any(o["ts"] == ts_p for o in ops):
+                        continue
+                    s.update(status="abierta", ts=ts_p, estr=estr, coin=coin, tf=tf,
+                             fecha=str(pd.to_datetime(ts_p, unit="ms")))
+                    try:
+                        s.update(contexto(ex, coin, L, ctx_cache))
+                    except Exception:
+                        pass
+                    ops.append(s)
+                    print(f"  NUEVO {estr}/{coin}/{tf} {s['dir'].upper()} @ {s['entry']:.4f} stop {s['stop']:.4f} obj {s['target']:.4f}")
                 f.write_text(json.dumps(ops, indent=2))
                 cerr = [o for o in ops if o["status"] == "cerrada"]
                 ab = [o for o in ops if o["status"] == "abierta"]

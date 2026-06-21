@@ -1,0 +1,19 @@
+[
+  {
+    "dir": "corto",
+    "entry": 72.949,
+    "stop": 74.14,
+    "target": 70.567,
+    "status": "abierta",
+    "ts": 1782080100000,
+    "estr": "adx",
+    "coin": "SOL",
+    "tf": "15m",
+    "fecha": "2026-06-21 22:15:00",
+    "funding": 9.2162e-06,
+    "oi": 5196362.360000006,
+    "pos_rango": 0.32,
+    "liq_arriba_%": 0.07,
+    "liq_abajo_%": 0.0
+  }
+]

@@ -1,0 +1,19 @@
+[
+  {
+    "dir": "largo",
+    "entry": 1713.6,
+    "stop": 1699.9983,
+    "target": 1740.8033999999998,
+    "status": "abierta",
+    "ts": 1782076500000,
+    "estr": "volumen",
+    "coin": "ETH",
+    "tf": "15m",
+    "fecha": "2026-06-21 21:15:00",
+    "funding": 9.8461e-06,
+    "oi": 808807.9009999994,
+    "pos_rango": 0.28,
+    "liq_arriba_%": 0.14,
+    "liq_abajo_%": 0.01
+  }
+]
