@@ -1,0 +1,19 @@
+[
+  {
+    "dir": "corto",
+    "entry": 1712.8,
+    "stop": 1723.5,
+    "target": 1696.75,
+    "status": "abierta",
+    "ts": 1782079500000,
+    "estr": "scalp_sqz",
+    "coin": "ETH",
+    "tf": "5m",
+    "fecha": "2026-06-21 22:05:00",
+    "funding": 7.7064e-06,
+    "oi": 777895.8948000001,
+    "pos_rango": 0.31,
+    "liq_arriba_%": 0.11,
+    "liq_abajo_%": 0.01
+  }
+]

@@ -106,6 +106,24 @@ buscar PRIMERO el lookahead. Cazarlo aquí evitó desplegar una estrategia falsa
 
 **Contexto:** Toda estrategia multi-timeframe; validación de cualquier edge nuevo.
 
+## 2026-06-22 — La confluencia de indicadores de PRECIO es ilusoria (son redundantes)
+
+**Error o aprendizaje:** Probamos si combinar indicadores (confluencia) y alinear con el marco mayor
+mejora el acierto. Sobre 34.042 señales (1h, 12 monedas), el acierto se queda PLANO ~33% (= azar a 2R)
+tengas 1 o 5 indicadores coincidiendo; el alineamiento HTF tampoco ayuda (34% vs 34%); y decae en 2026.
+
+**Causa raíz:** La matriz de correlación lo destapa: trend y RSI correlan 0,69; trend/RSI vs ADX −0,33.
+Los indicadores técnicos son TRANSFORMACIONES REDUNDANTES del mismo precio. "5 confirmaciones" son ~2
+piezas de info independiente — y ni esas predicen dirección (mercado eficiente). La confluencia FEELS
+como más evidencia pero es la MISMA evidencia contada varias veces.
+
+**Lección:** No apilar indicadores de precio esperando que la "confluencia" cree edge — está demostrado
+que no. La información INDEPENDIENTE (la que podría tener edge) NO está en el precio: está en datos de
+otra naturaleza —funding, Open Interest, liquidaciones, order-book— que reflejan POSICIONAMIENTO, no
+patrón de precio. Ahí hay que mirar. Y la dimensión de SALIDA (trailing/BE/parcial/tiempo) sigue sin probar.
+
+**Contexto:** Diseño de estrategias; gestión de expectativas; por qué pivotamos a datos no-precio.
+
 ## 2026-06-21 — "Detectable ≠ explotable": las micro-ineficiencias direccionales son SUB-COSTE
 
 **Error o aprendizaje:** La estadística del precio mostró efectos REALES y persistentes: autocorrelación

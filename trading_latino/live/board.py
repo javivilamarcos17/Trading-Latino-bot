@@ -36,6 +36,7 @@ def main():
     por_estr = {}       # agregado por estrategia
     ult = 0
     abiertas_total = 0
+    cerradas_all = []      # todas las operaciones cerradas (con su contexto) para analizar
     for f in files:
         partes = f.stem.split("_")
         # nombre tipo  scalp_sqz_BTC_15m  -> estrategia puede llevar guion bajo
@@ -43,6 +44,7 @@ def main():
         ops = json.loads(f.read_text())
         cerr = [o for o in ops if o["status"] == "cerrada"]
         ab = [o for o in ops if o["status"] == "abierta"]
+        cerradas_all.extend(cerr)
         abiertas_total += len(ab)
         pnls = [o["pnl"] for o in cerr]
         comp.append({"estr": estr, "coin": coin, "tf": tf, "n": len(cerr), "ab": len(ab),
@@ -73,6 +75,42 @@ def main():
             print("  ..."); continue
         w = f"{c['win']*100:4.0f}%" if c["win"] is not None else "  - "
         print(f"  {c['estr']:<12} {c['coin']:<5} {c['tf']:<4} {c['n']:>4} {c['ab']:>3} {w:>6} {c['ret']*100:>+8.2f}%")
+
+    def _res(trades):
+        p = [o["pnl"] for o in trades]
+        return len(p), (sum(1 for x in p if x > 0) / len(p) if p else float("nan")), _cum(p)
+
+    # ---- FOCO en OB y FVG (lo que pediste analizar) ----
+    print("\n  FOCO OB y FVG (y SMC, que combina FVG+estructura)")
+    print(f"  {'estrategia':<10} {'ops':>5} {'win':>6} {'retorno':>9}")
+    for e in ("fvg", "ob", "smc"):
+        sub = [o for o in cerradas_all if o.get("estr") == e]
+        if sub:
+            n, w, r = _res(sub)
+            print(f"  {e:<10} {n:>5} {w*100:>5.0f}% {r*100:>+8.2f}%")
+
+    # ---- ENTENDER LA LIQUIDEZ: ¿importa DÓNDE entra (premium/discount del rango)? ----
+    ctx = [o for o in cerradas_all if "pos_rango" in o]
+    if len(ctx) >= 20:
+        print("\n  CONTEXTO — posición en el rango al entrar (0=suelo/discount, 1=techo/premium)")
+        for et, m in [("discount (<0.35)", lambda o: o["pos_rango"] < 0.35),
+                      ("medio (0.35-0.65)", lambda o: 0.35 <= o["pos_rango"] <= 0.65),
+                      ("premium (>0.65)", lambda o: o["pos_rango"] > 0.65)]:
+            sub = [o for o in ctx if m(o)]
+            if len(sub) >= 8:
+                n, w, r = _res(sub)
+                print(f"    {et:<20} n={n:>4} win {w*100:>3.0f}% ret {r*100:>+7.2f}%")
+        fnd = [o for o in ctx if o.get("funding") is not None]
+        if len(fnd) >= 20:
+            print("  CONTEXTO — funding al entrar (posicionamiento)")
+            for et, m in [("funding + (largos pagan)", lambda o: o["funding"] > 0),
+                          ("funding - (cortos pagan)", lambda o: o["funding"] < 0)]:
+                sub = [o for o in fnd if m(o)]
+                if len(sub) >= 8:
+                    n, w, r = _res(sub)
+                    print(f"    {et:<24} n={n:>4} win {w*100:>3.0f}% ret {r*100:>+7.2f}%")
+    else:
+        print("\n  (contexto de liquidez/funding: se irá llenando con las operaciones nuevas)")
 
     tot = sum(c["n"] for c in comp)
     print(f"\n  TOTAL: {tot} operaciones cerradas | {abiertas_total} abiertas | {len(files)} competidores")

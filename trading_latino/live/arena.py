@@ -305,6 +305,32 @@ def detectar(estr, ex, coin, tf):
     return None, L
 
 
+def contexto(ex, coin, L, cache):
+    """Contexto NO-precio + liquidez de cada operación, para entender luego qué la hace funcionar.
+    funding/OI = posicionamiento (independiente del precio). pos_rango = premium/discount (0=suelo,
+    1=techo). dist_liq = % a la liquidez (swing) más cercana arriba/abajo."""
+    if coin not in cache:
+        try:
+            fr = ex.fetch_funding_rate(f"{coin}/USDC:USDC").get("fundingRate")
+        except Exception:
+            fr = None
+        try:
+            oi = ex.fetch_open_interest(f"{coin}/USDC:USDC").get("openInterestAmount")
+        except Exception:
+            oi = None
+        cache[coin] = (fr, oi)
+    fr, oi = cache[coin]
+    cerr = L.iloc[:-1]
+    px = float(cerr["cierre"].iloc[-1])
+    hi = cerr["maximo"].tail(100); lo = cerr["minimo"].tail(100)
+    rh = float(hi.max()); rl = float(lo.min())
+    pos = round((px - rl) / (rh - rl), 2) if rh > rl else 0.5
+    arr = hi[hi > px]; aba = lo[lo < px]
+    dliq_up = round((arr.min() / px - 1) * 100, 2) if len(arr) else None
+    dliq_dn = round((1 - aba.max() / px) * 100, 2) if len(aba) else None
+    return {"funding": fr, "oi": oi, "pos_rango": pos, "liq_arriba_%": dliq_up, "liq_abajo_%": dliq_dn}
+
+
 def actualizar(ops, L):
     hi = L["maximo"].to_numpy(); lo = L["minimo"].to_numpy(); ts = L["t"].to_numpy()
     for o in ops:
@@ -333,6 +359,7 @@ def main():
     REG.mkdir(parents=True, exist_ok=True)
     print("ARENA EN VIVO (paper) — estrategias x temporalidades. Sin órdenes, sin dinero.\n")
     tabla = []
+    ctx_cache = {}      # funding/OI por moneda, una sola vez por tick
     for estr, tfs_estr in ESTRATEGIAS_TF.items():
         for coin in COINS:
             for tf in tfs_estr:
@@ -347,6 +374,10 @@ def main():
                 if setup and not any(o["ts"] == ts_last for o in ops):
                     setup.update(status="abierta", ts=ts_last, estr=estr, coin=coin, tf=tf,
                                  fecha=str(pd.to_datetime(ts_last, unit="ms")))
+                    try:
+                        setup.update(contexto(ex, coin, L, ctx_cache))
+                    except Exception:
+                        pass
                     ops.append(setup)
                     print(f"  NUEVO {estr}/{coin}/{tf} {setup['dir'].upper()} @ {setup['entry']:.4f} stop {setup['stop']:.4f} obj {setup['target']:.4f}")
                 f.write_text(json.dumps(ops, indent=2))
