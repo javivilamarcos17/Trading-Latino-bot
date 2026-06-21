@@ -1,0 +1,193 @@
+"""
+Parámetros del bot de Trading Latino — la "biblia" convertida en código.
+
+Cada parámetro lleva una etiqueta de ORIGEN, según el principio de gobierno del proyecto
+(ver docs/ESTRATEGIA_TRADING_LATINO.md):
+
+    🟦 NUCLEO  = método de Merino. Sagrado, no se toca.
+    🟨 REAL    = realidad técnica neutral (costes, datos). No cambia su método.
+    🟥 ADD     = añadido nuestro, OPCIONAL. Desactivado por defecto. No contamina el núcleo.
+
+Backtest y operativa en vivo leen ESTOS mismos valores: una sola fuente de verdad.
+"""
+
+from dataclasses import dataclass, field
+
+
+# ───────────────────────────── Indicadores (🟦 NUCLEO) ─────────────────────────────
+@dataclass(frozen=True)
+class Indicadores:
+    EMA_RAPIDA: int = 10            # 🟦 EMA 10 (inercia a corto)
+    EMA_LENTA: int = 55            # 🟦 EMA 55 (tendencia principal / "imán")
+
+    ADX_PERIODO: int = 14          # 🟦 suavizado ADX
+    ADX_DI_LONGITUD: int = 14      # 🟦 longitud DI
+    ADX_NIVEL_CLAVE: float = 23.0  # 🟦 nivel clave horizontal
+    ADX_BARRAS_PENDIENTE: int = 3  # ⚠️ pendiente medida sobre 3 barras (de la versión community Ruckard)
+
+    # Squeeze Momentum (LazyBear)
+    BB_LONGITUD: int = 20          # 🟦 Bollinger
+    BB_MULT: float = 2.0           # 🟦
+    KC_LONGITUD: int = 20          # 🟦 Keltner
+    KC_MULT: float = 1.5           # 🟦
+
+    # Perfil de Volumen
+    POC_VENTANA_VELAS: int = 100   # 🔎 ventana para calcular el POC (default Ruckard VPVR=100). A validar en directo.
+
+
+# ───────────────────────────── Temporalidades (🟦 NUCLEO) ─────────────────────────────
+@dataclass(frozen=True)
+class Temporalidades:
+    MACRO: str = "1w"      # 🟦 filtro semanal de BTC (apalancamiento/riesgo)
+    SEMAFORO: str = "1d"   # 🟦 semáforo diario de BTC (permiso Long/Short)
+    OPERATIVO: str = "4h"  # 🟦 patrón
+    GATILLO: str = "1h"    # 🟦 entrada fina
+
+
+# ───────────────────────────── Gestión de riesgo (🟦 NUCLEO) ─────────────────────────────
+@dataclass(frozen=True)
+class Riesgo:
+    CAPITAL_PARTES: int = 20            # 🟦 capital en 20 partes
+    TAMANO_POSICION_PCT: float = 0.05   # 🟦 = 5% del capital por operación, fijo (núcleo Merino)
+    INTERES_COMPUESTO: bool = False     # 🟦 interés simple, nunca compuesto
+
+    APALANCAMIENTO_MIN: int = 3         # 🟦 3x-5x
+    APALANCAMIENTO_MAX: int = 5         # 🟦
+    MARGEN_AISLADO: bool = True         # 🟦 aislado (cruzado prohibido)
+
+    PERMITIR_DCA: bool = False          # 🟦 prohibido promediar a la baja
+    SHORT_BTC_PROHIBIDO: bool = True    # 🟦 a Bitcoin jamás se le hace short
+
+    # Break-even: tras 1 vela de 4H ganadora, mover SL al break-even REAL (con costes). Ver §13.
+    BREAKEVEN_VELAS_4H: int = 1         # 🟦 (intención de Merino)
+    BREAKEVEN_NETO_CON_COSTES: bool = True  # 🟨 el SL de BE cubre comisiones+funding (lo pidió el dueño)
+
+    # Guillotina del tiempo: 6-8 velas de 4H (24-32h) sin avanzar -> cierre a mercado
+    GUILLOTINA_VELAS_4H_MIN: int = 6    # 🟦
+    GUILLOTINA_VELAS_4H_MAX: int = 8    # 🟦
+
+    # Filtro horario: no abrir entre 15:15 y 15:45 (Madrid) — apertura de Nueva York
+    BLOQUEO_HORARIO_INICIO: str = "15:15"   # 🟦
+    BLOQUEO_HORARIO_FIN: str = "15:45"      # 🟦
+    BLOQUEO_HORARIO_TZ: str = "Europe/Madrid"  # 🟦
+
+    # Bear market estructural (BTC bajo EMA55 semanal) -> reducir Longs a la mitad
+    REDUCCION_LONGS_EN_BEAR: float = 0.5    # 🟦
+
+
+# ───────────────────────────── Costes (🟨 REALIDAD TÉCNICA) ─────────────────────────────
+@dataclass(frozen=True)
+class Costes:
+    # ✅ Confirmado (Hyperliquid, tramo de entrada <5M$ volumen 14d), junio 2026.
+    COMISION_TAKER: float = 0.00045   # 🟨 0.045% por lado (órdenes a mercado, lo que usa Merino)
+    COMISION_MAKER: float = 0.00015   # 🟨 0.015% por lado (órdenes límite)
+    SLIPPAGE_ESTIMADO: float = 0.0005 # 🟨 deslizamiento estimado en órdenes a mercado
+    FUNDING_CADA_HORAS: int = 1       # 🟨 Hyperliquid liquida funding CADA HORA (1/8 del ritmo 8h)
+    # 🔎 ESTIMACIÓN: no bajamos funding histórico (solo precio), así que asumimos un funding
+    # medio por hora que el Long PAGA. Se somete a sensibilidad en el barrido de costes.
+    # ~0,01% cada 8h ≈ 0,00125%/h (régimen alcista típico).
+    FUNDING_HORARIO_ESTIMADO: float = 0.0000125
+    # Nota: en shorts el funding suele ir a favor cuando el funding es positivo.
+
+
+# ───────────────────────────── Universo (🟦 lista de vigilancia) ─────────────────────────────
+BTC = "BTC"  # 🟦 el rey: solo Longs, nunca short
+
+# 🟦 Lista de vigilancia de altcoins (elegida por criterio profesional, ver §15).
+# 🔎 Verificar disponibilidad real en Hyperliquid al conectar.
+ALTCOINS = [
+    "ETH", "SOL", "BNB", "XRP", "ADA",      # majors / L1 grandes
+    "AVAX", "NEAR", "APT", "SUI",            # L1 alternativas
+    "ARB", "OP", "POL",                      # L2 / escalado
+    "LINK", "UNI", "AAVE",                   # DeFi / oráculos
+    "LTC", "BCH",                            # veteranas líquidas
+    "DOT",                                   # interoperabilidad
+    "TIA",                                   # infra / modular
+    "DOGE",                                  # meme líquida
+]
+
+
+# ───────────────────────────── Añadidos OPCIONALES (🟥 ADD) ─────────────────────────────
+@dataclass(frozen=True)
+class AnadidosOpcionales:
+    """Todo aquí está DESACTIVADO por defecto. Solo se activa si el dueño lo aprueba
+    y el backtest lo justifica. NUNCA se da por hecho que forma parte del método."""
+    USAR_RIESGO_FIJO: bool = False          # 🟥 en vez del 5% fijo de Merino
+    RIESGO_FIJO_PCT: float = 0.01           # 🟥 (si se activara)
+    FILTRO_ENTRADA_VENTAJA: bool = False    # 🟥 no entrar si objetivo < N x costes
+    FILTRO_ENTRADA_RATIO_COSTE: float = 2.0 # 🟥
+    USAR_ORDENES_MAKER: bool = False        # 🟥 límite en vez de mercado (Merino entra a mercado)
+    TOMA_PARCIAL: bool = False              # 🟥 vender la mitad al entrar en ganancias
+    # Cortacircuitos de pérdida: 🟥 a CALIBRAR con el backtest, no a ojo. None = sin tope aún.
+    TOPE_PERDIDA_DIARIA: float | None = None
+    TOPE_PERDIDA_SEMANAL: float | None = None
+    TOPE_PERDIDA_MENSUAL: float | None = None
+    # Mejoras de v2 que Merino sí usa:
+    USAR_DOMINANCIA: bool = False           # 🟥 USDT.D/BTC.D/TOTAL3 como contexto risk-on/off
+    USAR_AREA_VALOR: bool = False           # 🟥 VAH/VAL además del POC
+
+
+# ───────────────────────────── Backtest (🟨 REALIDAD) ─────────────────────────────
+@dataclass(frozen=True)
+class Backtest:
+    CAPITAL_INICIAL: float = 10_000.0   # 🔎 a confirmar con el dueño
+    # 🔎 periodo a confirmar; idealmente cubre alcista y bajista
+    FECHA_INICIO: str = "2021-01-01"
+    FECHA_FIN: str = "2025-12-31"
+    EXCHANGE_DATOS: str = "binance"     # 🟨 fuente de histórico largo (no es donde operamos)
+
+    # 🟦 Decisión del dueño: probar los dos motores POR SEPARADO antes de combinarlos.
+    #   "btc_longs"  -> solo Longs de BTC (diario alcista). Datos largos, lógica simple. Empezar por aquí.
+    #   "alt_shorts" -> solo Shorts de altcoins débiles (diario bajista de BTC).
+    #   "combinado"  -> los dos juntos, una vez validados por separado.
+    MODO: str = "btc_longs"
+
+    # 🟨 Cada altcoin empieza su backtest en su fecha real de listado (no antes de existir).
+    RESPETAR_FECHA_LISTADO: bool = True
+
+    # 🟨 ANTI-SOBREAJUSTE: validación fuera de muestra. Se ajusta en 'entrenamiento'
+    #    (inicio → esta fecha) y se valida en 'test' (esta fecha → fin), que el bot NO vio al calibrar.
+    FECHA_FIN_ENTRENAMIENTO: str = "2023-12-31"
+
+    # 🟨 SENSIBILIDAD A COSTES: correr el backtest multiplicando los costes por estos factores,
+    #    para ver a partir de qué nivel de coste deja de ser rentable (margen sobre el muro de costes).
+    BARRIDO_COSTES: tuple = (0.0, 0.5, 1.0, 2.0)
+
+
+# ───────────────────────────── Estrategia (entrada/salida) ─────────────────────────────
+@dataclass(frozen=True)
+class Estrategia:
+    # 🟦 Regla de salida en beneficio POR DEFECTO (elegida por el dueño): agotamiento del impulso.
+    REGLA_SALIDA: str = "agotamiento_impulso"
+    # 🟨 Decisión del dueño: el backtest COMPARA todas estas reglas de salida.
+    REGLAS_SALIDA_A_PROBAR: tuple = (
+        "agotamiento_impulso",   # cerrar cuando el Squeeze de 4H se gira en contra (purista)
+        "siguiente_poc",          # cerrar en la siguiente muralla de volumen
+        "trailing",               # dejar correr; salir si retrocede X% desde el máximo
+        "multiplo_r",             # objetivo = N veces el riesgo del stop
+    )
+    TRAILING_RETROCESO: float = 0.02   # 🟥 para 'trailing': retroceso del 2% desde el máximo
+    MULTIPLO_R: float = 2.0            # 🟥 para 'multiplo_r': objetivo 2x el riesgo
+
+    # Umbrales de entrada (🔎 a afinar/tunear en el backtest)
+    PROXIMIDAD_POC: float = 0.015      # "cerca del POC" = dentro del 1,5%
+    GUILLOTINA_PLANITUD: float = 0.01  # "precio plano" para la guillotina = dentro del 1% de la entrada
+    SWING_LOOKBACK_VELAS: int = 10     # velas para el mínimo/máximo estructural del stop
+
+
+# ───────────────────────────── Configuración global ─────────────────────────────
+@dataclass(frozen=True)
+class Config:
+    indicadores: Indicadores = field(default_factory=Indicadores)
+    temporalidades: Temporalidades = field(default_factory=Temporalidades)
+    riesgo: Riesgo = field(default_factory=Riesgo)
+    costes: Costes = field(default_factory=Costes)
+    backtest: Backtest = field(default_factory=Backtest)
+    estrategia: Estrategia = field(default_factory=Estrategia)
+    anadidos: AnadidosOpcionales = field(default_factory=AnadidosOpcionales)
+    btc: str = BTC
+    altcoins: list[str] = field(default_factory=lambda: list(ALTCOINS))
+
+
+# Instancia por defecto que importa el resto del bot.
+CONFIG = Config()

@@ -16,82 +16,160 @@
 ## 1. Estado actual
 
 > Marca con una **X** la casilla real. Solo una. Si dudas entre dos, elige la MENOR.
-> ¿No sabes qué significa cada una? → lee [docs/ESTADOS_DEL_PROYECTO.md](docs/ESTADOS_DEL_PROYECTO.md)
 
-- [X] 💡 **Idea** — Solo existe la idea en tu cabeza o en notas sueltas.
-- [ ] 📄 **Documentación** — Está escrito qué se quiere hacer, pero no hay nada construido.
-- [ ] 🎬 **Demo** — Hay algo que se puede *enseñar*, pero NO sirve para usar de verdad.
-- [ ] 🛠️ **Prototipo funcional** — Funciona en partes, pero no es fiable ni completo.
-- [ ] 🚀 **MVP** — Versión mínima usable por usuarios reales, con lo justo para aportar valor.
-- [ ] 🏭 **Producción** — En uso real, con datos reales y gente dependiendo de ello.
+- [ ] 💡 **Idea**
+- [ ] 📄 **Documentación**
+- [ ] 🎬 **Demo**
+- [X] 🛠️ **Prototipo de investigación** — El laboratorio de backtest corre end-to-end y es honesto
+      (sin lookahead, con costes). NO hay bot operando todavía.
+- [ ] 🚀 **MVP**
+- [ ] 🏭 **Producción**
 
-**Estado actual del template recién copiado: 💡 Idea.**
-*(Acabas de copiar la plantilla. Todavía no has construido nada. Esto es normal y correcto.)*
+**Estado: 🛠️ Prototipo de investigación.** Tenemos un **laboratorio de backtest serio** (alineado por
+hora de cierre, sin mirar el futuro, con comisiones/funding/slippage, y con **2026 como año de prueba
+ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Conclusión honesta:**
+
+- **Casi todo lo direccional/técnico/ML/scalping FALLA fuera de muestra** (overfitting): se ve bonito
+  en el pasado y se cae en 2026. Esto incluye la estrategia mecánica de Merino, divergencias RSI,
+  Squeeze, etc. probadas en muchas temporalidades.
+- **El ÚNICO edge robusto que hemos encontrado es el CARRY de funding** (delta-neutral: cobrar el
+  "alquiler" del funding con el precio cubierto, sin apostar dirección). Es real y muy estable.
+- **PERO el carry depende del régimen y se ha comprimido:** cesta diversificada de 6-15 monedas,
+  NETO de costes, a 1x → **+11-12%/año de media… pero inflado por 2021 (+45%)**. Quitando 2021,
+  los años recientes (2025-2026) rinden **~+1%/año a 1x**. Drawdown del flujo de funding ~−1,6%.
+- ⚠️ **Ese drawdown bajo es engañoso:** solo mide la volatilidad del funding. **NO** incluye el
+  riesgo de COLA real (quiebra de exchange tipo FTX, liquidación de la pata corta en un flash-crash,
+  pico de funding). Apalancar el carry para llegar al 10%+/año mete ese riesgo de cola en juego.
 
 ---
 
 ## 2. ✅ Qué funciona HOY
 
-> Lista SOLO lo que has probado tú mismo y funciona de verdad.
-> Si no lo has visto funcionar con tus propios ojos, no va aquí.
+> Solo lo comprobado de verdad.
 
-- _(Todavía nada. Aún no se ha construido nada del proyecto.)_
+- La **documentación** (visión, biblia de Merino, roadmap, arquitectura) y el **esqueleto** del proyecto.
+- **Descarga de datos** (Binance perp: BTC y altcoins, 1h/4h/1d/1w) verificada sin huecos/duplicados.
+- **Motor de backtest event-driven** con no-lookahead verificado, costes reales (comisiones, funding,
+  slippage) y hold-out de 2026 separado.
+- **Laboratorio de research** (`trading_latino/research/*.py`): decenas de experimentos reproducibles
+  (técnico, ML, carry, on-chain, sentimiento, momentum transversal, macro, Wyckoff, scalping).
+- **Análisis del carry profesional** (`research/carry_pro.py`): cesta diversificada, regla
+  anti-funding-negativo, costes explícitos, barrido de apalancamiento, estrés y desglose por año.
+- **Lectura EN VIVO de Hyperliquid (solo lectura, sin órdenes, sin dinero):**
+  - `live/mapa_liquidez.py`: mapa de liquidez en tiempo real (pools de stops + muros del order-book
+    + OI + funding). **Verificado contra la API pública en vivo.**
+  - `live/sniper.py` y `live/agente_smc.py`: detectores + paper-trading de SMC/barridos.
+  - **`live/arena.py`: ARENA en vivo — 4 estrategias (SMC, Merino/Trading Latino, barrido, FVG)
+    × 3 monedas (BTC/ETH/SOL) × 2 TF (15m/1h) = 24 competidores en PAPEL.** Registra cada operación
+    en JSON (`data_store/paper_arena/`) y muestra un leaderboard comparable en %. **Funcionando.**
+  - **Recolección automática: tarea programada de Windows `TradingArenaPaper` cada 15 min
+    (battery-safe) — VERIFICADA.** Acumula datos sola, también entre sesiones. Para verla:
+    `python -m trading_latino.live.arena`. Para pararla: `schtasks /Delete /TN TradingArenaPaper /F`.
 
 ---
 
-## 3. ❌ Qué NO funciona todavía
+## 3. ❌ Qué NO funciona / NO existe todavía
 
-> Todo lo planeado pero no construido o no fiable. Sé generoso aquí: más vale
-> sobre-listar que dar falsa sensación de avance.
-
-- Todo el producto: aún no se ha empezado a construir.
+- **No hay bot operando** — ni en papel (testnet) ni en real. Solo backtest/research.
+- **El riesgo de cola del carry NO está modelado** (contraparte/exchange, liquidación, pico funding).
+- **No hay gestión de riesgo en vivo** (colchones de liquidación, reparto multi-exchange, monitor de funding).
+- **No hemos demostrado ≥10%/año robusto a apalancamiento seguro.** El carry a 1x reciente está por
+  debajo de ese listón; llegar exige 2-3x (con su riesgo de cola) o esperar regímenes de euforia.
+- Conexión a exchange en vivo, paper trading y operativa real (fases finales).
 
 ---
 
 ## 4. 🧪 Cómo probarlo
 
-> Pasos EXACTOS para que cualquiera vea el estado actual con sus propios ojos.
-> Si no se puede probar todavía, dilo claramente.
+```bash
+# (1) que el esqueleto y la configuración cargan:
+.venv/Scripts/python.exe -c "from trading_latino.config import CONFIG; print('Altcoins:', len(CONFIG.altcoins))"
 
-- _Aún no hay nada que probar. Cuando exista una demo o MVP, Claude pondrá aquí
-  los pasos exactos (qué instalar, qué comando ejecutar, qué deberías ver)._
+# (2) el análisis del carry profesional (cesta diversificada, neto, estrés, por año):
+.venv/Scripts/python.exe -m trading_latino.research.carry_pro
+
+# (3) auditoría de la estrategia "estrella" v2 (atribución, lookahead, asignación):
+.venv/Scripts/python.exe -m trading_latino.research.audit_v2
+
+# (4) MAPA DE LIQUIDEZ EN VIVO de Hyperliquid (solo lectura):
+.venv/Scripts/python.exe -m trading_latino.live.mapa_liquidez BTC ETH
+
+# (5) PAPER-SNIPER en vivo (ejecutar cada ~15 min para acumular track record):
+.venv/Scripts/python.exe -m trading_latino.live.sniper BTC
+```
 
 ---
 
-## 5. 🔚 Última decisión tomada
+## 5. 🔚 Última decisión / hallazgo
 
-> La decisión más reciente que mueve el proyecto. Con fecha.
-
-- **[fecha]** — _(Aún ninguna. La primera será normalmente "qué vamos a construir".)_
+- **2026-06-21** — Depuración de la estrella (v2) + reapertura de los cortos. Hallazgos:
+  1. La v2 era en realidad **carry apalancado** (risk-parity le daba ~97% al carry); el sleeve
+     fundamental restaba (añadía drawdown direccional).
+  2. El carry, medido **realista** (cesta diversificada, neto de costes), rinde **~+12%/año
+     (inflado por 2021)**, **~+1-5%/año en años recientes**, DD −1,6% (solo del flujo; falta la cola).
+  3. **Meter más monedas (6→15) NO mejora** — las alts de cola tienen funding ruidoso/negativo.
+  4. **Reabrimos los cortos** (long-short market-neutral, Merino, reversión): **ninguno robusto**
+     (DD −40% a −96% y/o pierden en 2026).
+  5. **Hallazgo de fondo:** tanto el carry como el momentum transversal **rindieron en 2021-2023 y
+     se DECAYERON en 2024-2026** — el cripto maduró y los edges sistemáticos clásicos se comprimieron.
+  6. **Arbitraje de funding DEX↔CEX (corto Hyperliquid / largo Binance):** edge REAL market-neutral,
+     **positivo casi todos los años** (BTC/ETH/SOL), CAGR ~+5-6% a 1x, DD −1 a −4%. PERO **se está
+     comprimiendo** (BTC 2024 +10,9% → 2026 +0,2%) según madura Hyperliquid. Forward ≈ 0-2%/año.
+     Dato accionable: el carry rinde casi el DOBLE shorteando en Hyperliquid (+14,4%) que en Binance
+     (+6,6%), a cambio de riesgo de contraparte del DEX.
+  7. **Sniping muy apalancado (barridos de liquidez):** en backtest OHLCV, edge fino y solo con
+     stop ANCHO (no apalancado). Pero detectar mejor la liquidez SÍ sube el edge ×5-8.
+  8. **Decisión del dueño:** construir el SNIPER DE LIQUIDEZ EN VIVO sobre Hyperliquid (DEX con
+     order-book transparente). Hecho: mapa de liquidez en vivo + paper-sniper (solo lectura).
+  9. **Estudio diagnóstico (41.344 barridos):** la REVERSIÓN tras barrer liquidez **NO tiene edge**
+     (37,7% < 40% aleatorio). Con velas no se distingue stop-hunt de ruptura real.
+  10. **FVG / Order Blocks (278k casos):** FVG sí supera el azar (45,4%, estable incl 2026) pero
+     **muere en el muro de coste** (neto −0,02R). OB 42,4%, igual.
+  11. **Operativa SMC multi-timeframe (FVG diario + BOS 1H):** parecía oro (+0,2R/op, +536R) pero
+     era **100% LOOKAHEAD**; corregido = aleatorio (−0,016R/op, win 33% a 2R). Diagnóstico: ningún
+     sub-segmento (largos/cortos/moneda/stop) tiene edge.
+  12. **BTC como referencia (lead-lag):** BTC NO lidera a las alts (corr lag-1 ≈ 0; lag-0 +0,68 es
+     beta contemporánea, no explotable). Seguir a BTC con retraso: ruina.
+  13. **SMC/FVG en tradicional (EUR/USD, oro, S&P):** PEOR que cripto — por DEBAJO del azar
+     (forex ~37%, oro/S&P ~30%). El bajo coste no salva porque el bruto ya es negativo.
+  14. **CIERRE:** búsqueda direccional agotada con rigor en cripto y tradicional → eficiente.
+     Lo único tradeable validado: PRIMAS ESTRUCTURALES (carry, arb DEX↔CEX).
 
 ---
 
-## 6. ⏭️ Próxima decisión necesaria
+## 6. ⏭️ Próxima decisión necesaria (decide: el dueño)
 
-> Qué hay que decidir AHORA para poder avanzar. Quién la decide.
-
-- **Definir qué es el proyecto** → rellenar [SYSTEM_VISION.md](SYSTEM_VISION.md). Decide: tú.
+Elegir el camino con el carry como único edge robusto encontrado:
+- **(A) Aceptarlo como motor de bajo riesgo** a apalancamiento prudente (1-2x → ~12-26% histórico,
+  ~2-10% en regímenes calmos), y construir el bot con gestión de cola (multi-exchange, colchones).
+- **(B) Seguir buscando** un edge COMPLEMENTARIO que pague en los años flacos del carry (calmos/bajistas):
+  p. ej. arbitraje de funding entre exchanges (market-neutral, no requiere euforia).
+- **(C) Profesionalizar el carry** en un paper-trade sobre testnet antes de cualquier dinero real.
 
 ---
 
 ## 7. ⚠️ Riesgos abiertos
 
-> Cosas que podrían salir mal: dependencias de terceros, datos sensibles,
-> decisiones sin cerrar, plazos, costes. Sin esconder nada.
-
-- _(Ninguno registrado todavía. Claude irá añadiendo riesgos según aparezcan.)_
+- **El listón de ≥10%/año robusto NO está demostrado a apalancamiento seguro.** El carry a 1x reciente
+  rinde poco; el 10%+ exige apalancar (riesgo de cola) o depender de euforias de mercado.
+- **Riesgo de cola del carry no modelado:** quiebra de exchange (FTX), liquidación de la pata corta,
+  pico de funding. Es el riesgo REAL y el backtest no lo ve.
+- **Régimen:** el funding se ha comprimido; no asumir que el +12% histórico se repite.
+- **Riesgo financiero:** es trading apalancado con dinero real (fases finales). Empezar con capital
+  mínimo y solo tras validar en paper.
+- **Dependencia de terceros:** APIs de exchanges (límites, cambios, caídas).
 
 ---
 
 ## 8. 🎯 Nivel de confianza del estado actual
 
-> ¿Cómo de seguro estás de que lo descrito arriba es verdad?
-
-- [ ] 🟢 **Alto** — Lo he probado y estoy seguro de que funciona como digo.
-- [ ] 🟡 **Medio** — Funciona, pero no lo he probado a fondo o hay zonas grises.
-- [X] 🔴 **Bajo** — Recién empezado / sin probar / mucha incertidumbre todavía.
+- [ ] 🟢 Alto
+- [X] 🟡 **Medio** — El laboratorio de backtest y los hallazgos (carry = único edge robusto, pero
+      regime-dependiente) son sólidos y honestos. Pero NO hay producto operando y el ≥10%/año robusto
+      a apalancamiento seguro sigue sin demostrarse.
+- [ ] 🔴 Bajo
 
 ---
 
-*Última actualización: [fecha] por [nombre]*
+*Última actualización: 2026-06-21 por Claude.*
 *Mantiene: Claude (con validación del dueño del proyecto).*

@@ -1,0 +1,23 @@
+# Dependencias del bot de Trading Latino
+# Instalar con:  pip install -r requirements.txt
+# (Python 3.12 recomendado, dentro de un entorno virtual .venv)
+
+# --- Datos y cálculo ---
+pandas>=2.2
+numpy>=1.26
+pyarrow>=16.0          # guardar/leer velas en formato parquet (rápido y compacto)
+
+# --- Descarga de histórico para el backtesting ---
+ccxt>=4.3              # acceso unificado a exchanges (descarga de velas OHLCV)
+
+# --- Informe del backtest ---
+matplotlib>=3.8        # curva de capital y drawdown
+
+# --- Configuración ---
+PyYAML>=6.0            # por si movemos parámetros a ficheros .yaml
+
+# --- Tests ---
+pytest>=8.0
+
+# --- Exchange en vivo (Fase 6+, paper y real) ---
+# hyperliquid-python-sdk>=0.9   # se activa al llegar a paper trading
