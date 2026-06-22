@@ -47,6 +47,8 @@ ESTRATEGIAS_TF = {
     # --- scalping / reversión rápida: rápidos ---
     "scalp_rev": ["1m", "5m", "15m"], "scalp_rev3": ["1m", "5m", "15m"],
     "vwap": ["1m", "5m", "15m"],
+    # --- COMPUESTAS multi-factor (price-action+smart-money y Merino enriquecido) ---
+    "adrig": ["15m", "1h", "4h"], "merinox": ["15m", "1h", "4h"],
     # adx y scalp_sqz RETIRADAS (2026-06-22): muertas con datos reales (adx 0% acierto / -1.1R;
     # scalp_sqz -0.6/-0.8R con cualquier salida).
 }
@@ -323,6 +325,58 @@ def det_donchian(d):
     return None
 
 
+def det_adrig(d):
+    """AdriG — Smart Money + Price Action (MULTI-FACTOR, no depende de un indicador):
+    (1) SESGO de fondo: precio vs EMA200 (proxy del marco mayor).
+    (2) UBICACION: largos solo en DESCUENTO del rango / cortos solo en PREMIUM (comprar barato/vender caro).
+    (3) GATILLO de price-action: barrido de liquidez (toma un swing previo de 20 velas) + RECLAIM
+        (cierra de vuelta al lado correcto) = trampa institucional + giro.
+    (4) SANIDAD de volumen: no entrar en clímax extremo (>2.5x media), que estadísticamente falla.
+    Stop al otro lado del barrido; objetivo 2R. Pone a prueba la tesis smart-money con datos."""
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy(); op = d["apertura"].to_numpy()
+    vol = d["volumen"].to_numpy(); vm = d["volumen"].rolling(20).mean().shift(1).to_numpy()
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    j = len(cl) - 1
+    if j < 60 or np.isnan(ema[j]) or np.isnan(vm[j]) or not vm[j]:
+        return None
+    rh = hi[j - 50:j].max(); rl = lo[j - 50:j].min()
+    if rh <= rl:
+        return None
+    pos = (cl[j] - rl) / (rh - rl)
+    volok = vol[j] < 2.5 * vm[j]                     # no clímax extremo
+    swl = lo[j - 20:j].min(); swh = hi[j - 20:j].max()
+    if cl[j] > ema[j] and pos < 0.45 and volok:      # sesgo alcista + descuento
+        if lo[j] <= swl and cl[j] > swl and cl[j] > op[j]:   # barrió el mínimo y reclamó
+            return _setup("largo", cl[j], lo[j] * 0.999, 2.0)
+    if cl[j] < ema[j] and pos > 0.55 and volok:      # sesgo bajista + premium
+        if hi[j] >= swh and cl[j] < swh and cl[j] < op[j]:
+            return _setup("corto", cl[j], hi[j] * 1.001, 2.0)
+    return None
+
+
+def det_merinox(d):
+    """Merino ENRIQUECIDO (MULTI-FACTOR): tendencia EMA10/55 + fuerza ADX + giro de Squeeze, MÁS
+    alineación con el marco mayor (EMA200) y sanidad de volumen (sin clímax). Objetivo 2R."""
+    c = d["cierre"]
+    e10 = c.ewm(span=10, adjust=False).mean().to_numpy()
+    e55 = c.ewm(span=55, adjust=False).mean().to_numpy()
+    e200 = c.ewm(span=200, adjust=False).mean().to_numpy()
+    hh = d["maximo"].rolling(20).max(); ll = d["minimo"].rolling(20).min()
+    mom = (c - ((hh + ll) / 2 + c.rolling(20).mean()) / 2).to_numpy()
+    adx = _adx(d)
+    vol = d["volumen"].to_numpy(); vm = d["volumen"].rolling(20).mean().shift(1).to_numpy()
+    cl = c.to_numpy(); j = len(cl) - 1
+    if j < 200 or np.isnan(adx[j]) or np.isnan(mom[j - 1]) or np.isnan(e200[j]) or not vm[j]:
+        return None
+    swl = d["minimo"].iloc[j - 10:j].min(); swh = d["maximo"].iloc[j - 10:j].max()
+    volok = vol[j] < 2.5 * vm[j]
+    if e10[j] > e55[j] and cl[j] > e200[j] and adx[j] > 20 and mom[j] > 0 >= mom[j - 1] and volok:
+        return _setup("largo", cl[j], swl, 2.0)
+    if e10[j] < e55[j] and cl[j] < e200[j] and adx[j] > 20 and mom[j] < 0 <= mom[j - 1] and volok:
+        return _setup("corto", cl[j], swh, 2.0)
+    return None
+
+
 def velas_cached(ex, coin, tf, cache, limit=500):
     """Cachea las velas por (moneda, TF) durante el tick: muchas estrategias comparten las MISMAS
     velas -> se piden una sola vez (evita el 429 de Hyperliquid y acelera)."""
@@ -470,6 +524,10 @@ def detectar_cerr(estr, cerr, coin):
         return det_donchian(cerr)
     if estr == "elliott":
         return det_elliott(cerr)
+    if estr == "adrig":
+        return det_adrig(cerr)
+    if estr == "merinox":
+        return det_merinox(cerr)
     return None
 
 
