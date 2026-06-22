@@ -59,12 +59,16 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
   - `live/mapa_liquidez.py`: mapa de liquidez en tiempo real (pools de stops + muros del order-book
     + OI + funding). **Verificado contra la API pública en vivo.**
   - `live/sniper.py` y `live/agente_smc.py`: detectores + paper-trading de SMC/barridos.
-  - **`live/arena.py`: ARENA en vivo — 4 estrategias (SMC, Merino/Trading Latino, barrido, FVG)
-    × 3 monedas (BTC/ETH/SOL) × 2 TF (15m/1h) = 24 competidores en PAPEL.** Registra cada operación
-    en JSON (`data_store/paper_arena/`) y muestra un leaderboard comparable en %. **Funcionando.**
-  - **Recolección automática: tarea programada de Windows `TradingArenaPaper` cada 15 min
-    (battery-safe) — VERIFICADA.** Acumula datos sola, también entre sesiones. Para verla:
-    `python -m trading_latino.live.arena`. Para pararla: `schtasks /Delete /TN TradingArenaPaper /F`.
+  - **`live/arena.py`: ARENA en vivo — 18 estrategias × BTC/ETH × varias TF (1m→4h) = ~200
+    competidores en PAPEL.** Incluye familia OB, FVG, RSI/divergencias, Merino y Merino enriquecido
+    (`merinox`), scalping, Donchian, Elliott (proxy), VWAP, smart-money+price-action (`adrig`),
+    multi-temporalidad real (`mtf`) y OB reforzado (`ob_plus`). Cada operación registra **contexto rico**
+    (funding, OI, ΔOI, Fear&Greed, régimen/ADX, sesión, premium/discount, liquidez, volumen) y mide
+    **5 políticas de salida** sobre el recorrido real de 1m. Además, **registro CONTINUO de contexto**
+    (`_ctx_<coin>.jsonl`) para poder simular cualquier operativa futura. **Funcionando.**
+  - **Recolección automática EN LA NUBE (GitHub Actions, patrón bucle-en-job, cada ~3 min, 24/7
+    auto-encadenado) — VERIFICADA.** Ya NO depende del portátil. Datos en la rama `arena-data`.
+    Herramientas de análisis read-only: `_inventario.py`, `_analisis.py`, `_mtf.py`, `board.py`, `salidas.py`.
 
 ---
 
@@ -101,6 +105,23 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 ---
 
 ## 5. 🔚 Última decisión / hallazgo
+
+- **2026-06-22** — Reconstrucción de la ARENA en vivo como laboratorio de medición 24/7 (nube).
+  1. **Decisión del dueño:** en vez de cerrar en "el direccional es eficiente", montar un laboratorio
+     en vivo que mida muchas estrategias en condiciones reales y recoja la MÁXIMA información para
+     descubrir si hay edge y bajo qué condiciones. Filosofía: analizar → probar → mejorar en directo.
+  2. **Construido:** cobertura amplia de temporalidades, contexto rico por operación, **registro
+     continuo de contexto** (simular cualquier operativa futura), estrategias compuestas multi-factor
+     (`adrig`, `merinox`), multi-temporalidad real (`mtf`) y OB reforzado (`ob_plus`).
+  3. **Aviso de honestidad:** la recolección EN VIVO lleva **horas/días**, no semanas. La mayoría de
+     datos actuales son **backfill** de un solo tramo de mercado (miedo + funding positivo, sin variedad
+     de régimen). **NO hay conclusiones todavía.**
+  4. **Lead a confirmar (NO probado):** la **familia OB** es la única consistentemente positiva en el
+     backfill (`ob_trend` 15m +0.77R n=68; `ob` 15m +0.18R n=151), con **objetivo fijo 2R** (el
+     break-even temprano le corta ganadoras) y **mejor en 15m**. Filtro validado: **no entrar en clímax
+     de volumen** (>2.5x media). Falta confirmar con datos en vivo de varios regímenes antes de fiarse.
+  5. **Resto (fvg, vwap, scalps, adx, donchian, volumen):** negativas en el backfill → candidatas a
+     retirar, pero **se espera a tener datos en vivo** antes de podar.
 
 - **2026-06-21** — Depuración de la estrella (v2) + reapertura de los cortos. Hallazgos:
   1. La v2 era en realidad **carry apalancado** (risk-parity le daba ~97% al carry); el sleeve
@@ -171,5 +192,5 @@ Elegir el camino con el carry como único edge robusto encontrado:
 
 ---
 
-*Última actualización: 2026-06-21 por Claude.*
+*Última actualización: 2026-06-22 por Claude.*
 *Mantiene: Claude (con validación del dueño del proyecto).*
