@@ -28,7 +28,7 @@ import numpy as np
 import pandas as pd
 
 REG = Path(__file__).resolve().parents[2] / "data_store" / "paper_arena"
-COINS = ["BTC", "ETH", "SOL"]
+COINS = ["BTC", "ETH", "SOL", "XRP", "DOGE", "AVAX"]   # red ampliada para recoger más datos
 # cada estrategia corre en SUS temporalidades (scalping en rápidas)
 ESTRATEGIAS_TF = {
     "smc": ["15m", "1h"], "merino": ["15m", "1h"], "sweep": ["15m", "1h"], "fvg": ["15m", "1h"],
