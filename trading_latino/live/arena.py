@@ -33,16 +33,24 @@ REG = Path(__file__).resolve().parents[2] / "data_store" / "paper_arena"
 COINS = ["BTC", "ETH"]   # FOCO en BTC (estrella); ETH solo como control anti-sobreajuste
 # cada estrategia corre en SUS temporalidades (scalping en rápidas)
 ESTRATEGIAS_TF = {
-    "smc": ["15m", "1h"], "merino": ["15m", "1h"], "sweep": ["15m", "1h"], "fvg": ["15m", "1h"],
-    "ob": ["15m", "1h"], "rsi": ["15m", "1h"], "volumen": ["15m", "1h"],
-    "rsidiv": ["15m", "1h", "4h"], "scalp_rev": ["1m", "5m"],
+    # Cobertura AMPLIA de temporalidades por familia: tener muestra en CADA TF y poder comparar la
+    # MISMA estrategia entre temporalidades (objetivo: sacar lo mejor de cada una con datos reales).
+    # Las velas se comparten en caché por (moneda, TF) -> ampliar es casi gratis para la API.
+    # --- estructura / tendencia: medios-altos (+ algún rápido para más muestra) ---
+    "smc": ["15m", "1h", "4h"], "merino": ["15m", "1h", "4h"],
+    "sweep": ["5m", "15m", "1h", "4h"], "ob": ["5m", "15m", "1h", "4h"],
+    "ob_trend": ["5m", "15m", "1h", "4h"], "donchian": ["15m", "1h", "4h"],
+    "elliott": ["15m", "1h", "4h"],
+    # --- osciladores / reversión: medios ---
+    "fvg": ["5m", "15m", "1h", "4h"], "rsi": ["5m", "15m", "1h"],
+    "rsidiv": ["15m", "1h", "4h"], "volumen": ["5m", "15m", "1h"],
+    # --- scalping / reversión rápida: rápidos ---
+    "scalp_rev": ["1m", "5m", "15m"], "scalp_rev3": ["1m", "5m", "15m"],
+    "vwap": ["1m", "5m", "15m"],
     # adx y scalp_sqz RETIRADAS (2026-06-22): muertas con datos reales (adx 0% acierto / -1.1R;
-    # scalp_sqz -0.6/-0.8R con cualquier salida). Se concentran recursos en lo prometedor.
-    # LOTE NUEVO a probar (obtener más info):
-    "ob_trend": ["15m", "1h"], "scalp_rev3": ["1m", "5m"], "vwap": ["5m", "15m"],
-    "donchian": ["15m", "1h", "4h"], "elliott": ["15m", "1h", "4h"],
+    # scalp_sqz -0.6/-0.8R con cualquier salida).
 }
-HTF_DE = {"15m": "1h", "1h": "4h"}      # marco mayor para SMC según el menor
+HTF_DE = {"5m": "15m", "15m": "1h", "1h": "4h", "4h": "1d"}   # marco mayor para SMC según el menor
 # Coste REALISTA por operación (ida+vuelta): Hyperliquid taker ~0.035%/lado + slippage.
 # Lo ponemos conservador (0.08%) para que la rentabilidad medida sea honesta, no optimista.
 COSTE = 0.0008
@@ -486,10 +494,9 @@ def _delta_oi(coin, oi_now):
     return None
 
 
-def contexto(ex, coin, L, cache):
-    """Contexto RICO por operación — para diagnosticar POR QUÉ funciona/falla y afinar luego.
-    Incluye: funding/OI + ΔOI (posicionamiento), premium/discount + liquidez, ATR%/ADX (vol y
-    tendencia-vs-rango), Fear&Greed (sentimiento) y volumen relativo. No es predicción: es CONTEXTO."""
+def _mercado(ex, coin, cache):
+    """Contexto de MERCADO (funding, OI, ΔOI, Fear&Greed) — lo que NO se puede reconstruir del
+    histórico de velas. Se pide UNA vez por moneda por tick (cacheado) para no saturar la API."""
     if coin not in cache:
         try:
             fr = ex.fetch_funding_rate(f"{coin}/USDC:USDC").get("fundingRate")
@@ -500,14 +507,38 @@ def contexto(ex, coin, L, cache):
         except Exception:
             oi = None
         cache[coin] = (fr, oi, _delta_oi(coin, oi))
-    fr, oi, doi = cache[coin]
     if "fng" not in cache:                                    # Fear & Greed, una vez por tick
         try:
             cache["fng"] = int(requests.get("https://api.alternative.me/fng/?limit=1",
                                             timeout=15).json()["data"][0]["value"])
         except Exception:
             cache["fng"] = None
-    cerr = L.iloc[:-1]
+    fr, oi, doi = cache[coin]
+    return fr, oi, doi, cache["fng"]
+
+
+def registrar_ctx_mercado(coin, ts, px, fr, oi, fng):
+    """Registro CONTINUO (append, JSONL) del contexto de mercado IRREEMPLAZABLE: funding, OI y
+    Fear&Greed con su timestamp. Con esto + las velas (siempre recuperables) se puede SIMULAR
+    cualquier operativa futura con el contexto REAL que había en cada momento. Una línea por lectura
+    -> robusto, no reescribe el fichero entero."""
+    f = REG / f"_ctx_{coin}.jsonl"
+    try:
+        with f.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps({"ts": int(ts), "px": px, "funding": fr, "oi": oi, "fng": fng}) + "\n")
+    except Exception:
+        pass
+
+
+def contexto(ex, coin, L, cache, cerr=None):
+    """Contexto RICO por operación — para diagnosticar POR QUÉ funciona/falla y afinar luego.
+    Incluye: funding/OI + ΔOI (posicionamiento), premium/discount + liquidez, ATR%/ADX (vol y
+    tendencia-vs-rango), Fear&Greed (sentimiento) y volumen relativo. No es predicción: es CONTEXTO.
+    `cerr` = velas hasta la vela de la SEÑAL (para fijar el contexto de precio en ese instante exacto,
+    no en el de 'ahora'); si no se pasa, usa la última vela cerrada de L."""
+    fr, oi, doi, fng = _mercado(ex, coin, cache)
+    if cerr is None:
+        cerr = L.iloc[:-1]
     px = float(cerr["cierre"].iloc[-1])
     hi = cerr["maximo"].tail(100); lo = cerr["minimo"].tail(100)
     rh = float(hi.max()); rl = float(lo.min())
@@ -515,7 +546,7 @@ def contexto(ex, coin, L, cache):
     arr = hi[hi > px]; aba = lo[lo < px]
     dliq_up = round((arr.min() / px - 1) * 100, 2) if len(arr) else None
     dliq_dn = round((1 - aba.max() / px) * 100, 2) if len(aba) else None
-    out = {"funding": fr, "oi": oi, "d_oi_%": doi, "fng": cache.get("fng"),
+    out = {"funding": fr, "oi": oi, "d_oi_%": doi, "fng": fng,
            "pos_rango": pos, "liq_arriba_%": dliq_up, "liq_abajo_%": dliq_dn}
     if len(cerr) >= 30:                                        # ATR%, ADX (vol y régimen), volumen
         try:
@@ -598,6 +629,22 @@ def main():
     ctx_cache = {}      # funding/OI por moneda, una sola vez por tick
     m1_cache = {}       # velas de 1m por moneda (para resolver con el recorrido real)
     vcache = {}         # velas por (moneda, TF) compartidas entre estrategias (evita 429)
+
+    # --- REGISTRO CONTINUO del contexto de mercado (una vez por moneda por tick, haya señal o no) ---
+    # Es lo único irreemplazable: con esto + las velas se puede simular cualquier operativa futura.
+    ahora_ms = int(time.time() * 1000)
+    for coin in COINS:
+        try:
+            m1_cache[coin] = velas(ex, coin, "1m", 5000)
+        except Exception:
+            m1_cache[coin] = None
+        try:
+            fr, oi, doi, fng = _mercado(ex, coin, ctx_cache)
+            px = float(m1_cache[coin]["cierre"].iloc[-1]) if m1_cache[coin] is not None and len(m1_cache[coin]) else None
+            registrar_ctx_mercado(coin, ahora_ms, px, fr, oi, fng)
+        except Exception:
+            pass
+
     for estr, tfs_estr in ESTRATEGIAS_TF.items():
         for coin in COINS:
             for tf in tfs_estr:
@@ -610,7 +657,7 @@ def main():
                         s, L = det_smc(ex, coin, tf, vcache)
                         tsl = int(L["t"].iloc[-2])
                         if s and tsl > last_ts:
-                            nuevos.append((tsl, s))
+                            nuevos.append((tsl, s, L.iloc[:-1]))
                     else:
                         L = velas_cached(ex, coin, tf, vcache)
                         closed = L.iloc[:-1].reset_index(drop=True)   # velas YA cerradas
@@ -620,7 +667,7 @@ def main():
                                 continue
                             s = detectar_cerr(estr, closed.iloc[:p + 1], coin)   # evalúa esa vela
                             if s:
-                                nuevos.append((int(tsa[p]), s))
+                                nuevos.append((int(tsa[p]), s, closed.iloc[:p + 1]))   # vela de la señal
                 except Exception as e:
                     print(f"  {estr}/{coin}/{tf}: error {type(e).__name__}: {e}"); continue
                 if coin not in m1_cache:
@@ -629,13 +676,13 @@ def main():
                     except Exception:
                         m1_cache[coin] = None
                 actualizar(ops, L, m1_cache[coin])
-                for ts_p, s in nuevos:
+                for ts_p, s, cerr_sig in nuevos:
                     if any(o["ts"] == ts_p for o in ops):
                         continue
                     s.update(status="abierta", ts=ts_p, estr=estr, coin=coin, tf=tf,
                              fecha=str(pd.to_datetime(ts_p, unit="ms")), sesion=sesion_de(ts_p))
                     try:
-                        s.update(contexto(ex, coin, L, ctx_cache))
+                        s.update(contexto(ex, coin, L, ctx_cache, cerr=cerr_sig))
                     except Exception:
                         pass
                     ops.append(s)

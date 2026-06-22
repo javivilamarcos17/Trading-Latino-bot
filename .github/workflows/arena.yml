@@ -55,7 +55,7 @@ jobs:
             git add -f data_store/paper_arena
             git commit -m "arena: datos $(date -u +%FT%TZ) [skip ci]" || echo "sin cambios"
             git push origin arena-data --force || echo "push falló, reintento la próxima"
-            sleep 900
+            sleep 180
           done
 
       - name: Auto-encadenar (lanzar la siguiente ejecución automáticamente)
