@@ -21,11 +21,13 @@ from __future__ import annotations
 
 import json
 import sys
+import time
 from pathlib import Path
 
 import ccxt
 import numpy as np
 import pandas as pd
+import requests
 
 REG = Path(__file__).resolve().parents[2] / "data_store" / "paper_arena"
 COINS = ["BTC", "ETH"]   # FOCO en BTC (estrella); ETH solo como control anti-sobreajuste
@@ -463,10 +465,31 @@ def detectar_cerr(estr, cerr, coin):
     return None
 
 
+def _delta_oi(coin, oi_now):
+    """Δ Open Interest (%): OI subiendo = dinero NUEVO entrando; bajando + precio arriba = squeeze.
+    Mantiene un pequeño histórico por moneda en disco (persiste en la rama arena-data)."""
+    f = REG / "_oihist.json"
+    try:
+        hist = json.loads(f.read_text()) if f.exists() else {}
+    except Exception:
+        hist = {}
+    arr = hist.get(coin, [])
+    if oi_now:
+        arr.append([int(time.time()), oi_now]); arr = arr[-300:]
+        hist[coin] = arr
+        try:
+            f.write_text(json.dumps(hist))
+        except Exception:
+            pass
+    if len(arr) >= 5 and oi_now and arr[-5][1]:
+        return round((oi_now / arr[-5][1] - 1) * 100, 2)
+    return None
+
+
 def contexto(ex, coin, L, cache):
-    """Contexto NO-precio + liquidez de cada operación, para entender luego qué la hace funcionar.
-    funding/OI = posicionamiento (independiente del precio). pos_rango = premium/discount (0=suelo,
-    1=techo). dist_liq = % a la liquidez (swing) más cercana arriba/abajo."""
+    """Contexto RICO por operación — para diagnosticar POR QUÉ funciona/falla y afinar luego.
+    Incluye: funding/OI + ΔOI (posicionamiento), premium/discount + liquidez, ATR%/ADX (vol y
+    tendencia-vs-rango), Fear&Greed (sentimiento) y volumen relativo. No es predicción: es CONTEXTO."""
     if coin not in cache:
         try:
             fr = ex.fetch_funding_rate(f"{coin}/USDC:USDC").get("fundingRate")
@@ -476,8 +499,14 @@ def contexto(ex, coin, L, cache):
             oi = ex.fetch_open_interest(f"{coin}/USDC:USDC").get("openInterestAmount")
         except Exception:
             oi = None
-        cache[coin] = (fr, oi)
-    fr, oi = cache[coin]
+        cache[coin] = (fr, oi, _delta_oi(coin, oi))
+    fr, oi, doi = cache[coin]
+    if "fng" not in cache:                                    # Fear & Greed, una vez por tick
+        try:
+            cache["fng"] = int(requests.get("https://api.alternative.me/fng/?limit=1",
+                                            timeout=15).json()["data"][0]["value"])
+        except Exception:
+            cache["fng"] = None
     cerr = L.iloc[:-1]
     px = float(cerr["cierre"].iloc[-1])
     hi = cerr["maximo"].tail(100); lo = cerr["minimo"].tail(100)
@@ -486,7 +515,20 @@ def contexto(ex, coin, L, cache):
     arr = hi[hi > px]; aba = lo[lo < px]
     dliq_up = round((arr.min() / px - 1) * 100, 2) if len(arr) else None
     dliq_dn = round((1 - aba.max() / px) * 100, 2) if len(aba) else None
-    return {"funding": fr, "oi": oi, "pos_rango": pos, "liq_arriba_%": dliq_up, "liq_abajo_%": dliq_dn}
+    out = {"funding": fr, "oi": oi, "d_oi_%": doi, "fng": cache.get("fng"),
+           "pos_rango": pos, "liq_arriba_%": dliq_up, "liq_abajo_%": dliq_dn}
+    if len(cerr) >= 30:                                        # ATR%, ADX (vol y régimen), volumen
+        try:
+            tr = pd.concat([cerr["maximo"] - cerr["minimo"], (cerr["maximo"] - cerr["cierre"].shift()).abs(),
+                            (cerr["minimo"] - cerr["cierre"].shift()).abs()], axis=1).max(axis=1)
+            out["atr_%"] = round(float((tr.rolling(14).mean() / cerr["cierre"]).iloc[-1]) * 100, 3)
+            adxv = float(_adx(cerr)[-1])
+            out["adx"] = round(adxv, 1)
+            out["regimen"] = "tendencia" if adxv > 25 else "rango"
+            out["vol_rel"] = round(float(cerr["volumen"].iloc[-1] / cerr["volumen"].tail(20).mean()), 2)
+        except Exception:
+            pass
+    return out
 
 
 POLITICAS = ("fixed", "be05", "be10", "t125", "trail")
