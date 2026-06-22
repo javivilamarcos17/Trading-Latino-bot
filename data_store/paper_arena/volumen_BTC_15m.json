@@ -1,48 +1,31 @@
 [
   {
     "dir": "largo",
-    "entry": 64356.0,
-    "stop": 64014.921,
-    "target": 65038.157999999996,
-    "status": "cerrada",
-    "ts": 1782040500000,
-    "estr": "volumen",
-    "coin": "BTC",
-    "tf": "15m",
-    "fecha": "2026-06-21 11:15:00",
-    "funding": -7.6962e-06,
-    "oi": 30787.68908,
-    "pos_rango": 0.21,
-    "liq_arriba_%": 0.08,
-    "liq_abajo_%": 0.06,
-    "exit": 64014.921,
-    "pnl": -0.006099878799179531,
-    "mfe_R": 0.07,
-    "mae_R": 1.08,
-    "res": "1m",
-    "exits": {
-      "fixed": -1.151,
-      "be05": -1.151,
-      "be10": -1.151,
-      "t125": -1.151,
-      "trail": -1.081
-    }
-  },
-  {
-    "dir": "largo",
     "entry": 63650.0,
     "stop": 63397.539,
     "target": 64154.922000000006,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782076500000,
     "estr": "volumen",
     "coin": "BTC",
     "tf": "15m",
     "fecha": "2026-06-21 21:15:00",
-    "funding": -7.6962e-06,
-    "oi": 30787.68908,
-    "pos_rango": 0.21,
-    "liq_arriba_%": 0.08,
-    "liq_abajo_%": 0.06
+    "funding": 1.1842e-06,
+    "oi": 29458.98434,
+    "pos_rango": 0.55,
+    "liq_arriba_%": 0.01,
+    "liq_abajo_%": 0.0,
+    "exit": 63397.539,
+    "pnl": -0.004766394344069175,
+    "mfe_R": 1.07,
+    "mae_R": 1.14,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.202,
+      "be05": -0.202,
+      "be10": -0.202,
+      "t125": -1.202,
+      "trail": -0.128
+    }
   }
 ]

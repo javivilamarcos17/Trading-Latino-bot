@@ -1,1 +1,19 @@
-[]
+[
+  {
+    "dir": "largo",
+    "entry": 63861.0,
+    "stop": 63242.0,
+    "target": 65099.0,
+    "status": "abierta",
+    "ts": 1782086400000,
+    "estr": "rsi",
+    "coin": "BTC",
+    "tf": "1h",
+    "fecha": "2026-06-22 00:00:00",
+    "funding": 1.1842e-06,
+    "oi": 29458.98434,
+    "pos_rango": 0.78,
+    "liq_arriba_%": 0.01,
+    "liq_abajo_%": 0.01
+  }
+]

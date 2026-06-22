@@ -32,8 +32,10 @@ COINS = ["BTC", "ETH", "SOL", "XRP", "DOGE", "AVAX"]   # red ampliada para recog
 # cada estrategia corre en SUS temporalidades (scalping en rápidas)
 ESTRATEGIAS_TF = {
     "smc": ["15m", "1h"], "merino": ["15m", "1h"], "sweep": ["15m", "1h"], "fvg": ["15m", "1h"],
-    "ob": ["15m", "1h"], "rsi": ["15m", "1h"], "volumen": ["15m", "1h"], "adx": ["15m", "1h"],
-    "rsidiv": ["15m", "1h", "4h"], "scalp_sqz": ["1m", "5m"], "scalp_rev": ["1m", "5m"],
+    "ob": ["15m", "1h"], "rsi": ["15m", "1h"], "volumen": ["15m", "1h"],
+    "rsidiv": ["15m", "1h", "4h"], "scalp_rev": ["1m", "5m"],
+    # adx y scalp_sqz RETIRADAS (2026-06-22): muertas con datos reales (adx 0% acierto / -1.1R;
+    # scalp_sqz -0.6/-0.8R con cualquier salida). Se concentran recursos en lo prometedor.
 }
 HTF_DE = {"15m": "1h", "1h": "4h"}      # marco mayor para SMC según el menor
 # Coste REALISTA por operación (ida+vuelta): Hyperliquid taker ~0.035%/lado + slippage.

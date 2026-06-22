@@ -10,11 +10,11 @@
     "coin": "SOL",
     "tf": "1h",
     "fecha": "2026-06-20 05:00:00",
-    "funding": 9.2162e-06,
-    "oi": 5196362.360000006,
-    "pos_rango": 0.77,
-    "liq_arriba_%": 0.21,
-    "liq_abajo_%": 0.02
+    "funding": -9.372e-07,
+    "oi": 5106890.08,
+    "pos_rango": 0.85,
+    "liq_arriba_%": 0.03,
+    "liq_abajo_%": 0.01
   },
   {
     "dir": "largo",
@@ -27,11 +27,11 @@
     "coin": "SOL",
     "tf": "1h",
     "fecha": "2026-06-20 06:00:00",
-    "funding": 9.2162e-06,
-    "oi": 5196362.360000006,
-    "pos_rango": 0.77,
-    "liq_arriba_%": 0.21,
-    "liq_abajo_%": 0.02
+    "funding": -9.372e-07,
+    "oi": 5106890.08,
+    "pos_rango": 0.85,
+    "liq_arriba_%": 0.03,
+    "liq_abajo_%": 0.01
   },
   {
     "dir": "largo",
@@ -44,11 +44,11 @@
     "coin": "SOL",
     "tf": "1h",
     "fecha": "2026-06-20 09:00:00",
-    "funding": 9.2162e-06,
-    "oi": 5196362.360000006,
-    "pos_rango": 0.77,
-    "liq_arriba_%": 0.21,
-    "liq_abajo_%": 0.02
+    "funding": -9.372e-07,
+    "oi": 5106890.08,
+    "pos_rango": 0.85,
+    "liq_arriba_%": 0.03,
+    "liq_abajo_%": 0.01
   },
   {
     "dir": "largo",
@@ -61,11 +61,11 @@
     "coin": "SOL",
     "tf": "1h",
     "fecha": "2026-06-20 10:00:00",
-    "funding": 9.2162e-06,
-    "oi": 5196362.360000006,
-    "pos_rango": 0.77,
-    "liq_arriba_%": 0.21,
-    "liq_abajo_%": 0.02
+    "funding": -9.372e-07,
+    "oi": 5106890.08,
+    "pos_rango": 0.85,
+    "liq_arriba_%": 0.03,
+    "liq_abajo_%": 0.01
   },
   {
     "dir": "largo",
@@ -78,11 +78,11 @@
     "coin": "SOL",
     "tf": "1h",
     "fecha": "2026-06-20 11:00:00",
-    "funding": 9.2162e-06,
-    "oi": 5196362.360000006,
-    "pos_rango": 0.77,
-    "liq_arriba_%": 0.21,
-    "liq_abajo_%": 0.02
+    "funding": -9.372e-07,
+    "oi": 5106890.08,
+    "pos_rango": 0.85,
+    "liq_arriba_%": 0.03,
+    "liq_abajo_%": 0.01
   },
   {
     "dir": "largo",
@@ -95,11 +95,11 @@
     "coin": "SOL",
     "tf": "1h",
     "fecha": "2026-06-20 14:00:00",
-    "funding": 9.2162e-06,
-    "oi": 5196362.360000006,
-    "pos_rango": 0.77,
-    "liq_arriba_%": 0.21,
-    "liq_abajo_%": 0.02,
+    "funding": -9.372e-07,
+    "oi": 5106890.08,
+    "pos_rango": 0.85,
+    "liq_arriba_%": 0.03,
+    "liq_abajo_%": 0.01,
     "exit": 70.76,
     "pnl": -0.017065813985819567,
     "mfe_R": 0.0,
@@ -124,11 +124,11 @@
     "coin": "SOL",
     "tf": "1h",
     "fecha": "2026-06-20 15:00:00",
-    "funding": 9.2162e-06,
-    "oi": 5196362.360000006,
-    "pos_rango": 0.77,
-    "liq_arriba_%": 0.21,
-    "liq_abajo_%": 0.02
+    "funding": -9.372e-07,
+    "oi": 5106890.08,
+    "pos_rango": 0.85,
+    "liq_arriba_%": 0.03,
+    "liq_abajo_%": 0.01
   },
   {
     "dir": "largo",
@@ -141,11 +141,11 @@
     "coin": "SOL",
     "tf": "1h",
     "fecha": "2026-06-20 21:00:00",
-    "funding": 9.2162e-06,
-    "oi": 5196362.360000006,
-    "pos_rango": 0.77,
-    "liq_arriba_%": 0.21,
-    "liq_abajo_%": 0.02
+    "funding": -9.372e-07,
+    "oi": 5106890.08,
+    "pos_rango": 0.85,
+    "liq_arriba_%": 0.03,
+    "liq_abajo_%": 0.01
   },
   {
     "dir": "largo",
@@ -158,11 +158,11 @@
     "coin": "SOL",
     "tf": "1h",
     "fecha": "2026-06-20 22:00:00",
-    "funding": 9.2162e-06,
-    "oi": 5196362.360000006,
-    "pos_rango": 0.77,
-    "liq_arriba_%": 0.21,
-    "liq_abajo_%": 0.02
+    "funding": -9.372e-07,
+    "oi": 5106890.08,
+    "pos_rango": 0.85,
+    "liq_arriba_%": 0.03,
+    "liq_abajo_%": 0.01
   },
   {
     "dir": "largo",
@@ -175,11 +175,11 @@
     "coin": "SOL",
     "tf": "1h",
     "fecha": "2026-06-21 02:00:00",
-    "funding": 9.2162e-06,
-    "oi": 5196362.360000006,
-    "pos_rango": 0.77,
-    "liq_arriba_%": 0.21,
-    "liq_abajo_%": 0.02
+    "funding": -9.372e-07,
+    "oi": 5106890.08,
+    "pos_rango": 0.85,
+    "liq_arriba_%": 0.03,
+    "liq_abajo_%": 0.01
   },
   {
     "dir": "largo",
@@ -192,11 +192,11 @@
     "coin": "SOL",
     "tf": "1h",
     "fecha": "2026-06-21 03:00:00",
-    "funding": 9.2162e-06,
-    "oi": 5196362.360000006,
-    "pos_rango": 0.77,
-    "liq_arriba_%": 0.21,
-    "liq_abajo_%": 0.02
+    "funding": -9.372e-07,
+    "oi": 5106890.08,
+    "pos_rango": 0.85,
+    "liq_arriba_%": 0.03,
+    "liq_abajo_%": 0.01
   },
   {
     "dir": "largo",
@@ -209,11 +209,11 @@
     "coin": "SOL",
     "tf": "1h",
     "fecha": "2026-06-21 09:00:00",
-    "funding": 9.2162e-06,
-    "oi": 5196362.360000006,
-    "pos_rango": 0.77,
-    "liq_arriba_%": 0.21,
-    "liq_abajo_%": 0.02,
+    "funding": -9.372e-07,
+    "oi": 5106890.08,
+    "pos_rango": 0.85,
+    "liq_arriba_%": 0.03,
+    "liq_abajo_%": 0.01,
     "exit": 72.734,
     "pnl": -0.018319687698396765,
     "mfe_R": 0.48,
