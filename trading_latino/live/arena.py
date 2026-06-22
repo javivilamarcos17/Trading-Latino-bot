@@ -49,6 +49,10 @@ ESTRATEGIAS_TF = {
     "vwap": ["1m", "5m", "15m"],
     # --- COMPUESTAS multi-factor (price-action+smart-money y Merino enriquecido) ---
     "adrig": ["15m", "1h", "4h"], "merinox": ["15m", "1h", "4h"],
+    # --- MULTI-TEMPORALIDAD real (HTF marca direccion, LTF marca timing) ---
+    "mtf": ["15m", "1h", "4h"],
+    # --- OB reforzado (lider + filtros validados por datos), en su TF dulce ---
+    "ob_plus": ["5m", "15m", "1h"],
     # adx y scalp_sqz RETIRADAS (2026-06-22): muertas con datos reales (adx 0% acierto / -1.1R;
     # scalp_sqz -0.6/-0.8R con cualquier salida).
 }
@@ -282,6 +286,26 @@ def det_ob_trend(d):
     return None
 
 
+def det_ob_plus(d):
+    """OB REFORZADO (sobre la familia líder): Order Block + tendencia EMA200 + sanidad de volumen
+    (sin clímax >2.5x, que el análisis mostró que falla). Apila SOLO los filtros que los datos validan
+    (la tendencia ayuda: ob_trend>ob; el clímax perjudica). Objetivo fijo 2R: los OB necesitan recorrido."""
+    base = det_ob(d)
+    if base is None:
+        return None
+    j = len(d) - 1
+    cl = d["cierre"].to_numpy()[j]
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    vol = d["volumen"].to_numpy(); vm = d["volumen"].rolling(20).mean().shift(1).to_numpy()
+    if np.isnan(ema[j]) or not vm[j] or np.isnan(vm[j]) or vol[j] >= 2.5 * vm[j]:
+        return None
+    if base["dir"] == "largo" and cl > ema[j]:
+        return base
+    if base["dir"] == "corto" and cl < ema[j]:
+        return base
+    return None
+
+
 def det_scalp_rev3(d):
     """Reversión a la media con banda Bollinger MÁS extrema (2.5σ) = señal de más calidad."""
     c = d["cierre"]; ma = c.rolling(20).mean(); sd = c.rolling(20).std()
@@ -463,6 +487,36 @@ def det_smc(ex, coin, ltf, cache):
     return None, L
 
 
+def det_mtf(ex, coin, ltf, cache):
+    """MULTI-TEMPORALIDAD de verdad: el marco MAYOR (HTF) marca la DIRECCION (tendencia EMA50 +
+    impulso a favor) y el marco MENOR da el TIMING (ruptura de estructura tras el retroceso). Es la
+    operativa 'estoy alcista en el marco grande, espero el retest y entro al giro'. SIN lookahead:
+    solo velas CERRADAS (HTF y LTF). Stop al otro lado del último swing; objetivo 2R."""
+    Lfull = velas_cached(ex, coin, ltf, cache)
+    htf = HTF_DE.get(ltf)
+    if htf is None:
+        return None, Lfull
+    H = velas_cached(ex, coin, htf, cache).iloc[:-1]          # HTF cerrado
+    ch = H["cierre"].to_numpy()
+    if len(ch) < 60:
+        return None, Lfull
+    e50 = H["cierre"].ewm(span=50, adjust=False).mean().to_numpy()
+    htf_up = ch[-1] > e50[-1] and ch[-1] > ch[-5]            # marco mayor alcista + con impulso
+    htf_dn = ch[-1] < e50[-1] and ch[-1] < ch[-5]
+    L = Lfull.iloc[:-1]                                       # LTF cerrado
+    last_sh, last_sl = _swings(L)
+    cl = L["cierre"].to_numpy(); lo = L["minimo"].to_numpy(); hi = L["maximo"].to_numpy()
+    j = len(cl) - 1
+    if j < 30:
+        return None, Lfull
+    swl = lo[j - 10:j].min(); swh = hi[j - 10:j].max()
+    if htf_up and not np.isnan(last_sh[j]) and cl[j] > last_sh[j] and cl[j - 1] <= last_sh[j]:
+        return _setup("largo", cl[j], swl), Lfull            # ruptura de estructura al alza a favor del HTF
+    if htf_dn and not np.isnan(last_sl[j]) and cl[j] < last_sl[j] and cl[j - 1] >= last_sl[j]:
+        return _setup("corto", cl[j], swh), Lfull
+    return None, Lfull
+
+
 def detectar(estr, ex, coin, tf):
     if estr == "smc":
         s, L = det_smc(ex, coin, tf); return s, L
@@ -516,6 +570,8 @@ def detectar_cerr(estr, cerr, coin):
         return det_scalp_rev(cerr)
     if estr == "ob_trend":
         return det_ob_trend(cerr)
+    if estr == "ob_plus":
+        return det_ob_plus(cerr)
     if estr == "scalp_rev3":
         return det_scalp_rev3(cerr)
     if estr == "vwap":
@@ -714,6 +770,11 @@ def main():
                     if estr == "smc":
                         s, L = det_smc(ex, coin, tf, vcache)
                         tsl = int(L["t"].iloc[-2])
+                        if s and tsl > last_ts:
+                            nuevos.append((tsl, s, L.iloc[:-1]))
+                    elif estr == "mtf":
+                        s, L = det_mtf(ex, coin, tf, vcache)
+                        tsl = int(L["t"].iloc[-2])           # última vela CERRADA (L = frame completo)
                         if s and tsl > last_ts:
                             nuevos.append((tsl, s, L.iloc[:-1]))
                     else:
