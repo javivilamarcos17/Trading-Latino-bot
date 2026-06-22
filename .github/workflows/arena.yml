@@ -41,12 +41,12 @@ jobs:
           git fetch origin arena-data || true
           git checkout origin/arena-data -- data_store/paper_arena 2>/dev/null || echo "primera vez, sin datos previos"
 
-      - name: BUCLE de recogida (~5.7h, una pasada cada 15 min)
+      - name: BUCLE de recogida (~5.5h, una pasada cada 15 min)
         run: |
           git config user.name "arena-bot"
           git config user.email "actions@users.noreply.github.com"
           git checkout -B arena-data
-          fin=$(( $(date +%s) + 20400 ))     # ~5.7 horas
+          fin=$(( $(date +%s) + 19800 ))     # ~5.5 horas (margen para el auto-encadenado)
           n=0
           while [ "$(date +%s)" -lt "$fin" ]; do
             n=$((n+1))
@@ -57,3 +57,18 @@ jobs:
             git push origin arena-data --force || echo "push falló, reintento la próxima"
             sleep 900
           done
+
+      - name: Auto-encadenar (lanzar la siguiente ejecución automáticamente)
+        if: always()
+        env:
+          PAT: ${{ secrets.ARENA_PAT }}
+        run: |
+          if [ -n "$PAT" ]; then
+            curl -s -X POST \
+              -H "Authorization: Bearer $PAT" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/workflows/arena.yml/dispatches" \
+              -d '{"ref":"master"}' && echo "Siguiente ejecución lanzada -> recogida 24/7 perpetua."
+          else
+            echo "Sin secreto ARENA_PAT: no hay auto-encadenado (configúralo para 24/7 sin clics)."
+          fi
