@@ -51,6 +51,8 @@ ESTRATEGIAS_TF = {
     "adrig": ["15m", "1h", "4h"], "merinox": ["15m", "1h", "4h"],
     # --- MULTI-TEMPORALIDAD real (HTF marca direccion, LTF marca timing) ---
     "mtf": ["15m", "1h", "4h"],
+    # --- OB reforzado (lider + filtros validados por datos), en su TF dulce ---
+    "ob_plus": ["5m", "15m", "1h"],
     # adx y scalp_sqz RETIRADAS (2026-06-22): muertas con datos reales (adx 0% acierto / -1.1R;
     # scalp_sqz -0.6/-0.8R con cualquier salida).
 }
@@ -277,6 +279,26 @@ def det_ob_trend(d):
         return None
     ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
     j = len(d) - 1; cl = d["cierre"].to_numpy()[j]
+    if base["dir"] == "largo" and cl > ema[j]:
+        return base
+    if base["dir"] == "corto" and cl < ema[j]:
+        return base
+    return None
+
+
+def det_ob_plus(d):
+    """OB REFORZADO (sobre la familia líder): Order Block + tendencia EMA200 + sanidad de volumen
+    (sin clímax >2.5x, que el análisis mostró que falla). Apila SOLO los filtros que los datos validan
+    (la tendencia ayuda: ob_trend>ob; el clímax perjudica). Objetivo fijo 2R: los OB necesitan recorrido."""
+    base = det_ob(d)
+    if base is None:
+        return None
+    j = len(d) - 1
+    cl = d["cierre"].to_numpy()[j]
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    vol = d["volumen"].to_numpy(); vm = d["volumen"].rolling(20).mean().shift(1).to_numpy()
+    if np.isnan(ema[j]) or not vm[j] or np.isnan(vm[j]) or vol[j] >= 2.5 * vm[j]:
+        return None
     if base["dir"] == "largo" and cl > ema[j]:
         return base
     if base["dir"] == "corto" and cl < ema[j]:
@@ -548,6 +570,8 @@ def detectar_cerr(estr, cerr, coin):
         return det_scalp_rev(cerr)
     if estr == "ob_trend":
         return det_ob_trend(cerr)
+    if estr == "ob_plus":
+        return det_ob_plus(cerr)
     if estr == "scalp_rev3":
         return det_scalp_rev3(cerr)
     if estr == "vwap":
