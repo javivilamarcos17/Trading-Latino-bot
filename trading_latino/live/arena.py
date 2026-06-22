@@ -38,7 +38,7 @@ ESTRATEGIAS_TF = {
     # scalp_sqz -0.6/-0.8R con cualquier salida). Se concentran recursos en lo prometedor.
     # LOTE NUEVO a probar (obtener más info):
     "ob_trend": ["15m", "1h"], "scalp_rev3": ["1m", "5m"], "vwap": ["5m", "15m"],
-    "donchian": ["15m", "1h", "4h"],
+    "donchian": ["15m", "1h", "4h"], "elliott": ["15m", "1h", "4h"],
 }
 HTF_DE = {"15m": "1h", "1h": "4h"}      # marco mayor para SMC según el menor
 # Coste REALISTA por operación (ida+vuelta): Hyperliquid taker ~0.035%/lado + slippage.
@@ -336,6 +336,42 @@ def sesion_de(ts):
     return "cierre"
 
 
+def det_elliott(d):
+    """Proxy mecánico de ELLIOTT — entrada en ONDA 3: tras onda 1 (impulso) + onda 2 (retroceso 38-85%
+    que NO rompe el origen), la ruptura del techo de onda 1 dispara la onda 3. Stop bajo onda 2.
+    (No es Elliott "puro" —el conteo es subjetivo— pero captura su parte operable.) Espejo bajista."""
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy()
+    j = len(cl) - 1
+    if j < 60:
+        return None
+    F = 2
+    sh = [i for i in range(F, j - F) if hi[i] == hi[i - F:i + F + 1].max()]
+    sl = [i for i in range(F, j - F) if lo[i] == lo[i - F:i + F + 1].min()]
+    if len(sh) < 1 or len(sl) < 2:
+        return None
+    # ALCISTA: inicio(low0) -> techo onda1(h1) -> fondo onda2(low2) -> ruptura de h1 = onda3
+    h1 = sh[-1]
+    lb = [i for i in sl if i < h1]; la = [i for i in sl if i > h1]
+    if lb and la:
+        low0, low2 = lb[-1], la[-1]
+        w1 = hi[h1] - lo[low0]
+        if w1 > 0:
+            retr = (hi[h1] - lo[low2]) / w1
+            if lo[low2] > lo[low0] and 0.38 <= retr <= 0.85 and cl[j] > hi[h1] and cl[j - 1] <= hi[h1]:
+                return _setup("largo", cl[j], lo[low2], 2.5)
+    # BAJISTA (espejo)
+    l1 = sl[-1]
+    hb = [i for i in sh if i < l1]; ha = [i for i in sh if i > l1]
+    if hb and ha:
+        high0, high2 = hb[-1], ha[-1]
+        w1d = hi[high0] - lo[l1]
+        if w1d > 0:
+            retrd = (hi[high2] - lo[l1]) / w1d
+            if hi[high2] < hi[high0] and 0.38 <= retrd <= 0.85 and cl[j] < lo[l1] and cl[j - 1] >= lo[l1]:
+                return _setup("corto", cl[j], hi[high2], 2.5)
+    return None
+
+
 def det_smc(ex, coin, ltf, cache):
     htf = HTF_DE[ltf]
     H = velas_cached(ex, coin, htf, cache).iloc[:-1]
@@ -422,6 +458,8 @@ def detectar_cerr(estr, cerr, coin):
         return det_vwap(cerr)
     if estr == "donchian":
         return det_donchian(cerr)
+    if estr == "elliott":
+        return det_elliott(cerr)
     return None
 
 

@@ -114,5 +114,39 @@
       "t125": 0.856,
       "trail": -0.368
     }
+  },
+  {
+    "dir": "largo",
+    "entry": 74.301,
+    "stop": 74.225,
+    "target": 74.41500000000002,
+    "status": "abierta",
+    "ts": 1782113820000,
+    "estr": "scalp_sqz",
+    "coin": "SOL",
+    "tf": "1m",
+    "fecha": "2026-06-22 07:37:00",
+    "funding": 7.575e-06,
+    "oi": 5132312.680000002,
+    "pos_rango": 0.67,
+    "liq_arriba_%": 0.01,
+    "liq_abajo_%": 0.0
+  },
+  {
+    "dir": "largo",
+    "entry": 74.322,
+    "stop": 74.225,
+    "target": 74.46750000000002,
+    "status": "abierta",
+    "ts": 1782114000000,
+    "estr": "scalp_sqz",
+    "coin": "SOL",
+    "tf": "1m",
+    "fecha": "2026-06-22 07:40:00",
+    "funding": 7.575e-06,
+    "oi": 5132312.680000002,
+    "pos_rango": 0.67,
+    "liq_arriba_%": 0.01,
+    "liq_abajo_%": 0.0
   }
 ]

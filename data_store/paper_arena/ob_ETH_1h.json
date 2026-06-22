@@ -572,7 +572,7 @@
     "entry": 1729.5,
     "stop": 1719.279,
     "target": 1749.942,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782097200000,
     "estr": "ob",
     "coin": "ETH",
@@ -582,7 +582,19 @@
     "oi": 804048.7988,
     "pos_rango": 0.74,
     "liq_arriba_%": 0.01,
-    "liq_abajo_%": 0.05
+    "liq_abajo_%": 0.05,
+    "exit": 1749.942,
+    "pnl": 0.01101960104076323,
+    "mfe_R": 2.02,
+    "mae_R": 0.34,
+    "res": "1m",
+    "exits": {
+      "fixed": 1.865,
+      "be05": -0.135,
+      "be10": -0.135,
+      "t125": 1.115,
+      "trail": -0.108
+    }
   },
   {
     "dir": "largo",

@@ -259,5 +259,56 @@
       "t125": -1.548,
       "trail": -0.84
     }
+  },
+  {
+    "dir": "corto",
+    "entry": 1748.0,
+    "stop": 1751.8500999999997,
+    "target": 1742.2248500000005,
+    "status": "abierta",
+    "ts": 1782113400000,
+    "estr": "scalp_rev",
+    "coin": "ETH",
+    "tf": "5m",
+    "fecha": "2026-06-22 07:30:00",
+    "funding": 1.25e-05,
+    "oi": 803989.3208000001,
+    "pos_rango": 0.79,
+    "liq_arriba_%": 0.09,
+    "liq_abajo_%": 0.01
+  },
+  {
+    "dir": "corto",
+    "entry": 1749.2,
+    "stop": 1752.7509999999997,
+    "target": 1743.8735000000006,
+    "status": "abierta",
+    "ts": 1782113700000,
+    "estr": "scalp_rev",
+    "coin": "ETH",
+    "tf": "5m",
+    "fecha": "2026-06-22 07:35:00",
+    "funding": 1.25e-05,
+    "oi": 803989.3208000001,
+    "pos_rango": 0.79,
+    "liq_arriba_%": 0.09,
+    "liq_abajo_%": 0.01
+  },
+  {
+    "dir": "corto",
+    "entry": 1747.2,
+    "stop": 1752.5507999999998,
+    "target": 1739.1738000000005,
+    "status": "abierta",
+    "ts": 1782114000000,
+    "estr": "scalp_rev",
+    "coin": "ETH",
+    "tf": "5m",
+    "fecha": "2026-06-22 07:40:00",
+    "funding": 1.25e-05,
+    "oi": 803989.3208000001,
+    "pos_rango": 0.79,
+    "liq_arriba_%": 0.09,
+    "liq_abajo_%": 0.01
   }
 ]

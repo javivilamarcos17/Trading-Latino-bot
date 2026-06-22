@@ -33,7 +33,7 @@
     "entry": 64126.0,
     "stop": 64313.0,
     "target": 63845.5,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782108900000,
     "estr": "scalp_sqz",
     "coin": "BTC",
@@ -43,7 +43,19 @@
     "oi": 29458.98434,
     "pos_rango": 0.51,
     "liq_arriba_%": 0.01,
-    "liq_abajo_%": 0.01
+    "liq_abajo_%": 0.01,
+    "exit": 64313.0,
+    "pnl": -0.00371613386146025,
+    "mfe_R": 1.11,
+    "mae_R": 1.27,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.274,
+      "be05": -0.274,
+      "be10": -0.274,
+      "t125": -1.274,
+      "trail": -0.167
+    }
   },
   {
     "dir": "largo",

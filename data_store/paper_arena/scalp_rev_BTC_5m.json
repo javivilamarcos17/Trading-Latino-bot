@@ -91,7 +91,7 @@
     "entry": 64031.0,
     "stop": 63904.032,
     "target": 64221.452000000005,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782110100000,
     "estr": "scalp_rev",
     "coin": "BTC",
@@ -101,7 +101,19 @@
     "oi": 29458.98434,
     "pos_rango": 0.51,
     "liq_arriba_%": 0.01,
-    "liq_abajo_%": 0.01
+    "liq_abajo_%": 0.01,
+    "exit": 64221.452000000005,
+    "pnl": 0.00217437178866494,
+    "mfe_R": 1.6,
+    "mae_R": 0.88,
+    "res": "1m",
+    "exits": {
+      "fixed": 1.097,
+      "be05": -0.403,
+      "be10": 1.097,
+      "t125": 0.847,
+      "trail": -1.246
+    }
   },
   {
     "dir": "largo",
@@ -131,5 +143,22 @@
       "t125": 0.809,
       "trail": 1.059
     }
+  },
+  {
+    "dir": "corto",
+    "entry": 64274.0,
+    "stop": 64427.36299999999,
+    "target": 64043.95550000001,
+    "status": "abierta",
+    "ts": 1782113400000,
+    "estr": "scalp_rev",
+    "coin": "BTC",
+    "tf": "5m",
+    "fecha": "2026-06-22 07:30:00",
+    "funding": 7.0093e-06,
+    "oi": 29568.77088,
+    "pos_rango": 0.65,
+    "liq_arriba_%": 0.01,
+    "liq_abajo_%": 0.0
   }
 ]

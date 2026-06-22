@@ -521,7 +521,7 @@
     "entry": 64180.0,
     "stop": 64035.144,
     "target": 64469.712,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782111600000,
     "estr": "fvg",
     "coin": "BTC",
@@ -531,7 +531,19 @@
     "oi": 29598.56452,
     "pos_rango": 0.64,
     "liq_arriba_%": 0.0,
-    "liq_abajo_%": 0.01
+    "liq_abajo_%": 0.01,
+    "exit": 64035.144,
+    "pnl": -0.0030570271112496067,
+    "mfe_R": 0.0,
+    "mae_R": 1.52,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.354,
+      "be05": -1.354,
+      "be10": -1.354,
+      "t125": -1.354,
+      "trail": -1.354
+    }
   },
   {
     "dir": "corto",
@@ -548,6 +560,23 @@
     "oi": 29598.56452,
     "pos_rango": 0.64,
     "liq_arriba_%": 0.0,
+    "liq_abajo_%": 0.01
+  },
+  {
+    "dir": "corto",
+    "entry": 64234.0,
+    "stop": 64481.1052,
+    "target": 63739.789600000004,
+    "status": "abierta",
+    "ts": 1782113400000,
+    "estr": "fvg",
+    "coin": "BTC",
+    "tf": "15m",
+    "fecha": "2026-06-22 07:30:00",
+    "funding": 7.0093e-06,
+    "oi": 29568.77088,
+    "pos_rango": 0.65,
+    "liq_arriba_%": 0.01,
     "liq_abajo_%": 0.01
   }
 ]
