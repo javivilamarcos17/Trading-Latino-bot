@@ -28,7 +28,7 @@ import numpy as np
 import pandas as pd
 
 REG = Path(__file__).resolve().parents[2] / "data_store" / "paper_arena"
-COINS = ["BTC", "ETH", "SOL", "XRP", "DOGE", "AVAX"]   # red ampliada para recoger más datos
+COINS = ["BTC", "ETH"]   # FOCO en BTC (estrella); ETH solo como control anti-sobreajuste
 # cada estrategia corre en SUS temporalidades (scalping en rápidas)
 ESTRATEGIAS_TF = {
     "smc": ["15m", "1h"], "merino": ["15m", "1h"], "sweep": ["15m", "1h"], "fvg": ["15m", "1h"],
@@ -36,6 +36,9 @@ ESTRATEGIAS_TF = {
     "rsidiv": ["15m", "1h", "4h"], "scalp_rev": ["1m", "5m"],
     # adx y scalp_sqz RETIRADAS (2026-06-22): muertas con datos reales (adx 0% acierto / -1.1R;
     # scalp_sqz -0.6/-0.8R con cualquier salida). Se concentran recursos en lo prometedor.
+    # LOTE NUEVO a probar (obtener más info):
+    "ob_trend": ["15m", "1h"], "scalp_rev3": ["1m", "5m"], "vwap": ["5m", "15m"],
+    "donchian": ["15m", "1h", "4h"],
 }
 HTF_DE = {"15m": "1h", "1h": "4h"}      # marco mayor para SMC según el menor
 # Coste REALISTA por operación (ida+vuelta): Hyperliquid taker ~0.035%/lado + slippage.
@@ -252,9 +255,90 @@ def det_rsidiv(d):
     return None
 
 
-def det_smc(ex, coin, ltf):
+# ----- LOTE NUEVO de alternativas a probar en vivo (variantes + familias nuevas) -----
+def det_ob_trend(d):
+    """Order Block PERO solo a favor de la tendencia mayor (EMA200). Refina la mejor (ob)."""
+    base = det_ob(d)
+    if base is None:
+        return None
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    j = len(d) - 1; cl = d["cierre"].to_numpy()[j]
+    if base["dir"] == "largo" and cl > ema[j]:
+        return base
+    if base["dir"] == "corto" and cl < ema[j]:
+        return base
+    return None
+
+
+def det_scalp_rev3(d):
+    """Reversión a la media con banda Bollinger MÁS extrema (2.5σ) = señal de más calidad."""
+    c = d["cierre"]; ma = c.rolling(20).mean(); sd = c.rolling(20).std()
+    up = (ma + 2.5 * sd).to_numpy(); dn = (ma - 2.5 * sd).to_numpy()
+    lo = d["minimo"].to_numpy(); hi = d["maximo"].to_numpy(); cl = c.to_numpy(); j = len(cl) - 1
+    if j < 25 or np.isnan(dn[j]):
+        return None
+    if lo[j] <= dn[j] and cl[j] > dn[j]:
+        return _setup("largo", cl[j], lo[j] * 0.999, 1.5)
+    if hi[j] >= up[j] and cl[j] < up[j]:
+        return _setup("corto", cl[j], hi[j] * 1.001, 1.5)
+    return None
+
+
+def det_vwap(d):
+    """Rebote en VWAP (50): el precio vuelve al VWAP desde arriba y aguanta -> largo (y espejo)."""
+    tp = (d["maximo"] + d["minimo"] + d["cierre"]) / 3
+    vwap = ((tp * d["volumen"]).rolling(50).sum() / d["volumen"].rolling(50).sum()).to_numpy()
+    lo = d["minimo"].to_numpy(); hi = d["maximo"].to_numpy(); cl = d["cierre"].to_numpy(); j = len(cl) - 1
+    if j < 55 or np.isnan(vwap[j]):
+        return None
+    swl = d["minimo"].iloc[j - 7:j].min(); swh = d["maximo"].iloc[j - 7:j].max()
+    if lo[j] <= vwap[j] and cl[j] > vwap[j] and cl[j - 1] > vwap[j - 1]:
+        return _setup("largo", cl[j], swl, 2.0)
+    if hi[j] >= vwap[j] and cl[j] < vwap[j] and cl[j - 1] < vwap[j - 1]:
+        return _setup("corto", cl[j], swh, 2.0)
+    return None
+
+
+def det_donchian(d):
+    """Ruptura de canal Donchian (máx/mín de 20 velas) = seguimiento de tendencia (familia nueva)."""
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy(); j = len(cl) - 1
+    if j < 25:
+        return None
+    hh = hi[j - 20:j].max(); ll = lo[j - 20:j].min()
+    sl = lo[j - 10:j].min(); sh = hi[j - 10:j].max()
+    if cl[j] > hh and cl[j - 1] <= hh:
+        return _setup("largo", cl[j], sl, 2.0)
+    if cl[j] < ll and cl[j - 1] >= ll:
+        return _setup("corto", cl[j], sh, 2.0)
+    return None
+
+
+def velas_cached(ex, coin, tf, cache, limit=500):
+    """Cachea las velas por (moneda, TF) durante el tick: muchas estrategias comparten las MISMAS
+    velas -> se piden una sola vez (evita el 429 de Hyperliquid y acelera)."""
+    k = (coin, tf)
+    if k not in cache:
+        cache[k] = velas(ex, coin, tf, limit)
+    return cache[k]
+
+
+def sesion_de(ts):
+    """Sesión de mercado (UTC) de una operación. Detecta la apertura de NY (mercado USA)."""
+    h = pd.to_datetime(ts, unit="ms").hour
+    if 13 <= h < 15:
+        return "ny_open"        # apertura USA (~9:30-11:00 ET)
+    if 13 <= h < 21:
+        return "ny"
+    if 7 <= h < 13:
+        return "londres"
+    if h < 7:
+        return "asia"
+    return "cierre"
+
+
+def det_smc(ex, coin, ltf, cache):
     htf = HTF_DE[ltf]
-    H = velas(ex, coin, htf, 300).iloc[:-1]
+    H = velas_cached(ex, coin, htf, cache).iloc[:-1]
     hi = H["maximo"].to_numpy(); lo = H["minimo"].to_numpy(); clh = H["cierre"].to_numpy()
     ema = H["cierre"].ewm(span=100, adjust=False).mean().to_numpy()
     zonas = []
@@ -263,7 +347,7 @@ def det_smc(ex, coin, ltf):
             zonas.append((hi[i - 2], lo[i], "largo"))
         if hi[i] < lo[i - 2] and (lo[i - 2] - hi[i]) / clh[i] > 0.0008 and clh[i] < ema[i]:
             zonas.append((hi[i], lo[i - 2], "corto"))
-    L = velas(ex, coin, ltf, 500).iloc[:-1]
+    L = velas_cached(ex, coin, ltf, cache).iloc[:-1]
     last_sh, last_sl = _swings(L)
     cl = L["cierre"].to_numpy(); lo2 = L["minimo"].to_numpy(); hi2 = L["maximo"].to_numpy()
     j = len(cl) - 1
@@ -330,6 +414,14 @@ def detectar_cerr(estr, cerr, coin):
         return det_scalp_sqz(cerr)
     if estr == "scalp_rev":
         return det_scalp_rev(cerr)
+    if estr == "ob_trend":
+        return det_ob_trend(cerr)
+    if estr == "scalp_rev3":
+        return det_scalp_rev3(cerr)
+    if estr == "vwap":
+        return det_vwap(cerr)
+    if estr == "donchian":
+        return det_donchian(cerr)
     return None
 
 
@@ -425,6 +517,7 @@ def main():
     tabla = []
     ctx_cache = {}      # funding/OI por moneda, una sola vez por tick
     m1_cache = {}       # velas de 1m por moneda (para resolver con el recorrido real)
+    vcache = {}         # velas por (moneda, TF) compartidas entre estrategias (evita 429)
     for estr, tfs_estr in ESTRATEGIAS_TF.items():
         for coin in COINS:
             for tf in tfs_estr:
@@ -434,12 +527,12 @@ def main():
                 nuevos = []     # (ts, setup) de TODAS las velas cerradas desde la última ejecución
                 try:
                     if estr == "smc":
-                        s, L = det_smc(ex, coin, tf)
+                        s, L = det_smc(ex, coin, tf, vcache)
                         tsl = int(L["t"].iloc[-2])
                         if s and tsl > last_ts:
                             nuevos.append((tsl, s))
                     else:
-                        L = velas(ex, coin, tf, 500)
+                        L = velas_cached(ex, coin, tf, vcache)
                         closed = L.iloc[:-1].reset_index(drop=True)   # velas YA cerradas
                         tsa = closed["t"].to_numpy()
                         for p in range(max(0, len(closed) - 50), len(closed)):
@@ -460,7 +553,7 @@ def main():
                     if any(o["ts"] == ts_p for o in ops):
                         continue
                     s.update(status="abierta", ts=ts_p, estr=estr, coin=coin, tf=tf,
-                             fecha=str(pd.to_datetime(ts_p, unit="ms")))
+                             fecha=str(pd.to_datetime(ts_p, unit="ms")), sesion=sesion_de(ts_p))
                     try:
                         s.update(contexto(ex, coin, L, ctx_cache))
                     except Exception:
