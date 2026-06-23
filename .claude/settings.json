@@ -49,7 +49,9 @@
       "Skill(update-config:*)",
       "Bash(.venv/Scripts/python.exe -c ' *)",
       "Bash(timeout 90 .venv/Scripts/python.exe -m trading_latino.live.arena)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(.venv/Scripts/python.exe -c \"import trading_latino.live.arena as a; print\\('OK —', len\\(a.ESTRATEGIAS_TF\\), 'estrategias'\\)\")",
+      "Bash(.venv/Scripts/python.exe -c \"import trading_latino.live.arena as a; print\\('OK —', len\\(a.ESTRATEGIAS_TF\\), 'estrategias:', list\\(a.ESTRATEGIAS_TF.keys\\(\\)\\)\\)\")"
     ]
   },
   "includeGitInstructions": true,

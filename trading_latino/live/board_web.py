@@ -196,8 +196,9 @@ def generar_html():
                 if not vals: celdas.append('<td style="color:#334155">—</td>'); continue
                 _, _, ev = _stat(vals)
                 c = "#22c55e" if (ev or 0) > 0.05 else ("#ef4444" if (ev or 0) < -0.02 else "#fbbf24")
-                cls = ' style="background:#1a3a1a"' if (ev or 0) > (best_val or -99) else ""
-                celdas.append(f'<td{cls} style="color:{c}">{ev:+.2f}R</td>')
+                is_best = (ev or 0) > (best_val or -99)
+                bg = "background:#1a3a1a;" if is_best else ""
+                celdas.append(f'<td style="{bg}color:{c}">{ev:+.2f}R</td>')
                 if (ev or -99) > best_val: best_val = ev or 0; best_pol = POL_LABEL[pol]
             celdas.append(f'<td style="color:#7dd3fc;font-size:0.78rem">{best_pol}</td>')
             rows.append("<tr>" + "".join(celdas) + "</tr>")
