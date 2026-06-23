@@ -911,15 +911,40 @@ def _mercado(ex, coin, cache):
     return fr, oi, doi, cache["fng"]
 
 
-def registrar_ctx_mercado(coin, ts, px, fr, oi, fng):
-    """Registro CONTINUO (append, JSONL) del contexto de mercado IRREEMPLAZABLE: funding, OI y
-    Fear&Greed con su timestamp. Con esto + las velas (siempre recuperables) se puede SIMULAR
-    cualquier operativa futura con el contexto REAL que había en cada momento. Una línea por lectura
-    -> robusto, no reescribe el fichero entero."""
+def _ob_snapshot(ex, coin):
+    """Snapshot del Order Book (top 5 bid/ask): IRREEMPLAZABLE, no se puede reconstruir después.
+    Devuelve spread%, muro bid más gordo, muro ask más gordo y los niveles top-5 de cada lado."""
+    try:
+        ob = ex.fetch_order_book(f"{coin}/USDC:USDC", limit=20)
+        bids = ob.get("bids", [])[:5]; asks = ob.get("asks", [])[:5]
+        if not bids or not asks:
+            return {}
+        spread_pct = round((asks[0][0] - bids[0][0]) / bids[0][0] * 100, 4)
+        bid_wall = max(bids, key=lambda x: x[1]) if bids else None
+        ask_wall = max(asks, key=lambda x: x[1]) if asks else None
+        return {
+            "spread_%": spread_pct,
+            "bid_wall_px": round(bid_wall[0], 4) if bid_wall else None,
+            "bid_wall_sz": round(bid_wall[1], 2) if bid_wall else None,
+            "ask_wall_px": round(ask_wall[0], 4) if ask_wall else None,
+            "ask_wall_sz": round(ask_wall[1], 2) if ask_wall else None,
+            "bids5": [[round(b[0], 4), round(b[1], 2)] for b in bids],
+            "asks5": [[round(a[0], 4), round(a[1], 2)] for a in asks],
+        }
+    except Exception:
+        return {}
+
+
+def registrar_ctx_mercado(ex, coin, ts, px, fr, oi, fng):
+    """Registro CONTINUO (append, JSONL) del contexto de mercado IRREEMPLAZABLE: funding, OI,
+    Fear&Greed y snapshot del Order Book (no se puede reconstruir de velas). Con esto + las velas
+    (siempre recuperables via API) se puede SIMULAR cualquier operativa futura. Una línea por tick."""
     f = REG / f"_ctx_{coin}.jsonl"
     try:
+        row = {"ts": int(ts), "px": px, "funding": fr, "oi": oi, "fng": fng}
+        row.update(_ob_snapshot(ex, coin))                         # spread + muros + top-5 niveles
         with f.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps({"ts": int(ts), "px": px, "funding": fr, "oi": oi, "fng": fng}) + "\n")
+            fh.write(json.dumps(row) + "\n")
     except Exception:
         pass
 
@@ -955,6 +980,35 @@ def contexto(ex, coin, L, cache, cerr=None):
             out["vol_rel"] = round(float(cerr["volumen"].iloc[-1] / cerr["volumen"].tail(20).mean()), 2)
         except Exception:
             pass
+    # RSI en 1h y EMA50 en 1h (sesgo del marco mayor): info MULTI-TF que enriquece el diagnostico
+    try:
+        if ("1h_data", coin) in cache:
+            d1h = cache[("1h_data", coin)]
+        else:
+            d1h = velas_cached(ex, coin, "1h", cache)
+            cache[("1h_data", coin)] = d1h
+        c1h = d1h["cierre"]
+        rsi1h = float(_rsi(c1h)[-1])
+        ema50_1h = float(c1h.ewm(span=50, adjust=False).mean().iloc[-1])
+        out["rsi_1h"] = round(rsi1h, 1)
+        out["ema50_1h_dist_%"] = round((px / ema50_1h - 1) * 100, 2)   # distancia % al EMA50 del 1h
+    except Exception:
+        pass
+    # RANGO ASIATICO del dia actual (fundamental para setup Sensei / ICT Killzone)
+    try:
+        hoy_utc = pd.Timestamp.now("UTC").date()
+        ts_arr2 = cerr["t"].to_numpy()
+        ts_pd2 = pd.to_datetime(ts_arr2, unit="ms", utc=True)
+        mask_as = (ts_pd2.date == hoy_utc) & (ts_pd2.hour < 7)
+        idx_as = np.where(mask_as)[0]
+        if len(idx_as) >= 3:
+            out["asia_hi"] = round(float(cerr["maximo"].to_numpy()[idx_as].max()), 4)
+            out["asia_lo"] = round(float(cerr["minimo"].to_numpy()[idx_as].min()), 4)
+            out["asia_rango_%"] = round((out["asia_hi"] - out["asia_lo"]) / out["asia_lo"] * 100, 2)
+            out["px_vs_asia"] = ("premium" if px > out["asia_hi"] else
+                                 "descuento" if px < out["asia_lo"] else "dentro")
+    except Exception:
+        pass
     # SESION ANTERIOR: qué hizo la sesión que acaba de terminar (tesis Sensei Trading / ICT)
     try:
         h_sig = int(pd.to_datetime(int(cerr["t"].iloc[-1]), unit="ms").hour)
@@ -1064,7 +1118,7 @@ def main():
         try:
             fr, oi, doi, fng = _mercado(ex, coin, ctx_cache)
             px = float(m1_cache[coin]["cierre"].iloc[-1]) if m1_cache[coin] is not None and len(m1_cache[coin]) else None
-            registrar_ctx_mercado(coin, ahora_ms, px, fr, oi, fng)
+            registrar_ctx_mercado(ex, coin, ahora_ms, px, fr, oi, fng)
         except Exception:
             pass
 
