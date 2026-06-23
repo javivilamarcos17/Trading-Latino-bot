@@ -120,6 +120,83 @@ def main():
     linea("en descuento (<0.40)", [R(o) for o in obt if o.get("pos_rango", 1) < 0.40])
     linea("en premium (>0.60)", [R(o) for o in obt if o.get("pos_rango", 0) > 0.60])
 
+    # 8) ACELERACION DEL REGIMEN (adx subiendo vs bajando)
+    print("\n8) ADX DIRECTION (aceleracion del regimen en la señal):")
+    ad = [o for o in ops if o.get("adx_dir") is not None]
+    linea("adx subiendo (tendencia acelerando)", [R(o) for o in ad if o["adx_dir"] == "subiendo"])
+    linea("adx bajando (tendencia frenando)", [R(o) for o in ad if o["adx_dir"] == "bajando"])
+    for reg in ["tendencia", "rango"]:
+        linea(f"  {reg} + adx_subiendo", [R(o) for o in ad if o.get("regimen") == reg and o["adx_dir"] == "subiendo"])
+        linea(f"  {reg} + adx_bajando", [R(o) for o in ad if o.get("regimen") == reg and o["adx_dir"] == "bajando"])
+
+    # 9) SESION ANTERIOR (tesis Sensei / ICT: lo que hizo la sesion anterior predice la actual)
+    print("\n9) SESION ANTERIOR — lo que hizo la sesion que acaba de terminar:")
+    sa = [o for o in ops if o.get("ses_ant_dir") is not None]
+    print(f"   ops con dato de sesion anterior: {len(sa)}")
+    for ses_a in ["asia", "londres", "ny"]:
+        sub = [o for o in sa if o.get("ses_ant") == ses_a]
+        if sub:
+            linea(f"  {ses_a} fue alcista -> ahora {{}}", [R(o) for o in sub if o["ses_ant_dir"] == "alcista"])
+            linea(f"  {ses_a} fue bajista -> ahora {{}}", [R(o) for o in sub if o["ses_ant_dir"] == "bajista"])
+
+    # 10) FAMILIA OB — comparativa de variantes (ver cual filtro aporta mas)
+    print("\n10) FAMILIA OB — comparativa de variantes por sesion (solo ops con tag de sesion):")
+    for fam in ["ob", "ob_trend", "ob_plus", "ob_regime", "ob_asia", "ob_regime_asia",
+                "ob_plus_asia", "ob_regime_asia", "ob_trend_r3", "ob_plus_asia_r3"]:
+        sub = [o for o in ops if o["_estr"] == fam and o.get("sesion") not in [None, "?"]]
+        if sub:
+            n, w, e = stat([R(o) for o in sub])
+            flag = "" if n >= MIN else "  (poca muestra)"
+            print(f"    {fam:<22} n={n:>4} win={w * 100:>3.0f}% exp={e:>+.2f}R{flag}")
+
+    # 11) SUB-SESION — aperturas reales de bolsa (solo ops con sub_sesion registrado)
+    print("\n11) SUB-SESION (apertura de bolsa real, UTC):")
+    sub_ses = defaultdict(list)
+    for o in ops:
+        if o.get("sub_sesion"):
+            sub_ses[o["sub_sesion"]].append(R(o))
+    orden_sub = ["tokyo_open", "tokyo_mid", "tokyo_close",
+                 "london_open", "london_mid",
+                 "ny_preopen", "nyse_open", "ny_mid", "ny_close", "overnight"]
+    for ss in orden_sub:
+        if ss in sub_ses:
+            linea(ss, sub_ses[ss])
+
+    # 12) RANKING POR ESTRATEGIA — largo vs corto (detectar sesgo de direccion)
+    print("\n12) RANKING ESTRATEGIAS — largo vs corto (sesgo de mercado actual):")
+    estrs = sorted({o["_estr"] for o in ops})
+    rows = []
+    for estr in estrs:
+        sub = [o for o in ops if o["_estr"] == estr]
+        nl, _, sl = stat([R(o) for o in sub if o["dir"] == "largo"])
+        nc, _, sc = stat([R(o) for o in sub if o["dir"] == "corto"])
+        if nl + nc >= 15:
+            rows.append((estr, nl, sl, nc, sc, nl + nc))
+    rows.sort(key=lambda x: (x[2] or -99) + (x[4] or -99), reverse=True)
+    print(f"    {'estrategia':<22} | {'n_L':>4} {'exp_L':>7}  | {'n_C':>4} {'exp_C':>7}")
+    for estr, nl, sl, nc, sc, _ in rows:
+        el = f"{sl:>+.2f}R" if nl > 0 else "  —   "
+        ec = f"{sc:>+.2f}R" if nc > 0 else "  —   "
+        marca = "  <-- ambos+" if (nl > 0 and sl > 0 and nc > 0 and sc > 0) else ""
+        print(f"    {estr:<22} | n={nl:>3} {el}  | n={nc:>3} {ec}{marca}")
+
+    # 13) SESION ANTERIOR NY ALCISTA — el hallazgo mas potente sin explotar
+    print("\n13) FILTRO: sesion anterior NY ALCISTA (n=165, win=73%, exp=+1.00R en datos propios):")
+    ny_al = [o for o in ops if o.get("ses_ant") == "ny" and o.get("ses_ant_dir") == "alcista"]
+    ny_ba = [o for o in ops if o.get("ses_ant") == "ny" and o.get("ses_ant_dir") == "bajista"]
+    linea("prev_NY alcista", [R(o) for o in ny_al])
+    linea("prev_NY bajista", [R(o) for o in ny_ba])
+    # Desglose por estrategia cuando NY fue alcista
+    if ny_al:
+        print("   Desglose por estrategia cuando prev_NY=alcista (n>=5):")
+        by_e = defaultdict(list)
+        for o in ny_al: by_e[o["_estr"]].append(R(o))
+        rows13 = [(e, v) for e, v in by_e.items() if len(v) >= 5]
+        rows13.sort(key=lambda x: sum(x[1])/len(x[1]), reverse=True)
+        for e, v in rows13:
+            n13, w13, exp13 = stat(v)
+            print(f"      {e:<22} n={n13:>3} win={w13*100:>3.0f}% exp={exp13:>+.2f}R")
+
 
 if __name__ == "__main__":
     main()
