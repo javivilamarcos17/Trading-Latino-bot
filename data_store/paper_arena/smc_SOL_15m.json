@@ -15,5 +15,22 @@
     "pos_rango": 0.7,
     "liq_arriba_%": 0.0,
     "liq_abajo_%": 0.05
+  },
+  {
+    "dir": "largo",
+    "entry": 74.653,
+    "stop": 72.06551879999999,
+    "target": 79.82796240000003,
+    "status": "abierta",
+    "ts": 1782134100000,
+    "estr": "smc",
+    "coin": "SOL",
+    "tf": "15m",
+    "fecha": "2026-06-22 13:15:00",
+    "funding": 1.13842e-05,
+    "oi": 5159537.46,
+    "pos_rango": 0.75,
+    "liq_arriba_%": 0.01,
+    "liq_abajo_%": 0.04
   }
 ]

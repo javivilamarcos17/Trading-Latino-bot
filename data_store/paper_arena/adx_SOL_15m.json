@@ -160,5 +160,39 @@
     "pos_rango": 0.58,
     "liq_arriba_%": 0.05,
     "liq_abajo_%": 0.05
+  },
+  {
+    "dir": "corto",
+    "entry": 72.678,
+    "stop": 73.74,
+    "target": 70.554,
+    "status": "abierta",
+    "ts": 1782145800000,
+    "estr": "adx",
+    "coin": "SOL",
+    "tf": "15m",
+    "fecha": "2026-06-22 16:30:00",
+    "funding": -1.09744e-05,
+    "oi": 4986827.28,
+    "pos_rango": 0.15,
+    "liq_arriba_%": 0.12,
+    "liq_abajo_%": 0.03
+  },
+  {
+    "dir": "corto",
+    "entry": 72.74,
+    "stop": 73.74,
+    "target": 70.74,
+    "status": "abierta",
+    "ts": 1782148500000,
+    "estr": "adx",
+    "coin": "SOL",
+    "tf": "15m",
+    "fecha": "2026-06-22 17:15:00",
+    "funding": -1.4142e-06,
+    "oi": 4993669.599999998,
+    "pos_rango": 0.18,
+    "liq_arriba_%": 0.03,
+    "liq_abajo_%": 0.0
   }
 ]

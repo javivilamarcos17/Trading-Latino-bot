@@ -1,0 +1,38 @@
+[
+  {
+    "dir": "largo",
+    "entry": 1739.1,
+    "stop": 1731.267,
+    "target": 1754.7659999999996,
+    "status": "cerrada",
+    "ts": 1782146700000,
+    "estr": "adrig",
+    "coin": "ETH",
+    "tf": "15m",
+    "fecha": "2026-06-22 16:45:00",
+    "sesion": "ny",
+    "funding": 1.25e-05,
+    "oi": 829241.8728,
+    "d_oi_%": 4.54,
+    "fng": 20,
+    "pos_rango": 0.49,
+    "liq_arriba_%": 0.01,
+    "liq_abajo_%": 0.02,
+    "atr_%": 0.51,
+    "adx": 30.7,
+    "regimen": "tendencia",
+    "vol_rel": 1.1,
+    "exit": 1731.267,
+    "pnl": -0.005304053820941785,
+    "mfe_R": 0.4,
+    "mae_R": 1.02,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.178,
+      "be05": -1.178,
+      "be10": -1.178,
+      "t125": -1.178,
+      "trail": -0.782
+    }
+  }
+]

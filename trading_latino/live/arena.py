@@ -39,20 +39,43 @@ ESTRATEGIAS_TF = {
     # --- estructura / tendencia: medios-altos (+ algún rápido para más muestra) ---
     "smc": ["15m", "1h", "4h"], "merino": ["15m", "1h", "4h"],
     "sweep": ["5m", "15m", "1h", "4h"], "ob": ["5m", "15m", "1h", "4h"],
-    "ob_trend": ["5m", "15m", "1h", "4h"], "donchian": ["15m", "1h", "4h"],
+    "ob_trend": ["5m", "15m", "1h", "4h"],
     "elliott": ["15m", "1h", "4h"],
     # --- osciladores / reversión: medios ---
     "fvg": ["5m", "15m", "1h", "4h"], "rsi": ["5m", "15m", "1h"],
-    "rsidiv": ["15m", "1h", "4h"], "volumen": ["5m", "15m", "1h"],
-    # --- scalping / reversión rápida: rápidos ---
-    "scalp_rev": ["1m", "5m", "15m"], "scalp_rev3": ["1m", "5m", "15m"],
+    "rsidiv": ["15m", "1h", "4h"],
+    # --- scalping / reversión rápida: SOLO vwap (scalp_rev/rev3 RETIRADAS: n=500+, -0.36/-0.47R) ---
     "vwap": ["1m", "5m", "15m"],
+    # RETIRADAS 2026-06-23 (muestra suficiente, negativas de forma consistente):
+    # scalp_rev n=485 -0.36R, scalp_rev3 n=120 -0.47R, volumen n=20 -0.62R, donchian n=65 -0.36R.
     # --- COMPUESTAS multi-factor (price-action+smart-money y Merino enriquecido) ---
     "adrig": ["15m", "1h", "4h"], "merinox": ["15m", "1h", "4h"],
     # --- MULTI-TEMPORALIDAD real (HTF marca direccion, LTF marca timing) ---
     "mtf": ["15m", "1h", "4h"],
     # --- OB reforzado (lider + filtros validados por datos), en su TF dulce ---
     "ob_plus": ["5m", "15m", "1h"],
+    # --- OB ADAPTATIVO al regimen (switcher: ob_trend en tendencia, ob_plus en rango) ---
+    "ob_regime": ["5m", "15m", "1h"],
+    # --- AdriG/ICT compleja: desplazamiento + FVG + retest a favor del sesgo ---
+    "adrig2": ["15m", "1h", "4h"],
+    # === PRUEBAS DE SESION (2026-06-23) ===
+    # Hallazgo: ob_trend Asia 80%/+1.09R, Londres 70%/+0.92R vs NY 27%/-0.41R.
+    # fvg: Asia +0.33R, Londres +0.55R (el backfill '?' lo arrastraba a -0.06R global).
+    # Cada sesion tiene su propio caracter — medimos cada hipotesis por separado.
+    # A) ob_asia: ob_trend solo en Asia+Londres (00-13 UTC) — test del filtro de sesion
+    "ob_asia": ["15m", "1h", "4h"],
+    # A2) fvg_asia: fvg con filtro de sesion — confirmacion de que es el tiempo, no el patron
+    "fvg_asia": ["5m", "15m", "1h", "4h"],
+    # A3) ob_regime_asia: el mejor switcher (ob_regime) solo en la mejor sesion (Asia+Londres)
+    "ob_regime_asia": ["15m", "1h"],
+    # B) ob_ny_open: ob_trend SOLO en apertura americana (13-15:30 UTC) — tesis ICT/Sensei Trading
+    "ob_ny_open": ["5m", "15m", "1h"],
+    # C) ob_scalp: 15m zona + 1m timing, solo Asia+Londres — la madre del scalping optimizado
+    # (estr especial: multi-TF, run as "1m" but internally uses 15m zones)
+    "ob_scalp": ["1m"],
+    # D) sensei: ICT Killzone NY — rango asiatico + Judas Swing + ChoCh + FVG/OB en 1m/5m
+    # Tesis Sensei Trading: el mercado manipula la liquidez asiatica/londrina al abrir NY
+    "sensei": ["1m", "5m"],
     # adx y scalp_sqz RETIRADAS (2026-06-22): muertas con datos reales (adx 0% acierto / -1.1R;
     # scalp_sqz -0.6/-0.8R con cualquier salida).
 }
@@ -306,6 +329,47 @@ def det_ob_plus(d):
     return None
 
 
+def det_fvg_asia(d):
+    """fvg CON FILTRO DE SESION — dato real: fvg Asia +0.33R, Londres +0.55R; el -0.06R global
+    venia del backfill antiguo sin tag de sesion ('?'). Confirma si el timing es el edge de fvg."""
+    h = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+    if h >= 13:
+        return None
+    return det_fvg(d)
+
+
+def det_ob_regime_asia(d):
+    """ob_regime (el mejor switcher: +0.63R) con FILTRO de sesion Asia+Londres. La hipotesis
+    es que el mejor selector de regimen mas la mejor ventana temporal deberian ser la combinacion
+    optima. No tiene precedente en los datos aun — es una apuesta informada."""
+    h = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+    if h >= 13:
+        return None
+    return det_ob_regime(d)
+
+
+def det_ob_asia(d):
+    """ob_trend CON FILTRO DE SESION — dato real: ob_trend Asia 80%win/+1.09R, Londres 70%/+0.92R,
+    NY 27%/-0.41R. El mismo OB que gana de noche MUERE en la sesión americana. Mide si el filtro
+    de sesión por sí solo convierte al ganador en una máquina. Corre en 15m/1h/4h como ob_trend."""
+    h = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+    if h >= 13:   # a partir de NY = el edge desaparece según los datos
+        return None
+    return det_ob_trend(d)
+
+
+def det_ob_regime(d):
+    """OB ADAPTATIVO AL RÉGIMEN (switcher basado en datos reales): en TENDENCIA (ADX>25) usa
+    ob_trend (robusto en tendencia, +0.21R); en RANGO (ADX<25) usa ob_plus (especialista de rango,
+    +0.64R). Elige el mejor especialista según el ADX del momento. Lo medimos para ver si el switch
+    bate a cada uno por separado."""
+    adx = _adx(d)
+    j = len(d) - 1
+    if j < 30 or np.isnan(adx[j]):
+        return None
+    return det_ob_trend(d) if adx[j] > 25 else det_ob_plus(d)
+
+
 def det_scalp_rev3(d):
     """Reversión a la media con banda Bollinger MÁS extrema (2.5σ) = señal de más calidad."""
     c = d["cierre"]; ma = c.rolling(20).mean(); sd = c.rolling(20).std()
@@ -399,6 +463,210 @@ def det_merinox(d):
     if e10[j] < e55[j] and cl[j] < e200[j] and adx[j] > 20 and mom[j] < 0 <= mom[j - 1] and volok:
         return _setup("corto", cl[j], swh, 2.0)
     return None
+
+
+def det_adrig2(d):
+    """AdriG/ICT smart-money COMPLEJA (multi-factor): DESPLAZAMIENTO institucional (vela de cuerpo
+    grande, >1.5x ATR) que deja un FVG (desequilibrio), + SESGO EMA200, + entrada en el RETEST del
+    FVG a favor del sesgo. Captura la huella institucional y la entrada en el hueco que dejó el impulso."""
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy(); op = d["apertura"].to_numpy()
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    tr = pd.concat([d["maximo"] - d["minimo"], (d["maximo"] - d["cierre"].shift()).abs(),
+                    (d["minimo"] - d["cierre"].shift()).abs()], axis=1).max(axis=1)
+    atr = tr.rolling(14).mean().to_numpy()
+    j = len(cl) - 1
+    if j < 210 or np.isnan(ema[j]) or np.isnan(atr[j]):
+        return None
+    for i in range(j - 15, j - 1):                       # FVG por desplazamiento en las últimas velas
+        if np.isnan(atr[i]) or atr[i] <= 0:
+            continue
+        body = abs(cl[i] - op[i])
+        if body < 1.5 * atr[i]:                          # exige impulso fuerte (desplazamiento)
+            continue
+        if cl[i] > op[i] and lo[i + 1] > hi[i - 1]:       # desplazamiento alcista deja FVG alcista
+            gap_bot, gap_top = hi[i - 1], lo[i + 1]
+            if cl[j] > ema[j] and lo[j] <= gap_top and cl[j] > gap_bot:    # retest a favor del sesgo
+                return _setup("largo", cl[j], gap_bot * 0.999, 2.0)
+        if cl[i] < op[i] and hi[i + 1] < lo[i - 1]:       # desplazamiento bajista deja FVG bajista
+            gap_top, gap_bot = lo[i - 1], hi[i + 1]
+            if cl[j] < ema[j] and hi[j] >= gap_bot and cl[j] < gap_top:
+                return _setup("corto", cl[j], gap_top * 1.001, 2.0)
+    return None
+
+
+def det_ob_ny_open(d):
+    """ob_trend en APERTURA AMERICANA (ICT): solo dispara entre 13:00-15:30 UTC (9:30-11:30 ET).
+    Tesis: la apertura de NY toma liquidez de la sesión de Londres y revierte o continúa el sesgo
+    del día. El estilo ICT/Sensei Trading opera OBs específicamente en este ventana. Medimos si
+    este timing tiene edge diferente al resto de la sesión americana (que muere en −0.41R)."""
+    h = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+    m = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").minute)
+    if not (13 <= h < 15 or (h == 15 and m <= 30)):
+        return None
+    return det_ob_trend(d)
+
+
+def det_ob_scalp(ex, coin, cache):
+    """SCALP INSTITUCIONAL (la madre de la estrategia final): el OB en 15m marca la ZONA
+    (OB válido + EMA200 + sin clímax de volumen), y la vela de 1m da el TIMING exacto dentro
+    de esa zona (pin-bar de rechazo: mecha >1.5x cuerpo = rechazo institucional real).
+    Solo en Asia+Londres (00-13 UTC) donde los datos validan el edge real (+1.09R/+0.92R).
+    Stop al borde del OB = stop mucho más ajustado que ob_trend normal. Objetivo 2R.
+    Escalable a más TF: si el 1m no da señales, puede probarse con 5m de timing."""
+    h = int(pd.Timestamp.now("UTC").hour)
+    if h >= 13:
+        return None, None
+
+    df15 = velas_cached(ex, coin, "15m", cache)
+    d15 = df15.iloc[:-1]
+    hi15 = d15["maximo"].to_numpy(); lo15 = d15["minimo"].to_numpy()
+    cl15 = d15["cierre"].to_numpy(); op15 = d15["apertura"].to_numpy()
+    ema15 = d15["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    vol15 = d15["volumen"].to_numpy()
+    vm15 = d15["volumen"].rolling(20).mean().shift(1).to_numpy()
+    j15 = len(cl15) - 1
+    if j15 < 210:
+        return None, None
+
+    zonas = []
+    for i in range(max(0, j15 - 30), j15 - 1):
+        if np.isnan(ema15[i]) or not vm15[i] or np.isnan(vm15[i]):
+            continue
+        if vol15[i] >= 2.5 * vm15[i]:
+            continue
+        if cl15[i] < op15[i] and cl15[i + 1] > hi15[i] and (hi15[i] - lo15[i]) / cl15[i] > 0.0008:
+            if cl15[i] > ema15[i]:
+                zonas.append((hi15[i], lo15[i], "largo"))
+        if cl15[i] > op15[i] and cl15[i + 1] < lo15[i] and (hi15[i] - lo15[i]) / cl15[i] > 0.0008:
+            if cl15[i] < ema15[i]:
+                zonas.append((hi15[i], lo15[i], "corto"))
+
+    if not zonas:
+        return None, None
+
+    df1 = velas_cached(ex, coin, "1m", cache)
+    L1 = df1.iloc[:-1]
+    hi1 = L1["maximo"].to_numpy(); lo1 = L1["minimo"].to_numpy()
+    cl1 = L1["cierre"].to_numpy(); op1 = L1["apertura"].to_numpy()
+    j1 = len(cl1) - 1
+    if j1 < 30:
+        return None, df1
+
+    px = cl1[j1]
+    for (ob_top, ob_bot, direc) in reversed(zonas):
+        if direc == "largo" and ob_bot <= px <= ob_top:
+            cuerpo = abs(cl1[j1] - op1[j1]) + 1e-9
+            mecha_inf = min(cl1[j1], op1[j1]) - lo1[j1]
+            if mecha_inf > 1.5 * cuerpo and cl1[j1] > op1[j1]:
+                return _setup("largo", px, ob_bot * 0.999, 2.0), df1
+        if direc == "corto" and ob_bot <= px <= ob_top:
+            cuerpo = abs(cl1[j1] - op1[j1]) + 1e-9
+            mecha_sup = hi1[j1] - max(cl1[j1], op1[j1])
+            if mecha_sup > 1.5 * cuerpo and cl1[j1] < op1[j1]:
+                return _setup("corto", px, ob_top * 1.001, 2.0), df1
+    return None, df1
+
+
+def det_sensei(ex, coin, ltf, cache):
+    """SENSEI ICT KILLZONE — implementacion mecanica de la operativa del Sensei Trading (ICT):
+    1. DIRECCION: sesgo de fondo via EMA200 en 1h (marco mayor).
+    2. RANGO ASIATICO: max/min de la sesion 00:00-07:00 UTC del dia actual (liqudez visible).
+    3. KILLZONE: solo opera entre 13:00-16:00 UTC (8:00-11:00 AM EST = apertura NY).
+    4. JUDAS SWING: el precio barre la liquidez del rango asiatico en la DIRECCION CONTRARIA
+       al sesgo (manipulacion institucional: trampa para novatos).
+    5. ENTRADA: tras el barrido, busca un FVG o OB en el LTF (1m o 5m) que confirme el giro.
+       Stop bajo el punto mas extremo del Judas. Target: lado opuesto del rango asiatico (2R min)."""
+    h_utc = int(pd.Timestamp.now("UTC").hour)
+    if not (13 <= h_utc < 16):          # solo Killzone de NY
+        return None, None
+
+    # 1) SESGO en 1h (marco mayor)
+    H1 = velas_cached(ex, coin, "1h", cache).iloc[:-1]
+    if len(H1) < 210:
+        return None, None
+    ema1h = H1["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    cl1h = H1["cierre"].to_numpy()
+    sesgo_alcista = cl1h[-1] > ema1h[-1]
+
+    # 2) RANGO ASIATICO del dia actual (00:00-07:00 UTC)
+    L_ltf = velas_cached(ex, coin, ltf, cache)
+    ts_arr = L_ltf["t"].to_numpy()
+    hi_ltf = L_ltf["maximo"].to_numpy(); lo_ltf = L_ltf["minimo"].to_numpy()
+    cl_ltf = L_ltf["cierre"].to_numpy()
+    hoy_utc = pd.Timestamp.now("UTC").date()
+    ts_pd = pd.to_datetime(ts_arr, unit="ms", utc=True)
+    mask_asia = (ts_pd.date == hoy_utc) & (ts_pd.hour < 7)
+    idx_asia = np.where(mask_asia)[0]
+    if len(idx_asia) < 3:
+        return None, L_ltf
+    asia_hi = hi_ltf[idx_asia].max()
+    asia_lo = lo_ltf[idx_asia].min()
+    if asia_hi <= asia_lo:
+        return None, L_ltf
+
+    # 3) JUDAS: precio barro la liquidez CONTRARIA al sesgo en la Killzone de HOY
+    mask_ky = (ts_pd.date == hoy_utc) & (ts_pd.hour >= 13) & (ts_pd.hour < 16)
+    idx_ky = np.where(mask_ky)[0]
+    if len(idx_ky) < 3:
+        return None, L_ltf
+
+    # En sesgo alcista: Judas = caida bajo el minimo asiatico (barre stops de compradores)
+    # En sesgo bajista: Judas = subida sobre el maximo asiatico (barre stops de vendedores)
+    judas_alcista = sesgo_alcista and lo_ltf[idx_ky].min() < asia_lo
+    judas_bajista = (not sesgo_alcista) and hi_ltf[idx_ky].max() > asia_hi
+    if not judas_alcista and not judas_bajista:
+        return None, L_ltf
+
+    # Punto extremo del Judas (stop tecnico)
+    judas_extreme = lo_ltf[idx_ky].min() if judas_alcista else hi_ltf[idx_ky].max()
+
+    # 4) ENTRADA: FVG o OB en el LTF tras el Judas, con precio ya de vuelta al lado correcto
+    cerr = L_ltf.iloc[:-1].reset_index(drop=True)
+    hi_c = cerr["maximo"].to_numpy(); lo_c = cerr["minimo"].to_numpy()
+    cl_c = cerr["cierre"].to_numpy(); op_c = cerr["apertura"].to_numpy()
+    j = len(cl_c) - 1
+    if j < 20:
+        return None, L_ltf
+
+    px = cl_c[j]
+    if judas_alcista:
+        # Precio debe haber vuelto SOBRE el minimo asiatico (barre y recupera)
+        if px <= asia_lo:
+            return None, L_ltf
+        # Buscar FVG alcista en las ultimas 10 velas del LTF
+        for i in range(max(0, j - 10), j - 1):
+            if lo_c[i] > hi_c[i - 2] and (lo_c[i] - hi_c[i - 2]) / cl_c[i] > 0.0005:
+                if lo_c[j] <= lo_c[i] and cl_c[j] > hi_c[i - 2]:
+                    stop = judas_extreme * 0.999
+                    if stop >= px:
+                        continue
+                    return _setup("largo", px, stop, 2.0), L_ltf
+        # Buscar OB alcista si no hay FVG
+        for i in range(max(0, j - 10), j - 1):
+            if cl_c[i] < op_c[i] and cl_c[i + 1] > hi_c[i]:
+                if lo_c[i] <= px <= hi_c[i]:
+                    stop = judas_extreme * 0.999
+                    if stop >= px:
+                        continue
+                    return _setup("largo", px, stop, 2.0), L_ltf
+    else:
+        if px >= asia_hi:
+            return None, L_ltf
+        for i in range(max(0, j - 10), j - 1):
+            if hi_c[i] < lo_c[i - 2] and (lo_c[i - 2] - hi_c[i]) / cl_c[i] > 0.0005:
+                if hi_c[j] >= hi_c[i] and cl_c[j] < lo_c[i - 2]:
+                    stop = judas_extreme * 1.001
+                    if stop <= px:
+                        continue
+                    return _setup("corto", px, stop, 2.0), L_ltf
+        for i in range(max(0, j - 10), j - 1):
+            if cl_c[i] > op_c[i] and cl_c[i + 1] < lo_c[i]:
+                if lo_c[i] <= px <= hi_c[i]:
+                    stop = judas_extreme * 1.001
+                    if stop <= px:
+                        continue
+                    return _setup("corto", px, stop, 2.0), L_ltf
+    return None, L_ltf
 
 
 def velas_cached(ex, coin, tf, cache, limit=500):
@@ -572,6 +840,10 @@ def detectar_cerr(estr, cerr, coin):
         return det_ob_trend(cerr)
     if estr == "ob_plus":
         return det_ob_plus(cerr)
+    if estr == "ob_regime":
+        return det_ob_regime(cerr)
+    if estr == "adrig2":
+        return det_adrig2(cerr)
     if estr == "scalp_rev3":
         return det_scalp_rev3(cerr)
     if estr == "vwap":
@@ -584,6 +856,14 @@ def detectar_cerr(estr, cerr, coin):
         return det_adrig(cerr)
     if estr == "merinox":
         return det_merinox(cerr)
+    if estr == "ob_asia":
+        return det_ob_asia(cerr)
+    if estr == "ob_ny_open":
+        return det_ob_ny_open(cerr)
+    if estr == "fvg_asia":
+        return det_fvg_asia(cerr)
+    if estr == "ob_regime_asia":
+        return det_ob_regime_asia(cerr)
     return None
 
 
@@ -667,12 +947,41 @@ def contexto(ex, coin, L, cache, cerr=None):
             tr = pd.concat([cerr["maximo"] - cerr["minimo"], (cerr["maximo"] - cerr["cierre"].shift()).abs(),
                             (cerr["minimo"] - cerr["cierre"].shift()).abs()], axis=1).max(axis=1)
             out["atr_%"] = round(float((tr.rolling(14).mean() / cerr["cierre"]).iloc[-1]) * 100, 3)
-            adxv = float(_adx(cerr)[-1])
+            adxarr = _adx(cerr)
+            adxv = float(adxarr[-1])
             out["adx"] = round(adxv, 1)
+            out["adx_dir"] = "subiendo" if adxarr[-1] > adxarr[-2] else "bajando"  # aceleracion del regimen
             out["regimen"] = "tendencia" if adxv > 25 else "rango"
             out["vol_rel"] = round(float(cerr["volumen"].iloc[-1] / cerr["volumen"].tail(20).mean()), 2)
         except Exception:
             pass
+    # SESION ANTERIOR: qué hizo la sesión que acaba de terminar (tesis Sensei Trading / ICT)
+    try:
+        h_sig = int(pd.to_datetime(int(cerr["t"].iloc[-1]), unit="ms").hour)
+        # Asia cierra a las 07:00 UTC; Londres cierra a las 13:00; NY cierra a las 21:00
+        # Buscamos el rango de la sesión anterior al momento de la señal
+        if 7 <= h_sig < 13:
+            ses_ant_range = (0, 7)      # la señal es en Londres -> sesion anterior = Asia
+            ses_ant_nombre = "asia"
+        elif 13 <= h_sig < 21:
+            ses_ant_range = (7, 13)     # señal en NY -> sesion anterior = Londres
+            ses_ant_nombre = "londres"
+        else:
+            ses_ant_range = (13, 21)    # señal en Asia/Cierre -> sesion anterior = NY del dia anterior
+            ses_ant_nombre = "ny"
+        ts_arr = cerr["t"].to_numpy()
+        cl_arr = cerr["cierre"].to_numpy()
+        horas = pd.to_datetime(ts_arr, unit="ms").hour
+        mask = (horas >= ses_ant_range[0]) & (horas < ses_ant_range[1])
+        idx = np.where(mask)[0]
+        if len(idx) >= 3:
+            ses_open = cl_arr[idx[0]]; ses_close = cl_arr[idx[-1]]
+            ses_hi = cerr["maximo"].to_numpy()[idx].max(); ses_lo = cerr["minimo"].to_numpy()[idx].min()
+            out["ses_ant"] = ses_ant_nombre
+            out["ses_ant_dir"] = "alcista" if ses_close > ses_open else "bajista"
+            out["ses_ant_rango_%"] = round((ses_hi - ses_lo) / ses_open * 100, 2)
+    except Exception:
+        pass
     return out
 
 
@@ -775,6 +1084,20 @@ def main():
                     elif estr == "mtf":
                         s, L = det_mtf(ex, coin, tf, vcache)
                         tsl = int(L["t"].iloc[-2])           # última vela CERRADA (L = frame completo)
+                        if s and tsl > last_ts:
+                            nuevos.append((tsl, s, L.iloc[:-1]))
+                    elif estr == "ob_scalp":
+                        s, L = det_ob_scalp(ex, coin, vcache)
+                        if L is None:
+                            L = velas_cached(ex, coin, "1m", vcache)
+                        tsl = int(L["t"].iloc[-2])           # última 1m cerrada
+                        if s and tsl > last_ts:
+                            nuevos.append((tsl, s, L.iloc[:-1]))
+                    elif estr == "sensei":
+                        s, L = det_sensei(ex, coin, tf, vcache)
+                        if L is None:
+                            L = velas_cached(ex, coin, tf, vcache)
+                        tsl = int(L["t"].iloc[-2])
                         if s and tsl > last_ts:
                             nuevos.append((tsl, s, L.iloc[:-1]))
                     else:

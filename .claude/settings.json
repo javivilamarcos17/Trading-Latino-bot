@@ -1,6 +1,6 @@
 {
   "permissions": {
-    "defaultMode": "acceptEdits",
+    "defaultMode": "bypassPermissions",
     "deny": [
       ".env*",
       "**/*.env",
@@ -23,7 +23,33 @@
       "Bash(git branch*)",
       "Bash(git fetch*)",
       "Bash(git pull*)",
-      "Bash(git push origin*)"
+      "Bash(git push origin*)",
+      "Bash(./.venv/Scripts/python.exe -c ' *)",
+      "Bash(git fetch *)",
+      "Bash(git check-ignore *)",
+      "Bash(git restore *)",
+      "Bash(timeout 300 python -m trading_latino.live.arena)",
+      "Bash(git commit -q -m 'feat\\(arena\\): cobertura amplia de TFs + registro continuo de contexto + contexto en vela de senal + tick 3min *)",
+      "Bash(python -c ' *)",
+      "Bash(python -m trading_latino.live._inventario)",
+      "Bash(python -m trading_latino.live._analisis)",
+      "Bash(timeout 320 python -m trading_latino.live.arena)",
+      "Bash(git commit -q -m 'feat\\(arena\\): estrategias compuestas multi-factor \\(adrig smart-money+price-action, merinox\\) + herramientas de analisis *)",
+      "Bash(git merge --no-ff feat/arena-base-completa -m 'merge: base de arena ampliada + estrategias compuestas multi-factor *)",
+      "Bash(timeout 340 python -m trading_latino.live.arena)",
+      "Bash(python -m trading_latino.live._mtf)",
+      "Bash(git commit -q -m 'feat\\(arena\\): estrategia multi-temporalidad real \\(mtf\\) + herramienta de analisis por TF *)",
+      "Bash(python -m trading_latino.live.salidas)",
+      "Bash(git commit -q -m 'feat\\(arena\\): ob_plus = OB + tendencia EMA200 + filtro de volumen \\(sin climax\\), en 5m/15m/1h *)",
+      "Bash(git commit -q -m 'docs\\(status\\): actualizar arena \\(18 estrategias, nube 24/7, contexto continuo\\) + hallazgo honesto 2026-06-22 *)",
+      "Bash(git merge --no-ff feat/mtf-y-analisis -m 'merge: estrategia multi-temporalidad \\(mtf\\) + ob_plus + herramienta _mtf + status *)",
+      "Bash(.venv/Scripts/python.exe -c \"import trading_latino.live.arena as a; print\\('OK — estrategias:', list\\(a.ESTRATEGIAS_TF.keys\\(\\)\\)\\)\")",
+      "Bash(timeout 120 .venv/Scripts/python.exe -m trading_latino.live.arena)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(.venv/Scripts/python.exe -c ' *)",
+      "Bash(timeout 90 .venv/Scripts/python.exe -m trading_latino.live.arena)",
+      "Bash(git commit -m ' *)"
     ]
   },
   "includeGitInstructions": true,

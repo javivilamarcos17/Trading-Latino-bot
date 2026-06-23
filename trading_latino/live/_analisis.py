@@ -120,6 +120,34 @@ def main():
     linea("en descuento (<0.40)", [R(o) for o in obt if o.get("pos_rango", 1) < 0.40])
     linea("en premium (>0.60)", [R(o) for o in obt if o.get("pos_rango", 0) > 0.60])
 
+    # 8) ACELERACION DEL REGIMEN (adx subiendo vs bajando)
+    print("\n8) ADX DIRECTION (aceleracion del regimen en la señal):")
+    ad = [o for o in ops if o.get("adx_dir") is not None]
+    linea("adx subiendo (tendencia acelerando)", [R(o) for o in ad if o["adx_dir"] == "subiendo"])
+    linea("adx bajando (tendencia frenando)", [R(o) for o in ad if o["adx_dir"] == "bajando"])
+    for reg in ["tendencia", "rango"]:
+        linea(f"  {reg} + adx_subiendo", [R(o) for o in ad if o.get("regimen") == reg and o["adx_dir"] == "subiendo"])
+        linea(f"  {reg} + adx_bajando", [R(o) for o in ad if o.get("regimen") == reg and o["adx_dir"] == "bajando"])
+
+    # 9) SESION ANTERIOR (tesis Sensei / ICT: lo que hizo la sesion anterior predice la actual)
+    print("\n9) SESION ANTERIOR — lo que hizo la sesion que acaba de terminar:")
+    sa = [o for o in ops if o.get("ses_ant_dir") is not None]
+    print(f"   ops con dato de sesion anterior: {len(sa)}")
+    for ses_a in ["asia", "londres", "ny"]:
+        sub = [o for o in sa if o.get("ses_ant") == ses_a]
+        if sub:
+            linea(f"  {ses_a} fue alcista -> ahora {{}}", [R(o) for o in sub if o["ses_ant_dir"] == "alcista"])
+            linea(f"  {ses_a} fue bajista -> ahora {{}}", [R(o) for o in sub if o["ses_ant_dir"] == "bajista"])
+
+    # 10) FAMILIA OB — comparativa de variantes (ver cual filtro aporta mas)
+    print("\n10) FAMILIA OB — comparativa de variantes por sesion (solo ops con tag de sesion):")
+    for fam in ["ob", "ob_trend", "ob_plus", "ob_regime", "ob_asia", "ob_regime_asia"]:
+        sub = [o for o in ops if o["_estr"] == fam and o.get("sesion") not in [None, "?"]]
+        if sub:
+            n, w, e = stat([R(o) for o in sub])
+            flag = "" if n >= MIN else "  (poca muestra)"
+            print(f"    {fam:<18} n={n:>4} win={w * 100:>3.0f}% exp={e:>+.2f}R{flag}")
+
 
 if __name__ == "__main__":
     main()
