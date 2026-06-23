@@ -113,6 +113,13 @@ ESTRATEGIAS_TF = {
     # pronto, trail=dejar correr) -> con esto medimos EN VIVO la tesis del video (cortar vs dejar correr)
     # y en QUE regimen gana cada una. 15m (el TF que el video dice que filtra el ruido) + 1h de control.
     "donchian": ["15m", "1h"],
+    # atr_break: AÑADIDA 2026-06-23 tras validar en Binance 50d (1m exacto): +0.41R en BTC Y ETH,
+    #   win 52% (vs 36-41% de las OB), positivo los 2 meses y las 2 monedas. Sesgo de diseño BAJO
+    #   (canal de Keltner de manual + concepto del video, no exprimido de estos datos). Perfil de edge
+    #   DISTINTO: gana en NY (+0.53R) donde las OB mueren (-0.12R) -> diversifica de verdad. Canal
+    #   adaptativo (EMA20 ± 2·ATR14): en alta volatilidad las bandas se abren y filtran fakeouts mejor
+    #   que el Donchian fijo. La variante con filtro Asia/EMA200 NO mejoraba la base -> entra la base sola.
+    "atr_break": ["15m", "1h"],
     "orf": ["5m", "15m"],
     "fvg_ob": ["15m", "1h"],     # RETIRADO 5m (6 ops -1.40R); 15m +1.83R 100%win es el star
     # breaker: RETIRADO 1h (26 ops -0.48R). Mantenemos 15m (3 ops prometedoras) y 4h (control).
@@ -488,6 +495,37 @@ def det_donchian(d):
     if cl[j] > hh and cl[j - 1] <= hh:
         return _setup("largo", cl[j], sl, 2.0)
     if cl[j] < ll and cl[j - 1] >= ll:
+        return _setup("corto", cl[j], sh, 2.0)
+    return None
+
+
+def det_atr_break(d):
+    """Ruptura de canal de Keltner (EMA20 ± 2·ATR14) = breakout ADAPTATIVO a la volatilidad.
+    Lógica económica (no curve-fit): a diferencia del Donchian (canal fijo de N velas), aquí el
+    canal se ensancha cuando sube la volatilidad (ATR alto) y se estrecha cuando baja. En cripto,
+    donde la volatilidad cambia mucho, eso exige MÁS empuje para dar señal en mercados nerviosos
+    (filtra fakeouts) y reacciona antes en mercados tranquilos. Entrada al CIERRE que cruza la banda
+    (cl[j] fuera, cl[j-1] dentro). Stop al swing opuesto de 10 velas, ancla 2R. El arena mide las 5
+    salidas en paralelo. Validada en Binance 50d (1m): +0.41R BTC y ETH, win 52%, gana en NY donde
+    las OB pierden -> perfil de edge complementario."""
+    cl = d["cierre"].to_numpy(); hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    j = len(cl) - 1
+    if j < 30:
+        return None
+    # ATR14 (Wilder via EWM) sobre el True Range
+    tr = np.maximum(hi[1:] - lo[1:],
+                    np.maximum(np.abs(hi[1:] - cl[:-1]), np.abs(lo[1:] - cl[:-1])))
+    tr_full = np.concatenate([[hi[0] - lo[0]], tr])
+    atr = pd.Series(tr_full).ewm(span=14, adjust=False).mean().to_numpy()
+    ema20 = d["cierre"].ewm(span=20, adjust=False).mean().to_numpy()
+    if np.isnan(atr[j]) or np.isnan(ema20[j]) or np.isnan(atr[j - 1]) or np.isnan(ema20[j - 1]):
+        return None
+    bu = ema20[j] + 2.0 * atr[j]; bd = ema20[j] - 2.0 * atr[j]
+    bu1 = ema20[j - 1] + 2.0 * atr[j - 1]; bd1 = ema20[j - 1] - 2.0 * atr[j - 1]
+    sl = lo[max(0, j - 10):j].min(); sh = hi[max(0, j - 10):j].max()
+    if cl[j] > bu and cl[j - 1] <= bu1:
+        return _setup("largo", cl[j], sl, 2.0)
+    if cl[j] < bd and cl[j - 1] >= bd1:
         return _setup("corto", cl[j], sh, 2.0)
     return None
 
@@ -1516,6 +1554,8 @@ def detectar_cerr(estr, cerr, coin):
         return det_vwap(cerr)
     if estr == "donchian":
         return det_donchian(cerr)
+    if estr == "atr_break":
+        return det_atr_break(cerr)
     if estr == "elliott":
         return det_elliott(cerr)
     if estr == "adrig":

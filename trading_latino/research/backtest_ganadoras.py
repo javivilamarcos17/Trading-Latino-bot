@@ -229,6 +229,53 @@ def det_ob_plus_asia_r3(d):
     base["R"] = 3.0
     return base
 
+def _atr14(d):
+    """ATR14 con EWM (equivale al Wilder smoothing estándar)."""
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy()
+    tr = np.maximum(hi[1:] - lo[1:],
+                    np.maximum(np.abs(hi[1:] - cl[:-1]), np.abs(lo[1:] - cl[:-1])))
+    tr_full = np.concatenate([[hi[0] - lo[0]], tr])
+    return pd.Series(tr_full).ewm(span=14, adjust=False).mean().to_numpy()
+
+def det_atr_break(d):
+    """Canal de Keltner (EMA20 ± 2×ATR14). Entrada al CIERRE cuando el precio cruza la banda.
+    Stop = mínimo/máximo swing de 10 velas.
+    Hipótesis: canal adaptativo → en alta volatilidad las bandas se expanden y filtran
+    falsas rupturas mejor que Donchian (que tiene canal fijo de N velas)."""
+    cl = d["cierre"].to_numpy(); hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    j = len(cl) - 1
+    if j < 30: return None
+    atr   = _atr14(d)
+    ema20 = d["cierre"].ewm(span=20, adjust=False).mean().to_numpy()
+    if np.isnan(atr[j]) or np.isnan(ema20[j]) or np.isnan(atr[j-1]) or np.isnan(ema20[j-1]): return None
+    bu  = ema20[j]   + 2.0 * atr[j];   bd  = ema20[j]   - 2.0 * atr[j]
+    bu1 = ema20[j-1] + 2.0 * atr[j-1]; bd1 = ema20[j-1] - 2.0 * atr[j-1]
+    sl = lo[max(0, j-10):j].min(); sh = hi[max(0, j-10):j].max()
+    if cl[j] > bu and cl[j-1] <= bu1: return _setup("largo", cl[j], sl, 2.0)
+    if cl[j] < bd and cl[j-1] >= bd1: return _setup("corto", cl[j], sh, 2.0)
+    return None
+
+def det_atr_break_trend(d):
+    """ATR Breakout + alineación EMA200.
+    Solo largo si precio > EMA200 (tendencia alcista); solo corto si precio < EMA200.
+    Hipótesis: el trend filter elimina señales en contra de la tendencia mayor."""
+    j = len(d) - 1
+    if j < 215: return None
+    ema200 = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    if np.isnan(ema200[j]): return None
+    base = det_atr_break(d)
+    if base is None: return None
+    cl = d["cierre"].to_numpy()
+    if base["dir"] == "largo" and cl[j] < ema200[j]: return None
+    if base["dir"] == "corto" and cl[j] > ema200[j]: return None
+    return base
+
+def det_atr_break_asia(d):
+    """ATR Breakout solo en sesión Asia (h < 7 UTC).
+    Hipótesis: si el edge del breakout existe, ¿se concentra en Asia como los OB?"""
+    if _hora_utc(d["t"].iloc[-1]) >= 7: return None
+    return det_atr_break(d)
+
 ESTRATEGIAS = {
     # --- VALIDADAS (filtro Asia) ---
     "ob_plus_asia":   det_ob_plus_asia,    # reina en vivo  (+1.295R vivo)
@@ -243,6 +290,10 @@ ESTRATEGIAS = {
     # --- APILADAS POR DISEÑO (lideraban en vivo, sin validar aun) ---
     "ob_plus_asia_r3": det_ob_plus_asia_r3,  # +2.19R en vivo (sospechosa de sobreajuste)
     "ob_asia_close":   det_ob_asia_close,    # +1.10R en vivo (sospechosa de sobreajuste)
+    # --- ATR BREAKOUT (canal de Keltner adaptativo — nueva familia a validar) ---
+    "atr_break":       det_atr_break,       # baseline puro: ¿funciona el canal ATR?
+    "atr_break_trend": det_atr_break_trend, # + filtro EMA200: ¿trend alignment añade valor?
+    "atr_break_asia":  det_atr_break_asia,  # + sesión Asia: ¿el patrón sesión aplica aquí?
 }
 
 # ------------------------------------------------------------------ simulacion de salida (OHLCV)

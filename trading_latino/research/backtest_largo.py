@@ -26,7 +26,7 @@ import ccxt
 
 # Reutilizamos detectores y helpers ya validados del otro backtest (su main esta guardado)
 from trading_latino.research.backtest_ganadoras import (
-    COSTE, LOOKBACK, _adx, _rsi, _setup,
+    COSTE, LOOKBACK, _adx, _setup,
     det_ob_trend, det_ob_plus, det_ob_regime,
 )
 
@@ -106,6 +106,41 @@ def det_vwap(d):
         return _setup("corto", cl[j], swh, 2.0)
     return None
 
+def _atr14_largo(d):
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy()
+    tr = np.maximum(hi[1:] - lo[1:],
+                    np.maximum(np.abs(hi[1:] - cl[:-1]), np.abs(lo[1:] - cl[:-1])))
+    tr_full = np.concatenate([[hi[0] - lo[0]], tr])
+    return pd.Series(tr_full).ewm(span=14, adjust=False).mean().to_numpy()
+
+def det_atr_break(d):
+    """Canal de Keltner (EMA20 ± 2×ATR14). Misma lógica que en backtest_ganadoras."""
+    cl = d["cierre"].to_numpy(); hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    j = len(cl) - 1
+    if j < 30: return None
+    atr   = _atr14_largo(d)
+    ema20 = d["cierre"].ewm(span=20, adjust=False).mean().to_numpy()
+    if np.isnan(atr[j]) or np.isnan(ema20[j]) or np.isnan(atr[j-1]) or np.isnan(ema20[j-1]): return None
+    bu  = ema20[j]   + 2.0 * atr[j];   bd  = ema20[j]   - 2.0 * atr[j]
+    bu1 = ema20[j-1] + 2.0 * atr[j-1]; bd1 = ema20[j-1] - 2.0 * atr[j-1]
+    sl = lo[max(0, j-10):j].min(); sh = hi[max(0, j-10):j].max()
+    if cl[j] > bu and cl[j-1] <= bu1: return _setup("largo", cl[j], sl, 2.0)
+    if cl[j] < bd and cl[j-1] >= bd1: return _setup("corto", cl[j], sh, 2.0)
+    return None
+
+def det_atr_break_trend(d):
+    """ATR Breakout + alineación EMA200."""
+    j = len(d) - 1
+    if j < 215: return None
+    ema200 = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    if np.isnan(ema200[j]): return None
+    base = det_atr_break(d)
+    if base is None: return None
+    cl = d["cierre"].to_numpy()
+    if base["dir"] == "largo" and cl[j] < ema200[j]: return None
+    if base["dir"] == "corto" and cl[j] > ema200[j]: return None
+    return base
+
 DONCHIAN_N = 20
 def det_donchian(d):
     """Ruptura de canal Donchian (N=20). SIN target fijo — la salida la gestiona el motor
@@ -168,14 +203,21 @@ def _mk_merino(coin):
 
 def estrategias_para(coin):
     return {
+        # --- familia OB (ya validada en 50 días) ---
         "ob_trend":  (det_ob_trend,  "fija"),
         "ob_plus":   (det_ob_plus,   "fija"),
         "ob_regime": (det_ob_regime, "fija"),
+        # --- Merino / momentum ---
         "merino":    (_mk_merino(coin), "fija"),
         "merinox":   (det_merinox,   "fija"),
+        # --- VWAP rolling (sin anclar — baseline) ---
         "vwap":      (det_vwap,      "fija"),
-        "donchian_2R":   (det_donchian, "fija"),       # Donchian con 2R (como lo medimos mal antes)
-        "donchian_trend": (det_donchian, "donchian"),  # Donchian con salida REAL trend-following
+        # --- Donchian: 2 hipótesis de salida enfrentadas ---
+        "donchian_2R":    (det_donchian, "fija"),      # ¿funciona con salida fija?
+        "donchian_trend": (det_donchian, "donchian"),  # ¿funciona dejando correr?
+        # --- ATR Breakout (canal adaptativo vs Donchian fijo) ---
+        "atr_break":       (det_atr_break,       "fija"),  # baseline sin filtros
+        "atr_break_trend": (det_atr_break_trend, "fija"),  # + EMA200: ¿mejora en todos los regímenes?
     }
 
 # ------------------------------------------------------------------ motor

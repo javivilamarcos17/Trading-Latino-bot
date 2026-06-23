@@ -13,6 +13,7 @@ from pathlib import Path
 
 REG = Path(__file__).resolve().parents[2] / "data_store" / "paper_arena"
 MIN_N = 12    # mínimo para dar veredicto firme
+VALID_BINANCE = REG / "_validacion_binance.json"   # números realistas out-of-sample
 
 POLITICAS = ("fixed", "be05", "be10", "t125", "trail")
 POL_LABEL  = {"fixed": "2R fijo", "be05": "BE 0.5R", "be10": "BE 1R", "t125": "1.25R", "trail": "Trail"}
@@ -210,6 +211,39 @@ def generar_html():
                 f'<table><thead>{cols}</thead><tbody>{"".join(rows)}</tbody></table>'
                 f'<p style="color:#64748b;font-size:0.75rem;margin:6px 0 0">Fondo verde = mejor opción para esa estrategia</p>')
 
+    # Panel simple: realidad VIVO vs BINANCE (el método de un vistazo)
+    def validacion_vivo_binance():
+        try:
+            vb = json.loads(VALID_BINANCE.read_text(encoding="utf-8"))["estrategias"]
+        except Exception:
+            return ""
+        rows = []
+        for estr, d in estr_data.items():
+            if estr not in vb: continue
+            _, _, exp_vivo = _stat(d["pnls"])
+            bn = vb[estr]
+            exp_bn = (bn.get("binance_btc", 0) + bn.get("binance_eth", 0)) / 2
+            v_txt = f"{exp_vivo:+.2f}R" if exp_vivo is not None else "—"
+            rows.append((exp_bn, estr, v_txt, exp_bn, bn.get("nota", "")))
+        if not rows: return ""
+        rows.sort(key=lambda x: x[0], reverse=True)
+        body = ""
+        for _, estr, v_txt, exp_bn, nota in rows:
+            bc = "#22c55e" if exp_bn > 0.25 else ("#86efac" if exp_bn > 0.05 else "#fbbf24")
+            body += (f'<tr><td style="font-weight:700;color:#f8fafc">{estr}</td>'
+                     f'<td style="color:#7dd3fc">{v_txt}</td>'
+                     f'<td style="color:{bc};font-weight:700">{exp_bn:+.2f}R</td>'
+                     f'<td style="color:#64748b;font-size:0.76rem">{nota}</td></tr>')
+        cols = "<tr>" + "".join(f"<th>{h}</th>" for h in
+               ["Estrategia", "Vivo (Hyperliquid)", "Binance 50d (real)", "Lectura"]) + "</tr>"
+        return ('<div style="background:#1e3a5f;padding:8px 14px;border-radius:8px 8px 0 0;'
+                'font-weight:700;color:#f8fafc;margin-top:24px">🔬 Realidad: vivo vs Binance '
+                '(el vivo propone, Binance confirma)</div>'
+                f'<table><thead>{cols}</thead><tbody>{body}</tbody></table>'
+                '<p style="color:#64748b;font-size:0.75rem;margin:6px 0 0">'
+                'El vivo suele estar inflado (mide la mejor salida, pocos datos, un solo régimen). '
+                'El número de Binance es el realista.</p>')
+
     css = """
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Segoe UI', sans-serif; background: #0a0a0f; color: #e2e8f0; padding: 24px; }
@@ -238,6 +272,7 @@ tr:hover td { background: #111827; }
 {seccion("🔍 Acumulando datos (n&lt;12 — esperar antes de juzgar)", acumulando, "#1e3a5f")}
 {seccion("❌ Débiles o descartar (n≥12, exp≤0.05R)", descartables, "#450a0a")}
 {exits_compacto()}
+{validacion_vivo_binance()}
 <p style="color:#1e293b;font-size:0.7rem;margin-top:28px">
   board_web.py · Regenerar: python -m trading_latino.live.board_web
 </p>
