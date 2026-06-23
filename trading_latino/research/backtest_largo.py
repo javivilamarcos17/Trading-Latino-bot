@@ -26,7 +26,7 @@ import ccxt
 
 # Reutilizamos detectores y helpers ya validados del otro backtest (su main esta guardado)
 from trading_latino.research.backtest_ganadoras import (
-    COSTE, LOOKBACK, _adx, _setup,
+    COSTE, LOOKBACK, _adx, _rsi, _setup,
     det_ob_trend, det_ob_plus, det_ob_regime,
 )
 
@@ -117,7 +117,6 @@ def det_mean_rev(d, target_mode="2R"):
     if j < 30: return None
     sma20 = d["cierre"].rolling(20).mean().to_numpy()
     std20 = d["cierre"].rolling(20).std().to_numpy()
-    from trading_latino.research.backtest_ganadoras import _rsi
     rsi = _rsi(d["cierre"])
     vm = pd.Series(vol).rolling(20).mean().to_numpy()
     if np.isnan(sma20[j]) or np.isnan(std20[j]) or np.isnan(rsi[j]) or not vm[j]: return None
