@@ -213,12 +213,36 @@ def det_ob_asia(d):
     if _hora_utc(d["t"].iloc[-1]) >= 13: return None
     return det_ob_trend(d)
 
+def det_ob_asia_close(d):
+    """ob_trend SOLO en cierre de Tokyo (03-07h UTC) — variante apilada por diseño, a validar."""
+    h = _hora_utc(d["t"].iloc[-1])
+    if not (3 <= h < 7): return None
+    return det_ob_trend(d)
+
+def det_ob_plus_asia_r3(d):
+    """ob_plus_asia con objetivo 3R — la variante que lideraba en vivo (+2.19R), a validar."""
+    if _hora_utc(d["t"].iloc[-1]) >= 7: return None
+    base = det_ob_plus(d)
+    if base is None: return None
+    D = abs(base["entry"] - base["stop"])
+    base["target"] = base["entry"] + 3.0*D if base["dir"] == "largo" else base["entry"] - 3.0*D
+    base["R"] = 3.0
+    return base
+
 ESTRATEGIAS = {
-    "ob_plus_asia":   det_ob_plus_asia,    # reina actual  (+1.295R)
-    "ob_trend_r3":    det_ob_trend_r3,     # #2 actual      (+1.085R)
-    "fvg_ob_asia":    det_fvg_ob_asia,     # #3 actual      (+0.654R)
-    "ob_regime_asia": det_ob_regime_asia,  # #4 actual      (+0.574R)
-    "ob_asia":        det_ob_asia,         # #5 actual      (+0.344R)
+    # --- VALIDADAS (filtro Asia) ---
+    "ob_plus_asia":   det_ob_plus_asia,    # reina en vivo  (+1.295R vivo)
+    "ob_trend_r3":    det_ob_trend_r3,     # #2 en vivo     (+1.085R vivo)
+    "fvg_ob_asia":    det_fvg_ob_asia,     # #3 en vivo     (+0.654R vivo)
+    "ob_regime_asia": det_ob_regime_asia,  # #4 en vivo     (+0.574R vivo)
+    "ob_asia":        det_ob_asia,         # #5 en vivo     (+0.344R vivo)
+    # --- BASELINES SIN filtro de sesion (¿cuanto aporta REALMENTE el filtro Asia?) ---
+    "ob_trend":       det_ob_trend,        # OB en TODAS las sesiones
+    "ob_plus":        det_ob_plus,         # OB+EMA200+sin-climax, todas las sesiones
+    "ob_regime":      det_ob_regime,       # switcher ADX, todas las sesiones
+    # --- APILADAS POR DISEÑO (lideraban en vivo, sin validar aun) ---
+    "ob_plus_asia_r3": det_ob_plus_asia_r3,  # +2.19R en vivo (sospechosa de sobreajuste)
+    "ob_asia_close":   det_ob_asia_close,    # +1.10R en vivo (sospechosa de sobreajuste)
 }
 
 # ------------------------------------------------------------------ simulacion de salida (OHLCV)
