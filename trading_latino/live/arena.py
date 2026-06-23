@@ -1751,6 +1751,12 @@ def contexto(ex, coin, L, cache, cerr=None):
         ema50_1h = float(c1h.ewm(span=50, adjust=False).mean().iloc[-1])
         out["rsi_1h"] = round(rsi1h, 1)
         out["ema50_1h_dist_%"] = round((px / ema50_1h - 1) * 100, 2)   # distancia % al EMA50 del 1h
+        # RESPALDO sobre_ema200: si el TF de la señal no tenía 200 velas, usar EMA200 del 1h
+        # (referencia de tendencia robusta y SIEMPRE disponible) -> contexto en vivo completo.
+        if "sobre_ema200" not in out and len(c1h) >= 200:
+            ema200_1h = float(c1h.ewm(span=200, adjust=False).mean().iloc[-1])
+            out["sobre_ema200"] = px > ema200_1h
+            out["ema200_dist_%"] = round((px / ema200_1h - 1) * 100, 2)
     except Exception:
         pass
     # RANGO ASIATICO del dia actual (fundamental para setup Sensei / ICT Killzone)
@@ -1810,6 +1816,32 @@ def contexto(ex, coin, L, cache, cerr=None):
             out["ses_ant_rango_%"] = round((ses_hi - ses_lo) / ses_open * 100, 2)
     except Exception:
         pass
+    # RESPALDO ses_ant desde 1h: en TF altos (4h) una sesión tiene 1-2 velas y el bloque de
+    # arriba no llega a >=3. Recalcular con los datos de 1h (granularidad suficiente SIEMPRE)
+    # garantiza contexto completo en TODA temporalidad. Aditivo: solo si faltaba.
+    if "ses_ant_dir" not in out:
+        try:
+            d1h_ctx = cache.get(("1h_data", coin))
+            if d1h_ctx is None:
+                d1h_ctx = velas_cached(ex, coin, "1h", cache)
+                cache[("1h_data", coin)] = d1h_ctx
+            recent = d1h_ctx.tail(30)                         # últimas ~30h cubren la sesión previa
+            h_sig = int(pd.to_datetime(int(cerr["t"].iloc[-1]), unit="ms").hour)
+            if 7 <= h_sig < 13:   rng, nom = (0, 7),  "asia"
+            elif 13 <= h_sig < 21: rng, nom = (7, 13), "londres"
+            else:                  rng, nom = (13, 21), "ny"
+            tt = recent["t"].to_numpy(); cl1 = recent["cierre"].to_numpy()
+            hh = pd.to_datetime(tt, unit="ms").hour
+            idx2 = np.where((hh >= rng[0]) & (hh < rng[1]))[0]
+            if len(idx2) >= 2:
+                bloque = idx2[idx2 >= idx2.max() - 12]        # la ocurrencia más reciente de esa sesión
+                o_ = cl1[bloque[0]]; c_ = cl1[bloque[-1]]
+                hi1 = recent["maximo"].to_numpy()[bloque].max(); lo1 = recent["minimo"].to_numpy()[bloque].min()
+                out["ses_ant"] = nom
+                out["ses_ant_dir"] = "alcista" if c_ > o_ else "bajista"
+                out["ses_ant_rango_%"] = round((hi1 - lo1) / o_ * 100, 2)
+        except Exception:
+            pass
     return out
 
 
