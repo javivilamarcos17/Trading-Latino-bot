@@ -36,18 +36,25 @@ ESTRATEGIAS_TF = {
     # Cobertura AMPLIA de temporalidades por familia: tener muestra en CADA TF y poder comparar la
     # MISMA estrategia entre temporalidades (objetivo: sacar lo mejor de cada una con datos reales).
     # Las velas se comparten en caché por (moneda, TF) -> ampliar es casi gratis para la API.
-    # --- estructura / tendencia: medios-altos (+ algún rápido para más muestra) ---
+    # --- estructura / tendencia: medios-altos ---
     "smc": ["15m", "1h", "4h"], "merino": ["15m", "1h", "4h"],
-    "sweep": ["5m", "15m", "1h", "4h"], "ob": ["5m", "15m", "1h", "4h"],
+    "sweep": ["5m", "15m", "1h", "4h"],
+    # ob SIN FILTROS RETIRADO (2026-06-23): n=513 -0.12R global, -0.39R en datos reales (tagged).
+    # En datos reales ES PEOR que el backfill — completamente dominado por ob_trend/ob_regime.
     "ob_trend": ["5m", "15m", "1h", "4h"],
-    "elliott": ["15m", "1h", "4h"],
-    # --- osciladores / reversión: medios ---
-    "fvg": ["5m", "15m", "1h", "4h"], "rsi": ["5m", "15m", "1h"],
-    "rsidiv": ["15m", "1h", "4h"],
-    # --- scalping / reversión rápida: SOLO vwap (scalp_rev/rev3 RETIRADAS: n=500+, -0.36/-0.47R) ---
+    # elliott TRANSFORMADO: solo dispara si el patron Elliott coincide ademas con un OB activo.
+    # Elliott mecanico puro = 0% win. Con OB como gatillo de timing tiene mucho mas sentido.
+    "elliott_ob": ["15m", "1h", "4h"],
+    # --- osciladores TRANSFORMADOS (rsi y rsidiv tenian -0.92R y -0.60R en datos reales,
+    #     peor que el backfill; se transforman en versiones con sesion + estructura) ---
+    "fvg": ["5m", "15m", "1h", "4h"],
+    "rsi_ob": ["5m", "15m", "1h"],         # RSI sale de extremo + precio en OB activo (EMA200)
+    "rsidiv_ob": ["15m", "1h", "4h"],      # Divergencia RSI + OB: doble confirmacion
+    # --- scalping / reversión rápida ---
     "vwap": ["1m", "5m", "15m"],
-    # RETIRADAS 2026-06-23 (muestra suficiente, negativas de forma consistente):
-    # scalp_rev n=485 -0.36R, scalp_rev3 n=120 -0.47R, volumen n=20 -0.62R, donchian n=65 -0.36R.
+    # RETIRADAS (muestra suficiente, negativas de forma consistente):
+    # ob n=513 -0.39R tagged, scalp_rev n=485 -0.36R, scalp_rev3 n=120 -0.47R,
+    # volumen n=20 -0.62R, donchian n=65 -0.36R, rsi n=33 -0.92R tagged, rsidiv n=105 -0.60R tagged.
     # --- COMPUESTAS multi-factor (price-action+smart-money y Merino enriquecido) ---
     "adrig": ["15m", "1h", "4h"], "merinox": ["15m", "1h", "4h"],
     # --- MULTI-TEMPORALIDAD real (HTF marca direccion, LTF marca timing) ---
@@ -89,6 +96,19 @@ ESTRATEGIAS_TF = {
     "london_fade": ["15m", "1h"],
     # adx y scalp_sqz RETIRADAS (2026-06-22): muertas con datos reales (adx 0% acierto / -1.1R;
     # scalp_sqz -0.6/-0.8R con cualquier salida).
+    # ===== NUEVAS 2026-06-23 — calibradas con datos reales antes de lanzarlas =====
+    # J) ob_plus_asia: ob_plus SOLO Asia pura (h<7). Dato: Asia +1.03R 79%, Londres -0.97R 11%.
+    #    El edge de ob_plus esta SOLO en Asia — no en el conjunto Asia+Londres.
+    "ob_plus_asia": ["5m", "15m", "1h"],
+    # K) smc_asia: SMC (+0.77R tagged = mejor estrategia real) con filtro Asia+Londres.
+    #    Hipotesis: el SMC se degrada en NY igual que ob. Multi-TF como smc.
+    "smc_asia": ["15m", "1h", "4h"],
+    # L) choch: Change of Character ICT — estructura previa rota en sentido contrario.
+    #    Solo Asia+Londres (datos: rango+asia = +1.49R 93%win, la mejor combinacion de todas).
+    "choch": ["15m", "1h", "4h"],
+    # M) ema_pullback: pullback clasico a EMA21 en tendencia (ADX>18). Asia+Londres.
+    #    Familia totalmente nueva: mide si el pullback a la media tiene edge vs el OB.
+    "ema_pullback": ["5m", "15m", "1h"],
 }
 HTF_DE = {"5m": "15m", "15m": "1h", "1h": "4h", "4h": "1d"}   # marco mayor para SMC según el menor
 # Coste REALISTA por operación (ida+vuelta): Hyperliquid taker ~0.035%/lado + slippage.
@@ -685,6 +705,173 @@ def det_london_fade(d):
     return None
 
 
+def det_ob_plus_asia(d):
+    """ob_plus CON FILTRO DE SOLO ASIA PURA (00-07 UTC). Dato real del analisis de sesion:
+    ob_plus Asia n=38 +1.03R 79%win, pero Londres n=19 -0.97R 11%win (DESTRUYE el edge).
+    El edge de ob_plus esta SOLO en Asia, no en el conjunto Asia+Londres. Por eso el filtro
+    es h<7 (no h<13 como ob_asia/fvg_asia). Solo opera las mejores horas de ob_plus."""
+    h = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+    if h >= 7:
+        return None
+    return det_ob_plus(d)
+
+
+def det_elliott_ob(d):
+    """Elliott mecanico (onda 3) + OB activo como soporte/resistencia en la zona del stop.
+    Elliott puro = 0% win porque falla en el timing. Con un OB valido en la zona de onda 2
+    (donde ponemos el stop), el nivel tiene respaldo estructural real, no solo fractal.
+    EMA200 obligatorio para no ir contra el sesgo de fondo."""
+    s = det_elliott(d)
+    if s is None:
+        return None
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    cl = d["cierre"].to_numpy(); op = d["apertura"].to_numpy()
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    j = len(cl) - 1
+    if j < 215 or np.isnan(ema[j]):
+        return None
+    stop = s["stop"]
+    for i in range(max(0, j - 50), j - 1):
+        if (hi[i] - lo[i]) / cl[i] < 0.0005:
+            continue
+        if s["dir"] == "largo" and cl[i] < op[i] and cl[i + 1] > hi[i]:
+            if lo[i] <= stop <= hi[i] and cl[j] > ema[j]:
+                return s
+        if s["dir"] == "corto" and cl[i] > op[i] and cl[i + 1] < lo[i]:
+            if lo[i] <= stop <= hi[i] and cl[j] < ema[j]:
+                return s
+    return None
+
+
+def det_rsi_ob(d):
+    """RSI sale de extremo (<30→≥30 o >70→≤70) Y precio esta en zona OB activa (EMA200).
+    El RSI aporta el momentum (el mercado estaba en panico/euforia), el OB aporta la
+    estructura (nivel institucional real). Solo cuando ambos coinciden simultaneamente.
+    rsi puro = -0.92R tagged; el OB actua como filtro estructural de calidad."""
+    c = d["cierre"]; rsi = _rsi(c); cl = c.to_numpy(); j = len(cl) - 1
+    if j < 215 or np.isnan(rsi[j - 1]):
+        return None
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); op = d["apertura"].to_numpy()
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    if np.isnan(ema[j]):
+        return None
+    sale_sobreventa = rsi[j - 1] < 30 <= rsi[j]
+    sale_sobrecompra = rsi[j - 1] > 70 >= rsi[j]
+    if not sale_sobreventa and not sale_sobrecompra:
+        return None
+    for i in range(max(0, j - 30), j - 1):
+        if (hi[i] - lo[i]) / cl[i] < 0.0008:
+            continue
+        if sale_sobreventa and cl[j] > ema[j]:
+            if cl[i] < op[i] and cl[i + 1] > hi[i] and lo[i] <= cl[j] <= hi[i]:
+                return _setup("largo", cl[j], lo[i] * 0.999)
+        if sale_sobrecompra and cl[j] < ema[j]:
+            if cl[i] > op[i] and cl[i + 1] < lo[i] and lo[i] <= cl[j] <= hi[i]:
+                return _setup("corto", cl[j], hi[i] * 1.001)
+    return None
+
+
+def det_rsidiv_ob(d):
+    """Divergencia RSI + OB activo (doble confirmacion): precio hace nuevo extremo pero RSI no
+    lo acompana (divergencia clasica), Y hay un OB institucional en la zona. La divergencia sola
+    genera falsos (-0.60R tagged); el OB actua como filtro de estructura que valida el nivel.
+    Solo opera divergencias que ocurren EN una zona OB real, alineada con EMA200."""
+    c = d["cierre"]; rsi = _rsi(c)
+    lo = d["minimo"].to_numpy(); hi = d["maximo"].to_numpy(); cl = c.to_numpy()
+    op = d["apertura"].to_numpy()
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    j = len(cl) - 1
+    if j < 215 or np.isnan(rsi[j]) or np.isnan(ema[j]):
+        return None
+    vent = range(j - 30, j - 4)
+    pl = min(vent, key=lambda k: lo[k])
+    ph = max(vent, key=lambda k: hi[k])
+    div_bull = lo[j] < lo[pl] and rsi[j] > rsi[pl] and rsi[j] < 50
+    div_bear = hi[j] > hi[ph] and rsi[j] < rsi[ph] and rsi[j] > 50
+    if not div_bull and not div_bear:
+        return None
+    for i in range(max(0, j - 40), j - 1):
+        if (hi[i] - lo[i]) / cl[i] < 0.0008:
+            continue
+        if div_bull and cl[j] > ema[j] and cl[i] < op[i] and cl[i + 1] > hi[i]:
+            if lo[i] <= cl[j] <= hi[i]:
+                return _setup("largo", cl[j], lo[j] * 0.999, 2.0)
+        if div_bear and cl[j] < ema[j] and cl[i] > op[i] and cl[i + 1] < lo[i]:
+            if lo[i] <= cl[j] <= hi[i]:
+                return _setup("corto", cl[j], hi[j] * 1.001, 2.0)
+    return None
+
+
+def det_choch(d):
+    """CHANGE OF CHARACTER (ChoCh ICT/SMC): el precio rompe la ultima estructura en sentido
+    CONTRARIO al sesgo previo, senalando un cambio de regimen. El mercado pasa de hacer
+    swing highs descendentes a romper uno al alza (ChoCh alcista), o lo opuesto (bajista).
+    Solo Asia+Londres (h<13): datos reales validan rango+Asia como la mejor ventana (+1.49R 93%).
+    A favor de EMA200 para no operar reversiones contra el sesgo macro de fondo."""
+    h = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+    if h >= 13:
+        return None
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy()
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    j = len(cl) - 1
+    if j < 215 or np.isnan(ema[j]):
+        return None
+    F = 3
+    sh = [i for i in range(F, j - F) if hi[i] == max(hi[max(0, i - F):i + F + 1])]
+    sl = [i for i in range(F, j - F) if lo[i] == min(lo[max(0, i - F):i + F + 1])]
+    if len(sh) < 2 or len(sl) < 2:
+        return None
+    last_sh = sh[-1]; prev_sh = sh[-2]
+    last_sl = sl[-1]; prev_sl = sl[-2]
+    # ChoCh ALCISTA: estructura bajista (SH descendentes) rota al alza
+    if hi[last_sh] < hi[prev_sh]:
+        if cl[j] > hi[last_sh] and cl[j - 1] <= hi[last_sh] and cl[j] > ema[j]:
+            return _setup("largo", cl[j], lo[last_sl] * 0.999, 2.0)
+    # ChoCh BAJISTA: estructura alcista (SL ascendentes) rota a la baja
+    if lo[last_sl] > lo[prev_sl]:
+        if cl[j] < lo[last_sl] and cl[j - 1] >= lo[last_sl] and cl[j] < ema[j]:
+            return _setup("corto", cl[j], hi[last_sh] * 1.001, 2.0)
+    return None
+
+
+def det_ema_pullback(d):
+    """PULLBACK A EMA21 EN TENDENCIA: el precio retrocede hasta la EMA21 mientras la EMA200
+    senala tendencia alcista/bajista. La vela toca la EMA21 y cierra de vuelta a favor.
+    ADX>18 para confirmar que hay tendencia real, no ruido lateral.
+    Solo Asia+Londres (h<13): datos validan tendencia+Asia como ventana viable (+0.52R 60%).
+    Estrategia completamente distinta a la familia OB: mide el pullback clasico a la media."""
+    h = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+    if h >= 13:
+        return None
+    c = d["cierre"]
+    e21 = c.ewm(span=21, adjust=False).mean().to_numpy()
+    e200 = c.ewm(span=200, adjust=False).mean().to_numpy()
+    adx = _adx(d)
+    cl = c.to_numpy(); lo = d["minimo"].to_numpy(); hi = d["maximo"].to_numpy()
+    j = len(cl) - 1
+    if j < 215 or np.isnan(e200[j]) or np.isnan(e21[j]) or np.isnan(adx[j]):
+        return None
+    if adx[j] < 18:
+        return None
+    swl = d["minimo"].iloc[j - 7:j].min(); swh = d["maximo"].iloc[j - 7:j].max()
+    if cl[j] > e200[j] and lo[j] <= e21[j] and cl[j] > e21[j] and cl[j] > cl[j - 1]:
+        return _setup("largo", cl[j], swl, 2.0)
+    if cl[j] < e200[j] and hi[j] >= e21[j] and cl[j] < e21[j] and cl[j] < cl[j - 1]:
+        return _setup("corto", cl[j], swh, 2.0)
+    return None
+
+
+def det_smc_asia(ex, coin, ltf, cache):
+    """SMC (FVG marco mayor + BOS marco menor) CON FILTRO de sesion Asia+Londres (h<13 UTC).
+    smc es la estrategia con mejor edge en datos reales (+0.77R tagged). La hipotesis:
+    el SMC en sesion americana se degrada como ob (mismo patron: institucional de noche).
+    Muestra aun pequena para confirmar, pero la hipotesis tiene sentido estructural fuerte."""
+    h_utc = int(pd.Timestamp.now("UTC").hour)
+    if h_utc >= 13:
+        return None, velas_cached(ex, coin, ltf, cache)
+    return det_smc(ex, coin, ltf, cache)
+
+
 def det_ob_scalp(ex, coin, cache):
     """SCALP INSTITUCIONAL (la madre de la estrategia final): el OB en 15m marca la ZONA
     (OB válido + EMA200 + sin clímax de volumen), y la vela de 1m da el TIMING exacto dentro
@@ -1053,6 +1240,18 @@ def detectar_cerr(estr, cerr, coin):
         return det_asia_sweep(cerr)
     if estr == "london_fade":
         return det_london_fade(cerr)
+    if estr == "ob_plus_asia":
+        return det_ob_plus_asia(cerr)
+    if estr == "elliott_ob":
+        return det_elliott_ob(cerr)
+    if estr == "rsi_ob":
+        return det_rsi_ob(cerr)
+    if estr == "rsidiv_ob":
+        return det_rsidiv_ob(cerr)
+    if estr == "choch":
+        return det_choch(cerr)
+    if estr == "ema_pullback":
+        return det_ema_pullback(cerr)
     return None
 
 
@@ -1169,6 +1368,13 @@ def contexto(ex, coin, L, cache, cerr=None):
             out["vol_rel"] = round(float(cerr["volumen"].iloc[-1] / cerr["volumen"].tail(20).mean()), 2)
         except Exception:
             pass
+    if len(cerr) >= 200:                                       # EMA200 en el TF de la señal
+        try:
+            ema200_tf = float(cerr["cierre"].ewm(span=200, adjust=False).mean().iloc[-1])
+            out["ema200_dist_%"] = round((px / ema200_tf - 1) * 100, 2)
+            out["sobre_ema200"] = px > ema200_tf
+        except Exception:
+            pass
     # RSI en 1h y EMA50 en 1h (sesgo del marco mayor): info MULTI-TF que enriquece el diagnostico
     try:
         if ("1h_data", coin) in cache:
@@ -1196,6 +1402,21 @@ def contexto(ex, coin, L, cache, cerr=None):
             out["asia_rango_%"] = round((out["asia_hi"] - out["asia_lo"]) / out["asia_lo"] * 100, 2)
             out["px_vs_asia"] = ("premium" if px > out["asia_hi"] else
                                  "descuento" if px < out["asia_lo"] else "dentro")
+    except Exception:
+        pass
+    # RANGO DE LONDRES (07-13 UTC) — espejo del asiatico, clave para london_fade y sensei
+    try:
+        hoy_utc2 = pd.Timestamp.now("UTC").date()
+        ts_arr3 = cerr["t"].to_numpy()
+        ts_pd3 = pd.to_datetime(ts_arr3, unit="ms", utc=True)
+        mask_lon = (ts_pd3.date == hoy_utc2) & (ts_pd3.hour >= 7) & (ts_pd3.hour < 13)
+        idx_lon = np.where(mask_lon)[0]
+        if len(idx_lon) >= 3:
+            out["london_hi"] = round(float(cerr["maximo"].to_numpy()[idx_lon].max()), 4)
+            out["london_lo"] = round(float(cerr["minimo"].to_numpy()[idx_lon].min()), 4)
+            out["london_rango_%"] = round((out["london_hi"] - out["london_lo"]) / out["london_lo"] * 100, 2)
+            cl_lon = cerr["cierre"].to_numpy()
+            out["london_dir"] = "alcista" if cl_lon[idx_lon[-1]] > cl_lon[idx_lon[0]] else "bajista"
     except Exception:
         pass
     # SESION ANTERIOR: qué hizo la sesión que acaba de terminar (tesis Sensei Trading / ICT)
@@ -1321,6 +1542,13 @@ def main():
                 try:
                     if estr == "smc":
                         s, L = det_smc(ex, coin, tf, vcache)
+                        tsl = int(L["t"].iloc[-2])
+                        if s and tsl > last_ts:
+                            nuevos.append((tsl, s, L.iloc[:-1]))
+                    elif estr == "smc_asia":
+                        s, L = det_smc_asia(ex, coin, tf, vcache)
+                        if L is None:
+                            L = velas_cached(ex, coin, tf, vcache)
                         tsl = int(L["t"].iloc[-2])
                         if s and tsl > last_ts:
                             nuevos.append((tsl, s, L.iloc[:-1]))
