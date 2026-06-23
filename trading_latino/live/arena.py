@@ -76,6 +76,17 @@ ESTRATEGIAS_TF = {
     # D) sensei: ICT Killzone NY — rango asiatico + Judas Swing + ChoCh + FVG/OB en 1m/5m
     # Tesis Sensei Trading: el mercado manipula la liquidez asiatica/londrina al abrir NY
     "sensei": ["1m", "5m"],
+    # ===== 5 ALTERNATIVAS NUEVAS (2026-06-23) — paralelas, sin tocar nada existente =====
+    # E) orf: Opening Range Breakout — primeros 15min de NY definen el rango del dia
+    "orf": ["5m", "15m"],
+    # F) fvg_ob: FVG dentro de OB — doble confluencia ICT (la señal mas fuerte de las dos)
+    "fvg_ob": ["5m", "15m", "1h"],
+    # G) breaker: Breaker Block ICT — OB fallido se convierte en nivel inverso
+    "breaker": ["15m", "1h", "4h"],
+    # H) asia_sweep: barrido del rango asiatico con recuperacion inmediata (trampa pura)
+    "asia_sweep": ["5m", "15m", "1h"],
+    # I) london_fade: fade del movimiento de Londres al abrir NY (operativa de sesion pura)
+    "london_fade": ["15m", "1h"],
     # adx y scalp_sqz RETIRADAS (2026-06-22): muertas con datos reales (adx 0% acierto / -1.1R;
     # scalp_sqz -0.6/-0.8R con cualquier salida).
 }
@@ -506,6 +517,174 @@ def det_ob_ny_open(d):
     return det_ob_trend(d)
 
 
+# ===== 5 NUEVAS ALTERNATIVAS (2026-06-23) — no tocan nada existente =====
+
+def det_orf(d):
+    """OPENING RANGE BREAKOUT: los primeros 15 min de NY (13:00-13:15 UTC = 9:00-9:15 ET) definen
+    el RANGO del dia. Ruptura por encima → largo; por debajo → corto. Stop al otro extremo del
+    rango, objetivo 2R. Estrategia institucional clasica, totalmente distinta a todo lo que tenemos.
+    Se mide si la ruptura de la apertura tiene edge en cripto (a diferencia de indices/forex)."""
+    ts_pd = pd.to_datetime(d["t"].to_numpy(), unit="ms", utc=True)
+    j = len(d) - 1
+    h = int(ts_pd[j].hour); m = int(ts_pd[j].minute)
+    if not (h > 13 or (h == 13 and m >= 15)) or h >= 21:   # solo NY despues de 13:15
+        return None
+    hoy = ts_pd[j].date()
+    mask_or = (ts_pd.date == hoy) & (ts_pd.hour == 13) & (ts_pd.minute < 15)
+    idx_or = np.where(mask_or)[0]
+    if len(idx_or) < 2:
+        return None
+    or_hi = d["maximo"].to_numpy()[idx_or].max()
+    or_lo = d["minimo"].to_numpy()[idx_or].min()
+    if or_hi <= or_lo or (or_hi - or_lo) / d["cierre"].to_numpy()[j] < 0.0003:
+        return None
+    cl = d["cierre"].to_numpy(); prev_cl = cl[j - 1]
+    if cl[j] > or_hi and prev_cl <= or_hi:
+        return _setup("largo", cl[j], or_lo, 2.0)
+    if cl[j] < or_lo and prev_cl >= or_lo:
+        return _setup("corto", cl[j], or_hi, 2.0)
+    return None
+
+
+def det_fvg_ob(d):
+    """FVG DENTRO DE OB — doble confluencia ICT: solo el FVG cuya zona cae DENTRO de un Order
+    Block activo (EMA200 + mismo sentido). Hipotesis: los FVGs mas potentes son los que se forman
+    sobre un OB institucional. Señal de alta calidad, pocas señales, R/R elevado."""
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    cl = d["cierre"].to_numpy(); op = d["apertura"].to_numpy()
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    j = len(cl) - 1
+    if j < 215 or np.isnan(ema[j]):
+        return None
+    obs = []
+    for i in range(max(0, j - 40), j - 1):
+        if np.isnan(ema[i]):
+            continue
+        if cl[i] < op[i] and cl[i + 1] > hi[i] and (hi[i] - lo[i]) / cl[i] > 0.0008:
+            if cl[i] > ema[i]:
+                obs.append((hi[i], lo[i], "largo"))
+        if cl[i] > op[i] and cl[i + 1] < lo[i] and (hi[i] - lo[i]) / cl[i] > 0.0008:
+            if cl[i] < ema[i]:
+                obs.append((hi[i], lo[i], "corto"))
+    if not obs:
+        return None
+    for i in range(max(1, j - 20), j - 1):
+        if lo[i] > hi[i - 2] and (lo[i] - hi[i - 2]) / cl[i] > 0.0008:   # FVG alcista
+            fvg_bot, fvg_top = hi[i - 2], lo[i]
+            if lo[j] <= fvg_top and cl[j] > fvg_bot:
+                for ob_top, ob_bot, direc in obs:
+                    if direc == "largo" and ob_bot <= fvg_bot <= ob_top:
+                        return _setup("largo", cl[j], ob_bot * 0.999, 2.0)
+        if hi[i] < lo[i - 2] and (lo[i - 2] - hi[i]) / cl[i] > 0.0008:   # FVG bajista
+            fvg_top2, fvg_bot2 = lo[i - 2], hi[i]
+            if hi[j] >= fvg_bot2 and cl[j] < fvg_top2:
+                for ob_top, ob_bot, direc in obs:
+                    if direc == "corto" and ob_bot <= fvg_top2 <= ob_top:
+                        return _setup("corto", cl[j], ob_top * 1.001, 2.0)
+    return None
+
+
+def det_breaker(d):
+    """BREAKER BLOCK (ICT): un OB que falla (precio lo atraviesa completamente) se convierte en
+    un bloque INVERSO — el soporte roto es ahora resistencia y viceversa. Concepto ICT puro: las
+    instituciones usan el nivel fallido para distribuir/acumular en el retest. Solo a favor de la
+    tendencia mayor (EMA200) para evitar señales en contra del sesgo."""
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    cl = d["cierre"].to_numpy(); op = d["apertura"].to_numpy()
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    j = len(cl) - 1
+    if j < 215 or np.isnan(ema[j]):
+        return None
+    px = cl[j]; breakers = []
+    for i in range(max(0, j - 50), j - 2):
+        if np.isnan(ema[i]):
+            continue
+        ob_top = hi[i]; ob_bot = lo[i]
+        if (ob_top - ob_bot) / cl[i] < 0.0008:
+            continue
+        if cl[i] < op[i] and cl[i + 1] > ob_top:          # OB alcista original
+            for k in range(i + 2, j):
+                if cl[k] < ob_bot:                          # fallo: precio cerro bajo el low del OB
+                    breakers.append((ob_top, ob_bot, "corto"))
+                    break
+        if cl[i] > op[i] and cl[i + 1] < ob_bot:          # OB bajista original
+            for k in range(i + 2, j):
+                if cl[k] > ob_top:                          # fallo: precio cerro sobre el high del OB
+                    breakers.append((ob_top, ob_bot, "largo"))
+                    break
+    for ob_top, ob_bot, direc in breakers:
+        if direc == "corto" and ob_bot <= px <= ob_top and cl[j] < ema[j]:
+            return _setup("corto", px, ob_top * 1.001, 2.0)
+        if direc == "largo" and ob_bot <= px <= ob_top and cl[j] > ema[j]:
+            return _setup("largo", px, ob_bot * 0.999, 2.0)
+    return None
+
+
+def det_asia_sweep(d):
+    """BARRIDO DEL RANGO ASIATICO: precio supera el maximo o minimo de la sesion asiatica
+    (00-07 UTC) PERO cierra de vuelta dentro del rango en la misma vela (pin-bar institucional).
+    Es la trampa mas limpia: barre los stops en los extremos y revierte inmediatamente.
+    Señal muy selectiva — cuando aparece suele ser de alta calidad."""
+    ts_pd = pd.to_datetime(d["t"].to_numpy(), unit="ms", utc=True)
+    j = len(d) - 1
+    if ts_pd[j].hour < 7:                    # no operar durante la propia sesion asiatica
+        return None
+    hoy = ts_pd[j].date()
+    mask_as = (ts_pd.date == hoy) & (ts_pd.hour < 7)
+    idx_as = np.where(mask_as)[0]
+    if len(idx_as) < 5:
+        return None
+    hi_a = d["maximo"].to_numpy()[idx_as].max()
+    lo_a = d["minimo"].to_numpy()[idx_as].min()
+    if hi_a <= lo_a:
+        return None
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    cl = d["cierre"].to_numpy(); op = d["apertura"].to_numpy()
+    if lo[j] < lo_a and cl[j] > lo_a and cl[j] > op[j]:   # barrio el minimo asiatico y recupero
+        return _setup("largo", cl[j], lo[j] * 0.999, 2.0)
+    if hi[j] > hi_a and cl[j] < hi_a and cl[j] < op[j]:   # barrio el maximo asiatico y recupero
+        return _setup("corto", cl[j], hi[j] * 1.001, 2.0)
+    return None
+
+
+def det_london_fade(d):
+    """FADE DEL CIERRE DE LONDRES: tras el cierre de Londres (13:00 UTC), el mercado suele
+    REVERTIR el movimiento de la sesion londinense. Londres alcista → buscar corto en NY;
+    Londres bajista → buscar largo. El timing: primer OB que aparece a favor del fade en NY,
+    alineado con EMA200. Tesis: NY 'roba' la liquidez que Londres creo durante la manana."""
+    ts_pd = pd.to_datetime(d["t"].to_numpy(), unit="ms", utc=True)
+    j = len(d) - 1
+    if not (13 <= ts_pd[j].hour < 21):
+        return None
+    hoy = ts_pd[j].date()
+    mask_lon = (ts_pd.date == hoy) & (ts_pd.hour >= 7) & (ts_pd.hour < 13)
+    idx_lon = np.where(mask_lon)[0]
+    if len(idx_lon) < 5:
+        return None
+    cl = d["cierre"].to_numpy(); op = d["apertura"].to_numpy()
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    if np.isnan(ema[j]):
+        return None
+    lon_open = cl[idx_lon[0]]; lon_close = cl[idx_lon[-1]]
+    lon_hi = hi[idx_lon].max(); lon_lo = lo[idx_lon].min()
+    london_alcista = lon_close > lon_open
+    px = cl[j]
+    # OB a favor del fade dentro de NY (post-13:00 UTC), alineado con EMA200
+    for i in range(max(idx_lon[-1] + 1, j - 20), j - 1):
+        if (hi[i] - lo[i]) / cl[i] < 0.0008:
+            continue
+        if london_alcista:                              # Londres subio → buscar corto
+            if cl[i] > op[i] and cl[i + 1] < lo[i] and px < ema[j]:
+                if lo[i] <= px <= hi[i]:
+                    return _setup("corto", px, hi[i] * 1.001, 2.0)
+        else:                                          # Londres bajo → buscar largo
+            if cl[i] < op[i] and cl[i + 1] > hi[i] and px > ema[j]:
+                if lo[i] <= px <= hi[i]:
+                    return _setup("largo", px, lo[i] * 0.999, 2.0)
+    return None
+
+
 def det_ob_scalp(ex, coin, cache):
     """SCALP INSTITUCIONAL (la madre de la estrategia final): el OB en 15m marca la ZONA
     (OB válido + EMA200 + sin clímax de volumen), y la vela de 1m da el TIMING exacto dentro
@@ -864,6 +1043,16 @@ def detectar_cerr(estr, cerr, coin):
         return det_fvg_asia(cerr)
     if estr == "ob_regime_asia":
         return det_ob_regime_asia(cerr)
+    if estr == "orf":
+        return det_orf(cerr)
+    if estr == "fvg_ob":
+        return det_fvg_ob(cerr)
+    if estr == "breaker":
+        return det_breaker(cerr)
+    if estr == "asia_sweep":
+        return det_asia_sweep(cerr)
+    if estr == "london_fade":
+        return det_london_fade(cerr)
     return None
 
 
