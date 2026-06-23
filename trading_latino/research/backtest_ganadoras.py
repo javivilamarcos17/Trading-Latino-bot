@@ -213,12 +213,132 @@ def det_ob_asia(d):
     if _hora_utc(d["t"].iloc[-1]) >= 13: return None
     return det_ob_trend(d)
 
+def det_ob_asia_close(d):
+    """ob_trend SOLO en cierre de Tokyo (03-07h UTC) — variante apilada por diseño, a validar."""
+    h = _hora_utc(d["t"].iloc[-1])
+    if not (3 <= h < 7): return None
+    return det_ob_trend(d)
+
+def det_ob_plus_asia_r3(d):
+    """ob_plus_asia con objetivo 3R — la variante que lideraba en vivo (+2.19R), a validar."""
+    if _hora_utc(d["t"].iloc[-1]) >= 7: return None
+    base = det_ob_plus(d)
+    if base is None: return None
+    D = abs(base["entry"] - base["stop"])
+    base["target"] = base["entry"] + 3.0*D if base["dir"] == "largo" else base["entry"] - 3.0*D
+    base["R"] = 3.0
+    return base
+
+def _atr14(d):
+    """ATR14 con EWM (equivale al Wilder smoothing estándar)."""
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy()
+    tr = np.maximum(hi[1:] - lo[1:],
+                    np.maximum(np.abs(hi[1:] - cl[:-1]), np.abs(lo[1:] - cl[:-1])))
+    tr_full = np.concatenate([[hi[0] - lo[0]], tr])
+    return pd.Series(tr_full).ewm(span=14, adjust=False).mean().to_numpy()
+
+def det_atr_break(d):
+    """Canal de Keltner (EMA20 ± 2×ATR14). Entrada al CIERRE cuando el precio cruza la banda.
+    Stop = mínimo/máximo swing de 10 velas.
+    Hipótesis: canal adaptativo → en alta volatilidad las bandas se expanden y filtran
+    falsas rupturas mejor que Donchian (que tiene canal fijo de N velas)."""
+    cl = d["cierre"].to_numpy(); hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    j = len(cl) - 1
+    if j < 30: return None
+    atr   = _atr14(d)
+    ema20 = d["cierre"].ewm(span=20, adjust=False).mean().to_numpy()
+    if np.isnan(atr[j]) or np.isnan(ema20[j]) or np.isnan(atr[j-1]) or np.isnan(ema20[j-1]): return None
+    bu  = ema20[j]   + 2.0 * atr[j];   bd  = ema20[j]   - 2.0 * atr[j]
+    bu1 = ema20[j-1] + 2.0 * atr[j-1]; bd1 = ema20[j-1] - 2.0 * atr[j-1]
+    sl = lo[max(0, j-10):j].min(); sh = hi[max(0, j-10):j].max()
+    if cl[j] > bu and cl[j-1] <= bu1: return _setup("largo", cl[j], sl, 2.0)
+    if cl[j] < bd and cl[j-1] >= bd1: return _setup("corto", cl[j], sh, 2.0)
+    return None
+
+def det_atr_break_trend(d):
+    """ATR Breakout + alineación EMA200.
+    Solo largo si precio > EMA200 (tendencia alcista); solo corto si precio < EMA200.
+    Hipótesis: el trend filter elimina señales en contra de la tendencia mayor."""
+    j = len(d) - 1
+    if j < 215: return None
+    ema200 = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    if np.isnan(ema200[j]): return None
+    base = det_atr_break(d)
+    if base is None: return None
+    cl = d["cierre"].to_numpy()
+    if base["dir"] == "largo" and cl[j] < ema200[j]: return None
+    if base["dir"] == "corto" and cl[j] > ema200[j]: return None
+    return base
+
+def det_atr_break_asia(d):
+    """ATR Breakout solo en sesión Asia (h < 7 UTC).
+    Hipótesis: si el edge del breakout existe, ¿se concentra en Asia como los OB?"""
+    if _hora_utc(d["t"].iloc[-1]) >= 7: return None
+    return det_atr_break(d)
+
+def det_mean_rev(d, target_mode="2R"):
+    """REVERSIÓN A LA MEDIA — comprar capitulación / vender euforia (familia NUEVA: anti-tendencia).
+    Lógica económica (no curve-fit): BTC sufre cascadas de liquidaciones donde el precio se estira
+    como una goma y chasquea de vuelta. Compramos SOLO cuando coinciden 3 señales de agotamiento:
+      (1) el mínimo perfora la banda inferior (SMA20 − 2.5·desv.est) = sobre-extensión estadística,
+      (2) RSI14 < 25 = sobreventa confirmada,
+      (3) volumen > 1.8× su media = CLÍMAX / capitulación (el pánico vendedor se agota).
+    Sin el filtro (3) sería 'atrapar cuchillos'; con él, esperamos a que el último vendedor claudique.
+    Stop bajo el mínimo de la vela − 0.5·ATR (buffer de volatilidad). Espejo a la baja para euforia.
+    target_mode: '2R' (comparable con el resto) | 'mean' (salida natural = volver a la media SMA20)."""
+    cl = d["cierre"].to_numpy(); hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    vol = d["volumen"].to_numpy(); j = len(cl) - 1
+    if j < 30: return None
+    sma20 = d["cierre"].rolling(20).mean().to_numpy()
+    std20 = d["cierre"].rolling(20).std().to_numpy()
+    rsi = _rsi(d["cierre"])
+    vm = pd.Series(vol).rolling(20).mean().to_numpy()
+    if np.isnan(sma20[j]) or np.isnan(std20[j]) or np.isnan(rsi[j]) or not vm[j]: return None
+    tr = np.maximum(hi[1:] - lo[1:], np.maximum(np.abs(hi[1:] - cl[:-1]), np.abs(lo[1:] - cl[:-1])))
+    atr = pd.Series(np.concatenate([[hi[0] - lo[0]], tr])).ewm(span=14, adjust=False).mean().to_numpy()
+    banda_inf = sma20[j] - 2.5 * std20[j]; banda_sup = sma20[j] + 2.5 * std20[j]
+    if lo[j] <= banda_inf and rsi[j] < 25 and vol[j] > 1.8 * vm[j]:
+        entry = cl[j]; stop = lo[j] - 0.5 * atr[j]
+        if target_mode == "mean":
+            D = entry - stop
+            if D <= 0: return None
+            r = (sma20[j] - entry) / D
+            return _setup("largo", entry, stop, r) if r > 0 else None
+        return _setup("largo", entry, stop, 2.0)
+    if hi[j] >= banda_sup and rsi[j] > 75 and vol[j] > 1.8 * vm[j]:
+        entry = cl[j]; stop = hi[j] + 0.5 * atr[j]
+        if target_mode == "mean":
+            D = stop - entry
+            if D <= 0: return None
+            r = (entry - sma20[j]) / D
+            return _setup("corto", entry, stop, r) if r > 0 else None
+        return _setup("corto", entry, stop, 2.0)
+    return None
+
+def det_mean_rev_2R(d):   return det_mean_rev(d, "2R")
+def det_mean_rev_mean(d): return det_mean_rev(d, "mean")
+
 ESTRATEGIAS = {
-    "ob_plus_asia":   det_ob_plus_asia,    # reina actual  (+1.295R)
-    "ob_trend_r3":    det_ob_trend_r3,     # #2 actual      (+1.085R)
-    "fvg_ob_asia":    det_fvg_ob_asia,     # #3 actual      (+0.654R)
-    "ob_regime_asia": det_ob_regime_asia,  # #4 actual      (+0.574R)
-    "ob_asia":        det_ob_asia,         # #5 actual      (+0.344R)
+    # --- VALIDADAS (filtro Asia) ---
+    "ob_plus_asia":   det_ob_plus_asia,    # reina en vivo  (+1.295R vivo)
+    "ob_trend_r3":    det_ob_trend_r3,     # #2 en vivo     (+1.085R vivo)
+    "fvg_ob_asia":    det_fvg_ob_asia,     # #3 en vivo     (+0.654R vivo)
+    "ob_regime_asia": det_ob_regime_asia,  # #4 en vivo     (+0.574R vivo)
+    "ob_asia":        det_ob_asia,         # #5 en vivo     (+0.344R vivo)
+    # --- BASELINES SIN filtro de sesion (¿cuanto aporta REALMENTE el filtro Asia?) ---
+    "ob_trend":       det_ob_trend,        # OB en TODAS las sesiones
+    "ob_plus":        det_ob_plus,         # OB+EMA200+sin-climax, todas las sesiones
+    "ob_regime":      det_ob_regime,       # switcher ADX, todas las sesiones
+    # --- APILADAS POR DISEÑO (lideraban en vivo, sin validar aun) ---
+    "ob_plus_asia_r3": det_ob_plus_asia_r3,  # +2.19R en vivo (sospechosa de sobreajuste)
+    "ob_asia_close":   det_ob_asia_close,    # +1.10R en vivo (sospechosa de sobreajuste)
+    # --- ATR BREAKOUT (canal de Keltner adaptativo — nueva familia a validar) ---
+    "atr_break":       det_atr_break,       # baseline puro: ¿funciona el canal ATR?
+    "atr_break_trend": det_atr_break_trend, # + filtro EMA200: ¿trend alignment añade valor?
+    "atr_break_asia":  det_atr_break_asia,  # + sesión Asia: ¿el patrón sesión aplica aquí?
+    # --- MEAN REVERSION (familia NUEVA anti-tendencia — comprar capitulación) ---
+    "mean_rev_2R":   det_mean_rev_2R,    # salida fija 2R (comparable con el resto)
+    "mean_rev_mean": det_mean_rev_mean,  # salida natural: volver a la media SMA20
 }
 
 # ------------------------------------------------------------------ simulacion de salida (OHLCV)

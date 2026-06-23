@@ -45,7 +45,8 @@ ESTRATEGIAS_TF = {
 
     # --- ESTRUCTURA / TENDENCIA (medios-altos) ---
     "smc": ["15m", "1h", "4h"], "merino": ["15m", "1h", "4h"],
-    "sweep": ["15m", "1h", "4h"],     # 5m retirado: n=2 irrelevante, 15m mantiene
+    # sweep RETIRADA 2026-06-23: n=18, hasta su MEJOR salida (t125) = -0.18R. Negativa en todas las salidas.
+    # "sweep": ["15m", "1h", "4h"],
     # RETIRADO 5m (58ops -0.32R), 1h (27ops -0.24R), 4h (18ops -0.42R).
     # Solo 15m tiene edge real: +1.01R 76%win (n=66). Fuera del 15m el OB pierde toda la magia.
     "ob_trend": ["15m"],
@@ -86,7 +87,9 @@ ESTRATEGIAS_TF = {
     # breaker_prev_ny: breaker (+0.014R muerto) RESUCITADO por filtro sesion anterior NY.
     #   Cuando NY anterior fue alcista: breaker = +1.52R win=94% (n=18). El contexto del
     #   dia anterior cambia completamente el edge — el breaker necesita momentum previo de NY.
-    "breaker_prev_ny": ["15m"],
+    # breaker_prev_ny RETIRADA 2026-06-23: con mas datos (n=19) el edge se evaporo — hasta su
+    #   MEJOR salida (be05) = -0.58R. El +1.52R inicial (n=18) era ruido de muestra pequena.
+    # "breaker_prev_ny": ["15m"],
     # RETIRADO 1h de ob_regime (12 ops -0.37R): switcher funciona en 15m (+0.99R) y 5m.
     # 5m bordeando el neutro (-0.04R 13ops) pero lo mantenemos para confirmar con SOL.
     "ob_regime": ["5m", "15m"],
@@ -106,10 +109,25 @@ ESTRATEGIAS_TF = {
     "sensei": ["1m", "5m"],
 
     # --- ALTERNATIVAS (en recoleccion de datos) ---
+    # donchian: RE-ACTIVADA 2026-06-23 con criterio. Se retiro por -0.39R en vivo... pero se midio
+    # SOLO con salida 2R, que MATA un trend-following (su edge es dejar correr ganancias grandes).
+    # Backtest Binance (50d): donchian a 2R = +0.05/+0.24R; "dejar correr" = -0.05/-0.08R en oso/lateral,
+    # pero deberia brillar en tendencia fuerte (toro). El arena mide LAS 5 SALIDAS a la vez (fixed=cortar
+    # pronto, trail=dejar correr) -> con esto medimos EN VIVO la tesis del video (cortar vs dejar correr)
+    # y en QUE regimen gana cada una. 15m (el TF que el video dice que filtra el ruido) + 1h de control.
+    "donchian": ["15m", "1h"],
+    # atr_break: AÑADIDA 2026-06-23 tras validar en Binance 50d (1m exacto): +0.41R en BTC Y ETH,
+    #   win 52% (vs 36-41% de las OB), positivo los 2 meses y las 2 monedas. Sesgo de diseño BAJO
+    #   (canal de Keltner de manual + concepto del video, no exprimido de estos datos). Perfil de edge
+    #   DISTINTO: gana en NY (+0.53R) donde las OB mueren (-0.12R) -> diversifica de verdad. Canal
+    #   adaptativo (EMA20 ± 2·ATR14): en alta volatilidad las bandas se abren y filtran fakeouts mejor
+    #   que el Donchian fijo. La variante con filtro Asia/EMA200 NO mejoraba la base -> entra la base sola.
+    "atr_break": ["15m", "1h"],
     "orf": ["5m", "15m"],
     "fvg_ob": ["15m", "1h"],     # RETIRADO 5m (6 ops -1.40R); 15m +1.83R 100%win es el star
-    # breaker: RETIRADO 1h (26 ops -0.48R). Mantenemos 15m (3 ops prometedoras) y 4h (control).
-    "breaker": ["15m", "4h"],
+    # breaker RETIRADA 2026-06-23: n=104, hasta su MEJOR salida = -0.05R. 104 ops sin edge y sin
+    #   tesis fuerte que la respalde. Su variante prev_ny tambien murio con datos. Familia agotada.
+    # "breaker": ["15m", "4h"],
     # asia_sweep RETIRADA DEFINITIVA 2026-06-23: n=23 exp=-0.564R, la peor estrategia del arena.
     # El barrido del rango asiatico es REAL (el precio barra el rango) pero la entrada es mala.
     # El mismo concepto funciona mejor en judas_swing_ob (con confirmacion OB de reversal).
@@ -139,7 +157,9 @@ ESTRATEGIAS_TF = {
     # R) judas_swing_ob: London open (07-10h) barre el rango asiatico (trampa institucional)
     #    y luego forma OB en la direccion CONTRARIA. Es el 'Judas Swing' ICT — la manipulation
     #    mas documentada: Londres engana al retail antes de moverse en la direccion real.
-    "judas_swing_ob": ["5m", "15m"],
+    # judas_swing_ob RETIRADA 2026-06-23: en mucho tiempo solo genero n=4 (apenas dispara) Y pierde
+    #   (-1.56R). Patron demasiado restrictivo: sin muestra util y negativa. Concepto ICT no cuaja aqui.
+    # "judas_swing_ob": ["5m", "15m"],
     # S) ny_london_sweep: NY open (13-15h) barre el rango de Londres y revierte.
     #    El paralelo del Judas Swing en la transicion London → NY. Ya tenemos london_hi/lo en
     #    contexto; esta estrategia verifica si NY 'roba' liquidez de Londres antes de seguir.
@@ -466,7 +486,13 @@ def det_vwap(d):
 
 
 def det_donchian(d):
-    """Ruptura de canal Donchian (máx/mín de 20 velas) = seguimiento de tendencia (familia nueva)."""
+    """Ruptura de canal Donchian (máx/mín de 20 velas) = seguimiento de tendencia.
+    Lógica económica (no curve-fit): si el precio supera el MÁXIMO de las últimas 20 velas, hay
+    demanda real empujando (ruptura genuina); espejo a la baja. Entrada al CIERRE de la vela de
+    ruptura (cl[j] cruza la banda y cl[j-1] aún no) — exige cierre, no solo mecha (filtra fakeouts).
+    Stop al swing opuesto de 10 velas. El objetivo 2R aquí es solo el ancla del riesgo: el arena
+    mide 5 salidas en paralelo (fixed=cortar pronto vs trail=dejar correr), que es como medimos EN
+    VIVO la tesis del video (Donchian rinde dejando correr) y en qué régimen gana cada salida."""
     hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy(); j = len(cl) - 1
     if j < 25:
         return None
@@ -475,6 +501,37 @@ def det_donchian(d):
     if cl[j] > hh and cl[j - 1] <= hh:
         return _setup("largo", cl[j], sl, 2.0)
     if cl[j] < ll and cl[j - 1] >= ll:
+        return _setup("corto", cl[j], sh, 2.0)
+    return None
+
+
+def det_atr_break(d):
+    """Ruptura de canal de Keltner (EMA20 ± 2·ATR14) = breakout ADAPTATIVO a la volatilidad.
+    Lógica económica (no curve-fit): a diferencia del Donchian (canal fijo de N velas), aquí el
+    canal se ensancha cuando sube la volatilidad (ATR alto) y se estrecha cuando baja. En cripto,
+    donde la volatilidad cambia mucho, eso exige MÁS empuje para dar señal en mercados nerviosos
+    (filtra fakeouts) y reacciona antes en mercados tranquilos. Entrada al CIERRE que cruza la banda
+    (cl[j] fuera, cl[j-1] dentro). Stop al swing opuesto de 10 velas, ancla 2R. El arena mide las 5
+    salidas en paralelo. Validada en Binance 50d (1m): +0.41R BTC y ETH, win 52%, gana en NY donde
+    las OB pierden -> perfil de edge complementario."""
+    cl = d["cierre"].to_numpy(); hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    j = len(cl) - 1
+    if j < 30:
+        return None
+    # ATR14 (Wilder via EWM) sobre el True Range
+    tr = np.maximum(hi[1:] - lo[1:],
+                    np.maximum(np.abs(hi[1:] - cl[:-1]), np.abs(lo[1:] - cl[:-1])))
+    tr_full = np.concatenate([[hi[0] - lo[0]], tr])
+    atr = pd.Series(tr_full).ewm(span=14, adjust=False).mean().to_numpy()
+    ema20 = d["cierre"].ewm(span=20, adjust=False).mean().to_numpy()
+    if np.isnan(atr[j]) or np.isnan(ema20[j]) or np.isnan(atr[j - 1]) or np.isnan(ema20[j - 1]):
+        return None
+    bu = ema20[j] + 2.0 * atr[j]; bd = ema20[j] - 2.0 * atr[j]
+    bu1 = ema20[j - 1] + 2.0 * atr[j - 1]; bd1 = ema20[j - 1] - 2.0 * atr[j - 1]
+    sl = lo[max(0, j - 10):j].min(); sh = hi[max(0, j - 10):j].max()
+    if cl[j] > bu and cl[j - 1] <= bu1:
+        return _setup("largo", cl[j], sl, 2.0)
+    if cl[j] < bd and cl[j - 1] >= bd1:
         return _setup("corto", cl[j], sh, 2.0)
     return None
 
@@ -1503,6 +1560,8 @@ def detectar_cerr(estr, cerr, coin):
         return det_vwap(cerr)
     if estr == "donchian":
         return det_donchian(cerr)
+    if estr == "atr_break":
+        return det_atr_break(cerr)
     if estr == "elliott":
         return det_elliott(cerr)
     if estr == "adrig":

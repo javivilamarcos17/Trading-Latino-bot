@@ -1,0 +1,16 @@
+{
+  "_meta": {
+    "descripcion": "Validacion out-of-sample en Binance. El VIVO genera hipotesis (sin sesgo, hacia el futuro); BINANCE da el numero realista. Si vivo >> binance, la verdad esta cerca de binance.",
+    "fuente_50d": "backtest_ganadoras.py — 50 dias, salida exacta con velas de 1m Binance",
+    "actualizado": "2026-06-23"
+  },
+  "estrategias": {
+    "ob_plus_asia":   {"binance_btc": 0.234, "binance_eth": 0.155, "n_btc": 320, "n_eth": 396, "nota": "Reina en vivo (+1.30R) pero 6x menor out-of-sample. Filtro Asia ayuda BTC, no ETH."},
+    "ob_trend":       {"binance_btc": 0.106, "binance_eth": 0.425, "n_btc": 1184, "n_eth": 1192, "nota": "ETH mucho mejor SIN filtro Asia (NY +0.58R es su mejor sesion)."},
+    "ob_plus":        {"binance_btc": 0.092, "binance_eth": 0.449, "n_btc": 1156, "n_eth": 1123, "nota": "ETH base sin filtro = +0.449R, el edge mas alto con n alto."},
+    "ob_regime":      {"binance_btc": 0.113, "binance_eth": 0.435, "n_btc": 1168, "n_eth": 1137, "nota": "Switcher ADX. Solido en ambas monedas."},
+    "fvg_ob_asia":    {"binance_btc": 1.633, "binance_eth": 0.306, "n_btc": 53, "n_eth": 39, "nota": "Edge alto pero n bajo = poca confianza. Confluencia FVG+OB en Asia."},
+    "ob_asia":        {"binance_btc": 0.313, "binance_eth": 0.314, "n_btc": 618, "n_eth": 690, "nota": "OB en sesiones Asia+Londres. Consistente."},
+    "atr_break":      {"binance_btc": 0.417, "binance_eth": 0.410, "n_btc": 194, "n_eth": 178, "nota": "NUEVA. Win 52% (vs 36-41% OB). Gana en NY donde OB pierde. Sesgo de diseno bajo."}
+  }
+}
