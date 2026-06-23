@@ -188,6 +188,49 @@ def mapa_router(ops):
     print("\n  ⚠️ Todo régimen actual = bajista/miedo. El router REAL necesita datos de toro/euforia")
     print("     (de ahí el multi-año de Binance). Esto es el esqueleto; se rellena al validar.")
 
+def _curva(cerr, risk_pct):
+    """Devuelve (retorno_total_%, max_drawdown_%) de una curva de capital compuesta."""
+    cap = pico = 1.0; maxdd = 0.0
+    for o in cerr:
+        cap *= (1 + (risk_pct / 100.0) * o["pnl_fixed"])
+        pico = max(pico, cap)
+        maxdd = max(maxdd, (pico - cap) / pico)
+    return (cap - 1) * 100, maxdd * 100
+
+def riesgo_ruina(ops, risk_pct=1.0):
+    """SEGURIDAD: ¿puede un mal momento reventar el trabajo de muchos días?
+    Compara la curva de capital de TODAS las estrategias vs SOLO LAS CURADAS (las
+    ganadoras), demostrando que la curación recorta el drawdown. Mide también la
+    CONCENTRACIÓN (posiciones simultáneas correlacionadas = riesgo real oculto)."""
+    import datetime as dt
+    from collections import Counter
+    cerr = sorted([o for o in ops if o.get("ts")], key=lambda o: o["ts"])
+    if not cerr:
+        print("  (sin ops)"); return
+    # Tier "curado": estrategias con exp>0.25 y n>=MIN_N (la cima validada)
+    by_estr = defaultdict(list)
+    for o in cerr: by_estr[o.get("estr")].append(o["pnl_fixed"])
+    curadas = {e for e, v in by_estr.items() if len(v) >= MIN_N and _stat(v)[2] > 0.25}
+    cur = [o for o in cerr if o.get("estr") in curadas]
+
+    print(f"\n=== RIESGO DE RUINA — curva de capital a {risk_pct:.0f}% de riesgo por operación ===")
+    rt_all, dd_all = _curva(cerr, risk_pct)
+    rt_cur, dd_cur = _curva(cur, risk_pct) if cur else (0, 0)
+    print(f"  TODAS ({len({o.get('estr') for o in cerr})} estr, {len(cerr):,} ops): retorno {rt_all:+.0f}%  ·  PEOR caída -{dd_all:.1f}%")
+    print(f"  CURADAS ({len(curadas)} estr, {len(cur):,} ops):  retorno {rt_cur:+.0f}%  ·  PEOR caída -{dd_cur:.1f}%")
+    if dd_all > 0:
+        print(f"  → Curar recorta la caída de -{dd_all:.0f}% a -{dd_cur:.0f}%. ESTO es 'no tener todas activas'.")
+    # Concentración
+    por_ts = defaultdict(lambda: Counter())
+    for o in cerr: por_ts[o["ts"]][o.get("dir")] += 1
+    peor = max(por_ts.items(), key=lambda kv: sum(kv[1].values()))
+    n_simult = sum(peor[1].values())
+    cuando = dt.datetime.fromtimestamp(peor[0]/1000, dt.timezone.utc).strftime("%Y-%m-%d %H:%M")
+    print(f"  Concentración máx: {n_simult} posiciones a la vez ({dict(peor[1])}) el {cuando} UTC")
+    print(f"  Regla de oro: riesgo/trade × posiciones simultáneas correlacionadas = tu riesgo REAL.")
+    print(f"  Con {n_simult} a la vez y {risk_pct:.0f}%/trade, un giro brusco arriesga ~{n_simult*risk_pct:.0f}% DE GOLPE.")
+    print(f"  → Solución: límite duro de posiciones correlacionadas + activar solo las del momento (router).")
+
 def estudio_salidas(ops):
     """Usa MFE/MAE para estudiar CÓMO salir: ¿el target 2R deja dinero en la mesa o es too lejos?"""
     print(f"\n=== ESTUDIO DE SALIDAS (MFE = cuánto corre el precio a favor; MAE = cuánto sufre antes) ===")
@@ -224,6 +267,8 @@ def main():
         estudio_salidas(ops)
     elif "--mapa" in args:
         mapa_router(ops)
+    elif "--riesgo" in args:
+        riesgo_ruina(ops)
     elif args and not args[0].startswith("--"):
         desglose_estrategia(ops, args[0])
     else:
