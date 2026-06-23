@@ -59,9 +59,10 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
   - `live/mapa_liquidez.py`: mapa de liquidez en tiempo real (pools de stops + muros del order-book
     + OI + funding). **Verificado contra la API pública en vivo.**
   - `live/sniper.py` y `live/agente_smc.py`: detectores + paper-trading de SMC/barridos.
-  - **`live/arena.py`: ARENA en vivo — 34 estrategias × BTC/ETH/SOL × varias TF (1m→4h) en PAPEL.**
-    Incluye familia OB depurada, FVG+OB, RSI/divergencias, Merino y `merinox`, scalping, Elliott (proxy),
-    smart-money+price-action (`adrig`), multi-temporalidad real (`mtf`), OB reforzado (`ob_plus`),
+  - **`live/arena.py`: ARENA en vivo — 32 estrategias × BTC/ETH/SOL × varias TF (1m→4h) en PAPEL.**
+    Incluye familia OB depurada, FVG+OB, RSI/divergencias, Merino y `merinox`, `atr_break` (Keltner
+    adaptativo, validada), `donchian`, smart-money+price-action (`adrig`), multi-temporalidad real (`mtf`),
+    OB reforzado (`ob_plus`),
     filtros de sesión Asia, sub-sesión (aperturas reales de bolsa) y estrategias ICT de ventana de
     mercado (`silver_bullet`, `judas_swing_ob`, `ny_london_sweep`). Cada operación registra **contexto
     rico** (funding, OI, ΔOI, Fear&Greed, régimen/ADX, sesión/sub-sesión, premium/discount, liquidez,
@@ -114,6 +115,29 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 ---
 
 ## 5. 🔚 Última decisión / hallazgo
+
+- **2026-06-23 (tarde)** — 🧹 PROFESIONALIZACIÓN + nueva familia validada + poda con evidencia.
+  1. **`atr_break` (canal de Keltner adaptativo) — NUEVA estrategia VALIDADA** en Binance 50d (1m exacto):
+     **+0.41R en BTC Y ETH, win 52%** (vs 36-41% de las OB), positiva en los 2 meses y las 2 monedas.
+     Sesgo de diseño BAJO (de manual + concepto de un vídeo, no exprimida de los datos). **Perfil de edge
+     COMPLEMENTARIO:** gana en NY (+0.53R) donde las OB pierden (−0.12R) → diversifica de verdad. Ya en la
+     arena recogiendo datos en vivo. Su variante con filtro Asia/EMA200 NO mejoraba la base → entra sola.
+  2. **Poda con evidencia (respetando la MEJOR de las 5 salidas, no solo 'fixed'):** retiradas 4 muertas —
+     `sweep` (−0.18R), `breaker` (−0.05R, n=104), `breaker_prev_ny` (−0.58R; el +1.52R inicial era ruido de
+     n pequeño), `judas_swing_ob` (−1.56R, apenas dispara). **Arena: 34 → 32 estrategias activas.** Histórico
+     conservado, retiros reversibles y documentados en el código.
+  3. **Mean Reversion (anti-tendencia) — PROBADA y RECHAZADA (de momento):** comprar capitulación
+     (banda 2.5σ + RSI<25 + clímax de volumen). En 50d (régimen bajista) **perdió −0.32R** (atrapar cuchillos,
+     confirmado). NO va a la arena. Encolada al multi-año para el test justo: ¿gana en régimen LATERAL (2023)?
+  4. **6 estrategias de scalping/HFT/MEV analizadas y DESCARTADAS con razón** (market-making Avellaneda-Stoikov,
+     order-book imbalance, grid trading, CEX-DEX arb, JIT liquidity, MEV sandwich, CVD order-flow): requieren
+     Rust/C++, nodos propios, sub-milisegundo, capital institucional y comisiones 0% — **imposibles de construir
+     y de validar** con nuestra infra (regla nº1: no fiarse de lo que no se puede backtestear). El sandwich es
+     además depredador. Lo único reciclable: usar órdenes maker (límite) para bajar costes si algún día hay
+     dinero real, y CEX-DEX arb coincide con el carry ya identificado (pero su versión rentable es sub-ms).
+  5. **Métrica viva:** longs 803 (37%) / shorts 1390 (63%) — sesgo a corto coherente con el régimen bajista.
+  6. **Salud del sistema:** tests 22/22, los detectores nuevos IDÉNTICOS entre arena y backtest (la validación
+     aplica a la versión en vivo), todas las estrategias activas con dispatch verificado, board regenera sin error.
 
 - **2026-06-23** — ⭐ PRIMERA VALIDACIÓN FUERA DE MUESTRA del edge OB-Asia (el hallazgo más sólido del proyecto).
   1. **Contexto:** la arena en vivo (1.737 ops) sugería ganadoras espectaculares (`ob_plus_asia` +1.30R,
@@ -226,5 +250,5 @@ Elegir el camino con el carry como único edge robusto encontrado:
 
 ---
 
-*Última actualización: 2026-06-23 por Claude.*
+*Última actualización: 2026-06-23 (tarde) por Claude — atr_break validada, poda de 4, scalping/MEV descartado, 32 estrategias.*
 *Mantiene: Claude (con validación del dueño del proyecto).*
