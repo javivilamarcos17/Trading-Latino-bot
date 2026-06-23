@@ -59,13 +59,22 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
   - `live/mapa_liquidez.py`: mapa de liquidez en tiempo real (pools de stops + muros del order-book
     + OI + funding). **Verificado contra la API pública en vivo.**
   - `live/sniper.py` y `live/agente_smc.py`: detectores + paper-trading de SMC/barridos.
-  - **`live/arena.py`: ARENA en vivo — 18 estrategias × BTC/ETH × varias TF (1m→4h) = ~200
-    competidores en PAPEL.** Incluye familia OB, FVG, RSI/divergencias, Merino y Merino enriquecido
-    (`merinox`), scalping, Donchian, Elliott (proxy), VWAP, smart-money+price-action (`adrig`),
-    multi-temporalidad real (`mtf`) y OB reforzado (`ob_plus`). Cada operación registra **contexto rico**
-    (funding, OI, ΔOI, Fear&Greed, régimen/ADX, sesión, premium/discount, liquidez, volumen) y mide
-    **5 políticas de salida** sobre el recorrido real de 1m. Además, **registro CONTINUO de contexto**
-    (`_ctx_<coin>.jsonl`) para poder simular cualquier operativa futura. **Funcionando.**
+  - **`live/arena.py`: ARENA en vivo — 34 estrategias × BTC/ETH/SOL × varias TF (1m→4h) en PAPEL.**
+    Incluye familia OB depurada, FVG+OB, RSI/divergencias, Merino y `merinox`, scalping, Elliott (proxy),
+    smart-money+price-action (`adrig`), multi-temporalidad real (`mtf`), OB reforzado (`ob_plus`),
+    filtros de sesión Asia, sub-sesión (aperturas reales de bolsa) y estrategias ICT de ventana de
+    mercado (`silver_bullet`, `judas_swing_ob`, `ny_london_sweep`). Cada operación registra **contexto
+    rico** (funding, OI, ΔOI, Fear&Greed, régimen/ADX, sesión/sub-sesión, premium/discount, liquidez,
+    volumen, dirección sesión anterior) y mide **5 políticas de salida** sobre el recorrido real de 1m.
+    Registro CONTINUO de contexto (`_ctx_<coin>.jsonl`). **Funcionando — 1.737 ops cerradas al 2026-06-23.**
+  - ⚠️ **AVISO CRÍTICO (anti-autoengaño):** las 1.737 ops son de **UN SOLO RÉGIMEN** (1.736 de 1.737 con
+    Fear&Greed <30 = miedo; mercado bajista: cortos +0.42R vs largos −0.06R; Asia +0.75R vs NY −0.48R).
+    Las "ganadoras" (familia OB-Asia) son **la misma apuesta medida muchas veces**: *corto + OB + Asia +
+    bajista*. NO es diversificación, es concentración disfrazada. Cuando el régimen gire (euforia/alcista)
+    podrían caer todas a la vez. **Varias estrategias nuevas se diseñaron VIENDO estos datos** (sesgo de
+    diseño) → su buen resultado es eco, no predicción. **Metodología correcta:** los datos EN VIVO son la
+    verdad (van hacia adelante, sin sesgo); los **50 días de Binance** (`research/backtest_ganadoras.py`)
+    sirven para VALIDAR fuera de muestra cada conclusión antes de fiarse.
   - **Recolección automática EN LA NUBE (GitHub Actions, patrón bucle-en-job, cada ~3 min, 24/7
     auto-encadenado) — VERIFICADA.** Ya NO depende del portátil. Datos en la rama `arena-data`.
     Herramientas de análisis read-only: `_inventario.py`, `_analisis.py`, `_mtf.py`, `board.py`, `salidas.py`.
@@ -105,6 +114,31 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 ---
 
 ## 5. 🔚 Última decisión / hallazgo
+
+- **2026-06-23** — ⭐ PRIMERA VALIDACIÓN FUERA DE MUESTRA del edge OB-Asia (el hallazgo más sólido del proyecto).
+  1. **Contexto:** la arena en vivo (1.737 ops) sugería ganadoras espectaculares (`ob_plus_asia` +1.30R,
+     `ob_plus_asia_r3` +2.19R). PERO **todas las ops son de UN SOLO RÉGIMEN** (1.736/1.737 con miedo<30;
+     bajista: cortos +0.42R vs largos −0.06R; Asia +0.75R vs NY −0.48R). Riesgo de autoengaño: las "34
+     estrategias" son **la misma apuesta** (corto+OB+Asia+bajista) medida muchas veces, y varias se
+     diseñaron VIENDO esos datos (sesgo de diseño).
+  2. **Prueba (`research/backtest_ganadoras.py`):** backtest de 52 días (May 2–Jun 23 2026) con velas de
+     15m de Hyperliquid para señales + **1m de Binance** para salidas exactas (~75k velas/moneda, ~1.300
+     ops). Binance da meses de 1m (Hyperliquid solo 3-4 días); precio idéntico <0.1%.
+  3. **RESULTADO — el edge AGUANTA:** `ob_regime_asia` +0.32R (n=1.286), `ob_asia` +0.31R (n=1.308),
+     `ob_plus_asia` +0.16/+0.23R, `ob_trend_r3` +0.10/+0.16R. **Positivo en los dos meses Y en BTC+ETH.**
+     Es la validación más fuerte de cualquier cosa en el proyecto.
+  4. **PERO 3 avisos anti-autoengaño:**
+     (a) **Los números en vivo estaban INFLADOS 6-8×.** Edge real ≈ **+0.2-0.3R/op**, no +1.3-2.2R.
+     Muestra pequeña + suerte inflaban la tabla en vivo.
+     (b) **Sigue siendo el MISMO régimen** (May-Jun bajista/miedo). NO sabemos qué pasa en euforia/alcista.
+     (c) Las variantes apiladas por diseño (`ob_plus_asia_r3`, `ob_asia_close`) NO se validaron; las
+     ganadoras robustas son las de mayor muestra (`ob_regime_asia`, `ob_asia`), no las que lideraban en vivo.
+  5. **Metodología confirmada:** vivo genera hipótesis (sin sesgo, va hacia adelante) → Binance valida
+     fuera de muestra → solo entonces fiarse. Funcionó.
+  6. **Comprobación:** 9 estrategias casi muertas (smc=0, ob_scalp=2, mtf=2, ny_london_sweep=3,
+     judas_swing_ob=4 ops): las ICT de ventana estrecha disparan demasiado poco para medir nada.
+  7. **Infra:** merge a master (34 estrategias + SOL + 3 ICT) → la nube ya corre el código nuevo;
+     `data_store` destrackeado de las ramas de código (datos solo en `arena-data`).
 
 - **2026-06-22** — Reconstrucción de la ARENA en vivo como laboratorio de medición 24/7 (nube).
   1. **Decisión del dueño:** en vez de cerrar en "el direccional es eficiente", montar un laboratorio
@@ -192,5 +226,5 @@ Elegir el camino con el carry como único edge robusto encontrado:
 
 ---
 
-*Última actualización: 2026-06-22 por Claude.*
+*Última actualización: 2026-06-23 por Claude.*
 *Mantiene: Claude (con validación del dueño del proyecto).*
