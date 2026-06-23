@@ -30,84 +30,80 @@ import pandas as pd
 import requests
 
 REG = Path(__file__).resolve().parents[2] / "data_store" / "paper_arena"
-COINS = ["BTC", "ETH"]   # FOCO en BTC (estrella); ETH solo como control anti-sobreajuste
+COINS = ["BTC", "ETH", "SOL"]   # 3 monedas = 3x velocidad de datos; SOL añadida 2026-06-23
 # cada estrategia corre en SUS temporalidades (scalping en rápidas)
 ESTRATEGIAS_TF = {
     # Cobertura AMPLIA de temporalidades por familia: tener muestra en CADA TF y poder comparar la
     # MISMA estrategia entre temporalidades (objetivo: sacar lo mejor de cada una con datos reales).
     # Las velas se comparten en caché por (moneda, TF) -> ampliar es casi gratis para la API.
-    # --- estructura / tendencia: medios-altos ---
+    # ============================================================
+    # ESTRATEGIAS — TFs DEPURADOS CON DATOS REALES (2026-06-23)
+    # Regla: se elimina un TF cuando tiene >=5 ops y es consistentemente negativo.
+    # El 15m es el TF ganador de casi todo. El 5m solo funciona para FVG puro.
+    # El 4h tiene pocos datos (pocas señales/dia) y resultado negativo en la mayoria.
+    # ============================================================
+
+    # --- ESTRUCTURA / TENDENCIA (medios-altos) ---
     "smc": ["15m", "1h", "4h"], "merino": ["15m", "1h", "4h"],
-    "sweep": ["5m", "15m", "1h", "4h"],
-    # ob SIN FILTROS RETIRADO (2026-06-23): n=513 -0.12R global, -0.39R en datos reales (tagged).
-    # En datos reales ES PEOR que el backfill — completamente dominado por ob_trend/ob_regime.
-    "ob_trend": ["5m", "15m", "1h", "4h"],
-    # elliott TRANSFORMADO: solo dispara si el patron Elliott coincide ademas con un OB activo.
-    # Elliott mecanico puro = 0% win. Con OB como gatillo de timing tiene mucho mas sentido.
-    "elliott_ob": ["15m", "1h", "4h"],
-    # --- osciladores TRANSFORMADOS (rsi y rsidiv tenian -0.92R y -0.60R en datos reales,
-    #     peor que el backfill; se transforman en versiones con sesion + estructura) ---
-    "fvg": ["5m", "15m", "1h", "4h"],
-    "rsi_ob": ["5m", "15m", "1h"],         # RSI sale de extremo + precio en OB activo (EMA200)
-    "rsidiv_ob": ["15m", "1h", "4h"],      # Divergencia RSI + OB: doble confirmacion
-    # --- scalping / reversión rápida ---
-    "vwap": ["1m", "5m", "15m"],
-    # RETIRADAS (muestra suficiente, negativas de forma consistente):
-    # ob n=513 -0.39R tagged, scalp_rev n=485 -0.36R, scalp_rev3 n=120 -0.47R,
-    # volumen n=20 -0.62R, donchian n=65 -0.36R, rsi n=33 -0.92R tagged, rsidiv n=105 -0.60R tagged.
-    # --- COMPUESTAS multi-factor (price-action+smart-money y Merino enriquecido) ---
+    "sweep": ["15m", "1h", "4h"],     # 5m retirado: n=2 irrelevante, 15m mantiene
+    # RETIRADO 5m (58 ops -0.32R): el OB en 5m se forma y retestea en minutos, demasiado ruido.
+    # Mantenemos 15m (+0.78R 82ops=EL LIDER), 1h (+0.30R 77ops), 4h en observacion.
+    "ob_trend": ["15m", "1h", "4h"],
+    "elliott_ob": ["15m", "1h", "4h"],   # Elliott+OB: TFs medios donde el patron tiene sentido
+
+    # --- FVG (la familia mas prolifica — el 5m funciona, 4h muerto) ---
+    # RETIRADO 4h de fvg (53 ops -0.72R) y de fvg_asia (37 ops -0.71R): 4h FVG = muerte.
+    # fvg 5m = +0.48R 64%win (152 ops) — el único TF pequeño que funciona bien en la familia.
+    "fvg": ["5m", "15m", "1h"],
+    # TRANSFORMADOS: rsidiv_ob solo 15m/1h, quitamos 4h (rsidiv 4h -0.61R con 18 ops)
+    "rsi_ob": ["5m", "15m", "1h"],
+    "rsidiv_ob": ["15m", "1h"],
+
+    # RETIRADAS definitivamente (muestra suficiente, todas las salidas negativas):
+    # vwap 91ops -0.43R (1m -0.72R, 5m -0.38R, 15m -0.20R) — muerto en todos los TF y exits.
+    # ob 513ops -0.39R tagged, scalp_rev 485ops, scalp_rev3 120ops, donchian 65ops,
+    # rsi 33ops -0.92R, rsidiv 105ops -0.60R, adx 53ops -0.98R, scalp_sqz 270ops -0.69R.
+
+    # --- COMPUESTAS multi-factor ---
     "adrig": ["15m", "1h", "4h"], "merinox": ["15m", "1h", "4h"],
-    # --- MULTI-TEMPORALIDAD real (HTF marca direccion, LTF marca timing) ---
+    # RETIRADO 4h de adrig2 (18 ops -1.10R): adrig2 funciona en 15m (+0.72R) y 1h, no en 4h.
+    "adrig2": ["15m", "1h"],
+
+    # --- MULTI-TEMPORALIDAD ---
     "mtf": ["15m", "1h", "4h"],
-    # --- OB reforzado (lider + filtros validados por datos), en su TF dulce ---
-    "ob_plus": ["5m", "15m", "1h"],
-    # --- OB ADAPTATIVO al regimen (switcher: ob_trend en tendencia, ob_plus en rango) ---
-    "ob_regime": ["5m", "15m", "1h"],
-    # --- AdriG/ICT compleja: desplazamiento + FVG + retest a favor del sesgo ---
-    "adrig2": ["15m", "1h", "4h"],
-    # === PRUEBAS DE SESION (2026-06-23) ===
-    # Hallazgo: ob_trend Asia 80%/+1.09R, Londres 70%/+0.92R vs NY 27%/-0.41R.
-    # fvg: Asia +0.33R, Londres +0.55R (el backfill '?' lo arrastraba a -0.06R global).
-    # Cada sesion tiene su propio caracter — medimos cada hipotesis por separado.
-    # A) ob_asia: ob_trend solo en Asia+Londres (00-13 UTC) — test del filtro de sesion
-    "ob_asia": ["15m", "1h", "4h"],
-    # A2) fvg_asia: fvg con filtro de sesion — confirmacion de que es el tiempo, no el patron
-    "fvg_asia": ["5m", "15m", "1h", "4h"],
-    # A3) ob_regime_asia: el mejor switcher (ob_regime) solo en la mejor sesion (Asia+Londres)
+
+    # --- FAMILIA OB DEPURADA ---
+    # RETIRADO 5m de ob_plus (57 ops -0.35R). TF dulce = 15m (+0.56R 31ops).
+    "ob_plus": ["15m", "1h"],
+    # RETIRADO 1h de ob_regime (12 ops -0.37R): switcher funciona en 15m (+0.99R) y 5m.
+    # 5m bordeando el neutro (-0.04R 13ops) pero lo mantenemos para confirmar con SOL.
+    "ob_regime": ["5m", "15m"],
+
+    # --- PRUEBAS DE SESION ---
+    # ob_asia: RETIRADO 1h (9 ops -0.43R). El edge de sesion es solo en 15m (+0.97R) y 4h vigila.
+    "ob_asia": ["15m", "4h"],
+    # fvg_asia: RETIRADO 4h (-0.71R 37ops) y 5m (-0.21R 44ops). Solo 15m (+0.70R) y 1h.
+    "fvg_asia": ["15m", "1h"],
+    # ob_regime_asia: 15m (+0.97R) es el star, 1h (-0.11R 6ops) poca muestra — la mantenemos.
     "ob_regime_asia": ["15m", "1h"],
-    # B) ob_ny_open: ob_trend SOLO en apertura americana (13-15:30 UTC) — tesis ICT/Sensei Trading
     "ob_ny_open": ["5m", "15m", "1h"],
-    # C) ob_scalp: 15m zona + 1m timing, solo Asia+Londres — la madre del scalping optimizado
-    # (estr especial: multi-TF, run as "1m" but internally uses 15m zones)
+
+    # --- SCALP/MULTI-TF especiales ---
     "ob_scalp": ["1m"],
-    # D) sensei: ICT Killzone NY — rango asiatico + Judas Swing + ChoCh + FVG/OB en 1m/5m
-    # Tesis Sensei Trading: el mercado manipula la liquidez asiatica/londrina al abrir NY
     "sensei": ["1m", "5m"],
-    # ===== 5 ALTERNATIVAS NUEVAS (2026-06-23) — paralelas, sin tocar nada existente =====
-    # E) orf: Opening Range Breakout — primeros 15min de NY definen el rango del dia
+
+    # --- ALTERNATIVAS (en recoleccion de datos) ---
     "orf": ["5m", "15m"],
-    # F) fvg_ob: FVG dentro de OB — doble confluencia ICT (la señal mas fuerte de las dos)
-    "fvg_ob": ["5m", "15m", "1h"],
-    # G) breaker: Breaker Block ICT — OB fallido se convierte en nivel inverso
-    "breaker": ["15m", "1h", "4h"],
-    # H) asia_sweep: barrido del rango asiatico con recuperacion inmediata (trampa pura)
+    "fvg_ob": ["15m", "1h"],     # RETIRADO 5m (6 ops -1.40R); 15m +1.83R 100%win es el star
+    # breaker: RETIRADO 1h (26 ops -0.48R). Mantenemos 15m (3 ops prometedoras) y 4h (control).
+    "breaker": ["15m", "4h"],
     "asia_sweep": ["5m", "15m", "1h"],
-    # I) london_fade: fade del movimiento de Londres al abrir NY (operativa de sesion pura)
     "london_fade": ["15m", "1h"],
-    # adx y scalp_sqz RETIRADAS (2026-06-22): muertas con datos reales (adx 0% acierto / -1.1R;
-    # scalp_sqz -0.6/-0.8R con cualquier salida).
-    # ===== NUEVAS 2026-06-23 — calibradas con datos reales antes de lanzarlas =====
-    # J) ob_plus_asia: ob_plus SOLO Asia pura (h<7). Dato: Asia +1.03R 79%, Londres -0.97R 11%.
-    #    El edge de ob_plus esta SOLO en Asia — no en el conjunto Asia+Londres.
+
+    # ===== NUEVAS 2026-06-23 — calibradas con datos reales =====
     "ob_plus_asia": ["5m", "15m", "1h"],
-    # K) smc_asia: SMC (+0.77R tagged = mejor estrategia real) con filtro Asia+Londres.
-    #    Hipotesis: el SMC se degrada en NY igual que ob. Multi-TF como smc.
     "smc_asia": ["15m", "1h", "4h"],
-    # L) choch: Change of Character ICT — estructura previa rota en sentido contrario.
-    #    Solo Asia+Londres (datos: rango+asia = +1.49R 93%win, la mejor combinacion de todas).
     "choch": ["15m", "1h", "4h"],
-    # M) ema_pullback: pullback clasico a EMA21 en tendencia (ADX>18). Asia+Londres.
-    #    Familia totalmente nueva: mide si el pullback a la media tiene edge vs el OB.
     "ema_pullback": ["5m", "15m", "1h"],
 }
 HTF_DE = {"5m": "15m", "15m": "1h", "1h": "4h", "4h": "1d"}   # marco mayor para SMC según el menor
@@ -1575,7 +1571,7 @@ def main():
                         L = velas_cached(ex, coin, tf, vcache)
                         closed = L.iloc[:-1].reset_index(drop=True)   # velas YA cerradas
                         tsa = closed["t"].to_numpy()
-                        for p in range(max(0, len(closed) - 50), len(closed)):
+                        for p in range(max(0, len(closed) - 200), len(closed)):
                             if tsa[p] <= last_ts:                      # ya registrada antes
                                 continue
                             s = detectar_cerr(estr, closed.iloc[:p + 1], coin)   # evalúa esa vela
