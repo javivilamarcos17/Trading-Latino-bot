@@ -106,6 +106,13 @@ ESTRATEGIAS_TF = {
     "sensei": ["1m", "5m"],
 
     # --- ALTERNATIVAS (en recoleccion de datos) ---
+    # donchian: RE-ACTIVADA 2026-06-23 con criterio. Se retiro por -0.39R en vivo... pero se midio
+    # SOLO con salida 2R, que MATA un trend-following (su edge es dejar correr ganancias grandes).
+    # Backtest Binance (50d): donchian a 2R = +0.05/+0.24R; "dejar correr" = -0.05/-0.08R en oso/lateral,
+    # pero deberia brillar en tendencia fuerte (toro). El arena mide LAS 5 SALIDAS a la vez (fixed=cortar
+    # pronto, trail=dejar correr) -> con esto medimos EN VIVO la tesis del video (cortar vs dejar correr)
+    # y en QUE regimen gana cada una. 15m (el TF que el video dice que filtra el ruido) + 1h de control.
+    "donchian": ["15m", "1h"],
     "orf": ["5m", "15m"],
     "fvg_ob": ["15m", "1h"],     # RETIRADO 5m (6 ops -1.40R); 15m +1.83R 100%win es el star
     # breaker: RETIRADO 1h (26 ops -0.48R). Mantenemos 15m (3 ops prometedoras) y 4h (control).
@@ -466,7 +473,13 @@ def det_vwap(d):
 
 
 def det_donchian(d):
-    """Ruptura de canal Donchian (máx/mín de 20 velas) = seguimiento de tendencia (familia nueva)."""
+    """Ruptura de canal Donchian (máx/mín de 20 velas) = seguimiento de tendencia.
+    Lógica económica (no curve-fit): si el precio supera el MÁXIMO de las últimas 20 velas, hay
+    demanda real empujando (ruptura genuina); espejo a la baja. Entrada al CIERRE de la vela de
+    ruptura (cl[j] cruza la banda y cl[j-1] aún no) — exige cierre, no solo mecha (filtra fakeouts).
+    Stop al swing opuesto de 10 velas. El objetivo 2R aquí es solo el ancla del riesgo: el arena
+    mide 5 salidas en paralelo (fixed=cortar pronto vs trail=dejar correr), que es como medimos EN
+    VIVO la tesis del video (Donchian rinde dejando correr) y en qué régimen gana cada salida."""
     hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy(); j = len(cl) - 1
     if j < 25:
         return None
