@@ -45,7 +45,8 @@ ESTRATEGIAS_TF = {
 
     # --- ESTRUCTURA / TENDENCIA (medios-altos) ---
     "smc": ["15m", "1h", "4h"], "merino": ["15m", "1h", "4h"],
-    "sweep": ["15m", "1h", "4h"],     # 5m retirado: n=2 irrelevante, 15m mantiene
+    # sweep RETIRADA 2026-06-23: n=18, hasta su MEJOR salida (t125) = -0.18R. Negativa en todas las salidas.
+    # "sweep": ["15m", "1h", "4h"],
     # RETIRADO 5m (58ops -0.32R), 1h (27ops -0.24R), 4h (18ops -0.42R).
     # Solo 15m tiene edge real: +1.01R 76%win (n=66). Fuera del 15m el OB pierde toda la magia.
     "ob_trend": ["15m"],
@@ -86,7 +87,9 @@ ESTRATEGIAS_TF = {
     # breaker_prev_ny: breaker (+0.014R muerto) RESUCITADO por filtro sesion anterior NY.
     #   Cuando NY anterior fue alcista: breaker = +1.52R win=94% (n=18). El contexto del
     #   dia anterior cambia completamente el edge — el breaker necesita momentum previo de NY.
-    "breaker_prev_ny": ["15m"],
+    # breaker_prev_ny RETIRADA 2026-06-23: con mas datos (n=19) el edge se evaporo — hasta su
+    #   MEJOR salida (be05) = -0.58R. El +1.52R inicial (n=18) era ruido de muestra pequena.
+    # "breaker_prev_ny": ["15m"],
     # RETIRADO 1h de ob_regime (12 ops -0.37R): switcher funciona en 15m (+0.99R) y 5m.
     # 5m bordeando el neutro (-0.04R 13ops) pero lo mantenemos para confirmar con SOL.
     "ob_regime": ["5m", "15m"],
@@ -122,8 +125,9 @@ ESTRATEGIAS_TF = {
     "atr_break": ["15m", "1h"],
     "orf": ["5m", "15m"],
     "fvg_ob": ["15m", "1h"],     # RETIRADO 5m (6 ops -1.40R); 15m +1.83R 100%win es el star
-    # breaker: RETIRADO 1h (26 ops -0.48R). Mantenemos 15m (3 ops prometedoras) y 4h (control).
-    "breaker": ["15m", "4h"],
+    # breaker RETIRADA 2026-06-23: n=104, hasta su MEJOR salida = -0.05R. 104 ops sin edge y sin
+    #   tesis fuerte que la respalde. Su variante prev_ny tambien murio con datos. Familia agotada.
+    # "breaker": ["15m", "4h"],
     # asia_sweep RETIRADA DEFINITIVA 2026-06-23: n=23 exp=-0.564R, la peor estrategia del arena.
     # El barrido del rango asiatico es REAL (el precio barra el rango) pero la entrada es mala.
     # El mismo concepto funciona mejor en judas_swing_ob (con confirmacion OB de reversal).
@@ -153,7 +157,9 @@ ESTRATEGIAS_TF = {
     # R) judas_swing_ob: London open (07-10h) barre el rango asiatico (trampa institucional)
     #    y luego forma OB en la direccion CONTRARIA. Es el 'Judas Swing' ICT — la manipulation
     #    mas documentada: Londres engana al retail antes de moverse en la direccion real.
-    "judas_swing_ob": ["5m", "15m"],
+    # judas_swing_ob RETIRADA 2026-06-23: en mucho tiempo solo genero n=4 (apenas dispara) Y pierde
+    #   (-1.56R). Patron demasiado restrictivo: sin muestra util y negativa. Concepto ICT no cuaja aqui.
+    # "judas_swing_ob": ["5m", "15m"],
     # S) ny_london_sweep: NY open (13-15h) barre el rango de Londres y revierte.
     #    El paralelo del Judas Swing en la transicion London → NY. Ya tenemos london_hi/lo en
     #    contexto; esta estrategia verifica si NY 'roba' liquidez de Londres antes de seguir.

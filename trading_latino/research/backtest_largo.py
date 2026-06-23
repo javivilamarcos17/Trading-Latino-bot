@@ -106,6 +106,44 @@ def det_vwap(d):
         return _setup("corto", cl[j], swh, 2.0)
     return None
 
+def det_mean_rev(d, target_mode="2R"):
+    """REVERSIÓN A LA MEDIA (anti-tendencia): comprar capitulación / vender euforia.
+    Banda inferior (SMA20 − 2.5σ) + RSI14<25 + clímax de volumen (>1.8× media) = agotamiento.
+    En 50d (régimen bajista) PERDIÓ (-0.32R): atrapar cuchillos. Aquí se prueba en régimen LATERAL
+    (2023) que es donde la reversión a la media DEBERÍA funcionar. Espejo para euforia.
+    target_mode: '2R' (comparable) | 'mean' (salida natural a la SMA20)."""
+    cl = d["cierre"].to_numpy(); hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    vol = d["volumen"].to_numpy(); j = len(cl) - 1
+    if j < 30: return None
+    sma20 = d["cierre"].rolling(20).mean().to_numpy()
+    std20 = d["cierre"].rolling(20).std().to_numpy()
+    from trading_latino.research.backtest_ganadoras import _rsi
+    rsi = _rsi(d["cierre"])
+    vm = pd.Series(vol).rolling(20).mean().to_numpy()
+    if np.isnan(sma20[j]) or np.isnan(std20[j]) or np.isnan(rsi[j]) or not vm[j]: return None
+    atr = _atr14_largo(d)
+    banda_inf = sma20[j] - 2.5 * std20[j]; banda_sup = sma20[j] + 2.5 * std20[j]
+    if lo[j] <= banda_inf and rsi[j] < 25 and vol[j] > 1.8 * vm[j]:
+        entry = cl[j]; stop = lo[j] - 0.5 * atr[j]
+        if target_mode == "mean":
+            D = entry - stop
+            if D <= 0: return None
+            r = (sma20[j] - entry) / D
+            return _setup("largo", entry, stop, r) if r > 0 else None
+        return _setup("largo", entry, stop, 2.0)
+    if hi[j] >= banda_sup and rsi[j] > 75 and vol[j] > 1.8 * vm[j]:
+        entry = cl[j]; stop = hi[j] + 0.5 * atr[j]
+        if target_mode == "mean":
+            D = stop - entry
+            if D <= 0: return None
+            r = (entry - sma20[j]) / D
+            return _setup("corto", entry, stop, r) if r > 0 else None
+        return _setup("corto", entry, stop, 2.0)
+    return None
+
+def det_mean_rev_2R(d):   return det_mean_rev(d, "2R")
+def det_mean_rev_mean(d): return det_mean_rev(d, "mean")
+
 def _atr14_largo(d):
     hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy()
     tr = np.maximum(hi[1:] - lo[1:],
@@ -218,6 +256,9 @@ def estrategias_para(coin):
         # --- ATR Breakout (canal adaptativo vs Donchian fijo) ---
         "atr_break":       (det_atr_break,       "fija"),  # baseline sin filtros
         "atr_break_trend": (det_atr_break_trend, "fija"),  # + EMA200: ¿mejora en todos los regímenes?
+        # --- Mean Reversion (anti-tendencia): perdió en 50d bajista, ¿gana en lateral 2023? ---
+        "mean_rev_2R":   (det_mean_rev_2R,   "fija"),
+        "mean_rev_mean": (det_mean_rev_mean, "fija"),
     }
 
 # ------------------------------------------------------------------ motor
