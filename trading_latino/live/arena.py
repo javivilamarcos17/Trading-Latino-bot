@@ -46,15 +46,15 @@ ESTRATEGIAS_TF = {
     # --- ESTRUCTURA / TENDENCIA (medios-altos) ---
     "smc": ["15m", "1h", "4h"], "merino": ["15m", "1h", "4h"],
     "sweep": ["15m", "1h", "4h"],     # 5m retirado: n=2 irrelevante, 15m mantiene
-    # RETIRADO 5m (58 ops -0.32R): el OB en 5m se forma y retestea en minutos, demasiado ruido.
-    # Mantenemos 15m (+0.78R 82ops=EL LIDER), 1h (+0.30R 77ops), 4h en observacion.
-    "ob_trend": ["15m", "1h", "4h"],
+    # RETIRADO 5m (58ops -0.32R), 1h (27ops -0.24R), 4h (18ops -0.42R).
+    # Solo 15m tiene edge real: +1.01R 76%win (n=66). Fuera del 15m el OB pierde toda la magia.
+    "ob_trend": ["15m"],
     "elliott_ob": ["15m", "1h", "4h"],   # Elliott+OB: TFs medios donde el patron tiene sentido
 
-    # --- FVG (la familia mas prolifica — el 5m funciona, 4h muerto) ---
-    # RETIRADO 4h de fvg (53 ops -0.72R) y de fvg_asia (37 ops -0.71R): 4h FVG = muerte.
-    # fvg 5m = +0.48R 64%win (152 ops) — el único TF pequeño que funciona bien en la familia.
-    "fvg": ["5m", "15m", "1h"],
+    # --- FVG — RETIRADA DEFINITIVA 2026-06-23 ---
+    # fvg n=533 exp=-0.049R: muestra maxima de confianza, negativo en todos los TFs y salidas.
+    # fvg_asia n=167 exp=-0.072R: el filtro Asia NO ayuda al FVG sin OB.
+    # LECCION: FVG solo no tiene edge. FVG+OB (fvg_ob) si funciona (+0.380R). La confluencia es clave.
     # TRANSFORMADOS: rsidiv_ob solo 15m/1h, quitamos 4h (rsidiv 4h -0.61R con 18 ops)
     "rsi_ob": ["5m", "15m", "1h"],
     "rsidiv_ob": ["15m", "1h"],
@@ -75,6 +75,18 @@ ESTRATEGIAS_TF = {
     # --- FAMILIA OB DEPURADA ---
     # RETIRADO 5m de ob_plus (57 ops -0.35R). TF dulce = 15m (+0.56R 31ops).
     "ob_plus": ["15m", "1h"],
+    # ob_plus_asia_r3: COMBINATION de los dos mejores hallazgos:
+    #   ob_plus_asia (reina, +1.295R n=66) + objetivo 3R (como ob_trend_r3, +1.085R n=79).
+    #   Si el precio alcanza 2R y continua (evidenciado por trail < fixed), probar 3R captura mas.
+    "ob_plus_asia_r3": ["15m"],
+    # ob_asia_close: OB solo en cierre de Tokyo (03-07h UTC).
+    #   sub_sesion revela: tokyo_close +0.68R vs tokyo_open +0.04R. La ultima parte de Asia
+    #   es donde el mercado hace los movimientos mas limpios antes de que abra Londres.
+    "ob_asia_close": ["15m"],
+    # breaker_prev_ny: breaker (+0.014R muerto) RESUCITADO por filtro sesion anterior NY.
+    #   Cuando NY anterior fue alcista: breaker = +1.52R win=94% (n=18). El contexto del
+    #   dia anterior cambia completamente el edge — el breaker necesita momentum previo de NY.
+    "breaker_prev_ny": ["15m"],
     # RETIRADO 1h de ob_regime (12 ops -0.37R): switcher funciona en 15m (+0.99R) y 5m.
     # 5m bordeando el neutro (-0.04R 13ops) pero lo mantenemos para confirmar con SOL.
     "ob_regime": ["5m", "15m"],
@@ -82,11 +94,12 @@ ESTRATEGIAS_TF = {
     # --- PRUEBAS DE SESION ---
     # ob_asia: RETIRADO 1h (9 ops -0.43R). El edge de sesion es solo en 15m (+0.97R) y 4h vigila.
     "ob_asia": ["15m", "4h"],
-    # fvg_asia: RETIRADO 4h (-0.71R 37ops) y 5m (-0.21R 44ops). Solo 15m (+0.70R) y 1h.
-    "fvg_asia": ["15m", "1h"],
+    # fvg_asia RETIRADA DEFINITIVA 2026-06-23: n=167 exp=-0.072R, negativo en 15m y 1h.
+    # El filtro Asia SIN OB no funciona. fvg_ob_asia (con OB) si es positivo (+0.654R).
     # ob_regime_asia: 15m (+0.97R) es el star, 1h (-0.11R 6ops) poca muestra — la mantenemos.
     "ob_regime_asia": ["15m", "1h"],
-    "ob_ny_open": ["5m", "15m", "1h"],
+    # ob_ny_open: -0.478R fixed pero trail=+0.152R (n=20). Poca muestra, mantener para confirmar.
+    "ob_ny_open": ["15m"],    # retirado 5m y 1h, solo 15m para seguir midiendo
 
     # --- SCALP/MULTI-TF especiales ---
     "ob_scalp": ["1m"],
@@ -97,7 +110,9 @@ ESTRATEGIAS_TF = {
     "fvg_ob": ["15m", "1h"],     # RETIRADO 5m (6 ops -1.40R); 15m +1.83R 100%win es el star
     # breaker: RETIRADO 1h (26 ops -0.48R). Mantenemos 15m (3 ops prometedoras) y 4h (control).
     "breaker": ["15m", "4h"],
-    "asia_sweep": ["5m", "15m", "1h"],
+    # asia_sweep RETIRADA DEFINITIVA 2026-06-23: n=23 exp=-0.564R, la peor estrategia del arena.
+    # El barrido del rango asiatico es REAL (el precio barra el rango) pero la entrada es mala.
+    # El mismo concepto funciona mejor en judas_swing_ob (con confirmacion OB de reversal).
     "london_fade": ["15m", "1h"],
 
     # ===== AÑADIDAS 2026-06-23 — de la primera ronda de calibración =====
@@ -109,9 +124,9 @@ ESTRATEGIAS_TF = {
     # N) fvg_ob_asia: EL HALLAZGO DEL DIA — fvg_ob 15m Asia = 100% win +1.8R (n=15).
     #    El mismo setup en Londres/NY = negativo. Filtrar a Asia pura es la clave.
     "fvg_ob_asia": ["15m", "1h"],
-    # O) adrig2_asia: adrig2 (+0.72R 29ops) con filtro Asia+Londres. Mismo principio
-    #    que ob_trend -> ob_asia: si el patron funciona, la sesion asiática lo amplifica.
-    "adrig2_asia": ["15m", "1h"],
+    # O) adrig2_asia RETIRADA 2026-06-23: n=120 exp=-0.140R — el filtro de sesion DESTROZA adrig2.
+    #    adrig2 base = +0.030R; con filtro Asia = -0.140R. Adrig2 necesita NY/Londres (volumen alto).
+    #    LECCION: los patrones de desplazamiento institucional NO mejoran con filtro Asia (al reves que OB).
     # P) ob_trend_r3: ob_trend en Asia con objetivo 3R. Los datos muestran que ob_plus_asia
     #    (fixed=+1.30R) NO se mejora con trailing (trail=+0.14R). El precio alcanza el objetivo
     #    Y sigue. Probar 3R para ver si podemos capturar mas ganancia en los mejores setups.
@@ -944,6 +959,66 @@ def det_ob_trend_r3(d):
     return None
 
 
+def det_ob_asia_close(d):
+    """OB EN EL CIERRE DE TOKIO (03-07h UTC) — dato de sub_sesion revela que tokyo_close
+    (+0.68R) es la mejor sub-sesion, mejor que tokyo_open (+0.04R) y london_open (+0.02R).
+    Intuicion: el final de Asia es cuando los institucionales asiaticos cierran posiciones
+    y el mercado hace sus movimientos mas limpios antes de que llegue Londres.
+    Refinamiento de ob_asia (00-07h +0.34R) para capturar solo la ventana con mayor edge."""
+    h = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+    if not (3 <= h < 7):    # solo tokyo_close (03-07h UTC)
+        return None
+    return det_ob_trend(d)
+
+
+def _prev_ny_alcista(d):
+    """Calcula si la sesion NY anterior (13-21h UTC del dia anterior) fue alcista.
+    Retorna True si cierre NY > apertura NY, False si fue bajista, None si sin datos."""
+    ts_pd = pd.to_datetime(d["t"].to_numpy(), unit="ms", utc=True)
+    j = len(d) - 1
+    hoy = ts_pd[j].date()
+    import datetime
+    ayer = hoy - datetime.timedelta(days=1)
+    mask_ny = (ts_pd.date == ayer) & (ts_pd.hour >= 13) & (ts_pd.hour < 21)
+    idx_ny = np.where(mask_ny)[0]
+    if len(idx_ny) < 4:
+        return None
+    cl = d["cierre"].to_numpy()
+    return cl[idx_ny[-1]] > cl[idx_ny[0]]
+
+
+def det_breaker_prev_ny(d):
+    """BREAKER CON FILTRO SESION ANTERIOR NY ALCISTA — el hallazgo mas potente del analisis.
+    breaker general = +0.014R (casi muerto), PERO cuando la sesion NY anterior fue alcista
+    sube a +1.52R win=94% (n=18). El contexto macro (lo que hizo NY) cambia completamente
+    el edge del breaker. El 'breaker block' institucional necesita momentum de la sesion
+    anterior para confirmar que la estructura esta respaldada por flujo real."""
+    prev = _prev_ny_alcista(d)
+    if prev is None or not prev:   # necesitamos NY alcista del dia anterior
+        return None
+    return det_breaker(d)
+
+
+def det_ob_plus_asia_r3(d):
+    """LA REINA CON OBJETIVO 3R: ob_plus_asia (+1.295R, #1 en la arena) con objetivo ampliado.
+    La logica: ob_plus_asia fixed=+1.295R vs trail=+0.414R → el precio alcanza 2R y CONTINUA.
+    ob_trend_r3 (tambien Asia, objetivo 3R) = +1.085R confirma que el mercado en Asia durante
+    tendencia supera los 2R con frecuencia. Esta variante prueba si ob_plus (con sus filtros
+    adicionales: EMA200 + sin climax de volumen) captura aun mas ganancia con 3R."""
+    h = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+    if h >= 7:
+        return None
+    base = det_ob_plus(d)
+    if base is None:
+        return None
+    D = abs(base["entry"] - base["stop"])
+    if base["dir"] == "largo":
+        base["target"] = base["entry"] + 3.0 * D
+    else:
+        base["target"] = base["entry"] - 3.0 * D
+    return base
+
+
 def det_silver_bullet(d):
     """ICT SILVER BULLET — FVG en las 3 ventanas killzone donde el institucional es mas activo.
     Ventanas UTC: 08-09h (London open = 3AM EST), 15-16h (NYSE 10AM), 19-20h (NYSE 2PM).
@@ -1470,6 +1545,12 @@ def detectar_cerr(estr, cerr, coin):
         return det_adrig2_asia(cerr)
     if estr == "ob_trend_r3":
         return det_ob_trend_r3(cerr)
+    if estr == "ob_plus_asia_r3":
+        return det_ob_plus_asia_r3(cerr)
+    if estr == "ob_asia_close":
+        return det_ob_asia_close(cerr)
+    if estr == "breaker_prev_ny":
+        return det_breaker_prev_ny(cerr)
     if estr == "silver_bullet":
         return det_silver_bullet(cerr)
     if estr == "judas_swing_ob":
