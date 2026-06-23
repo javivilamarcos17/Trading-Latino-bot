@@ -100,11 +100,35 @@ ESTRATEGIAS_TF = {
     "asia_sweep": ["5m", "15m", "1h"],
     "london_fade": ["15m", "1h"],
 
-    # ===== NUEVAS 2026-06-23 — calibradas con datos reales =====
+    # ===== AÑADIDAS 2026-06-23 — de la primera ronda de calibración =====
     "ob_plus_asia": ["5m", "15m", "1h"],
     "smc_asia": ["15m", "1h", "4h"],
     "choch": ["15m", "1h", "4h"],
     "ema_pullback": ["5m", "15m", "1h"],
+    # ===== AÑADIDAS 2026-06-23 — segunda ronda, basadas en analisis de datos en vivo =====
+    # N) fvg_ob_asia: EL HALLAZGO DEL DIA — fvg_ob 15m Asia = 100% win +1.8R (n=15).
+    #    El mismo setup en Londres/NY = negativo. Filtrar a Asia pura es la clave.
+    "fvg_ob_asia": ["15m", "1h"],
+    # O) adrig2_asia: adrig2 (+0.72R 29ops) con filtro Asia+Londres. Mismo principio
+    #    que ob_trend -> ob_asia: si el patron funciona, la sesion asiática lo amplifica.
+    "adrig2_asia": ["15m", "1h"],
+    # P) ob_trend_r3: ob_trend en Asia con objetivo 3R. Los datos muestran que ob_plus_asia
+    #    (fixed=+1.30R) NO se mejora con trailing (trail=+0.14R). El precio alcanza el objetivo
+    #    Y sigue. Probar 3R para ver si podemos capturar mas ganancia en los mejores setups.
+    "ob_trend_r3": ["15m", "1h"],
+    # RONDA 3 — estrategias de ventana de mercado basadas en ICT + datos propios
+    # Q) silver_bullet: FVG en las 3 killzones ICT (08h London, 15h NYSE 10AM, 19h NYSE 2PM).
+    #    El institucional opera en ventanas horarias muy concretas; el FVG dentro de esa ventana
+    #    tiene el mayor edge segun la metodologia ICT (validado en forex, probandolo en cripto).
+    "silver_bullet": ["5m", "15m"],
+    # R) judas_swing_ob: London open (07-10h) barre el rango asiatico (trampa institucional)
+    #    y luego forma OB en la direccion CONTRARIA. Es el 'Judas Swing' ICT — la manipulation
+    #    mas documentada: Londres engana al retail antes de moverse en la direccion real.
+    "judas_swing_ob": ["5m", "15m"],
+    # S) ny_london_sweep: NY open (13-15h) barre el rango de Londres y revierte.
+    #    El paralelo del Judas Swing en la transicion London → NY. Ya tenemos london_hi/lo en
+    #    contexto; esta estrategia verifica si NY 'roba' liquidez de Londres antes de seguir.
+    "ny_london_sweep": ["5m", "15m"],
 }
 HTF_DE = {"5m": "15m", "15m": "1h", "1h": "4h", "4h": "1d"}   # marco mayor para SMC según el menor
 # Coste REALISTA por operación (ida+vuelta): Hyperliquid taker ~0.035%/lado + slippage.
@@ -868,6 +892,175 @@ def det_smc_asia(ex, coin, ltf, cache):
     return det_smc(ex, coin, ltf, cache)
 
 
+def det_fvg_ob_asia(d):
+    """FVG_OB CON FILTRO ASIA (h<7 UTC) — el descubrimiento mas importante de la arena hasta ahora.
+    Analisis de fvg_ob por sesion muestra:
+      - fvg_ob 15m Asia:    n=15 ops, TODAS positivas, rango +1.77R a +1.94R  (100% win)
+      - fvg_ob 5m  Londres: n=6  ops, TODAS negativas, rango -1.34R a -1.45R (0% win)
+    La doble confluencia FVG-dentro-de-OB funciona PERFECTAMENTE en Asia y FALLA en NY/Londres.
+    Hipotesis: en Asia el mercado es menos manipulado (menos volumen), las zonas institucionales
+    se respetan mas limpiamente. Filtramos a solo Asia pura (h<7) para capturar ese edge."""
+    h = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+    if h >= 7:   # solo Asia pura; London y NY destruyen el patron
+        return None
+    return det_fvg_ob(d)
+
+
+def det_adrig2_asia(d):
+    """AdriG2 (desplazamiento institucional + FVG + retest) CON FILTRO Asia+Londres.
+    adrig2 15m = +0.72R 29ops — excelente resultado. La hipotesis es que el patron
+    de desplazamiento+FVG, al igual que todos los patrones OB, mejora con filtro de sesion.
+    Aplicamos el mismo filtro h<13 que mejoro ob_trend -> ob_asia (+1.13R en Asia)."""
+    h = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+    if h >= 13:
+        return None
+    return det_adrig2(d)
+
+
+def det_ob_trend_r3(d):
+    """ob_trend CON OBJETIVO 3R (en vez de 2R). Los datos muestran que ob_plus_asia
+    fixed=+1.30R y que el trail NO mejora el fixed (trail=+0.14R vs fixed=+1.30R para ob_plus_asia).
+    Eso significa que los OB buenos ALCANZAN el objetivo y el precio CONTINUA mas alla.
+    Esta variante prueba si ampliar el objetivo a 3R captura mas ganancia en los mejores setups.
+    Solo en Asia (h<7) donde el edge es maximo. Mismo detector que ob_trend pero objetivo 3R."""
+    h = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+    if h >= 7:
+        return None
+    base = det_ob(d)
+    if base is None:
+        return None
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    j = len(d) - 1; cl = d["cierre"].to_numpy()[j]
+    if np.isnan(ema[j]):
+        return None
+    if base["dir"] == "largo" and cl > ema[j]:
+        D = base["entry"] - base["stop"]
+        base["target"] = base["entry"] + 3.0 * D    # 3R en vez de 2R
+        return base
+    if base["dir"] == "corto" and cl < ema[j]:
+        D = base["stop"] - base["entry"]
+        base["target"] = base["entry"] - 3.0 * D
+        return base
+    return None
+
+
+def det_silver_bullet(d):
+    """ICT SILVER BULLET — FVG en las 3 ventanas killzone donde el institucional es mas activo.
+    Ventanas UTC: 08-09h (London open = 3AM EST), 15-16h (NYSE 10AM), 19-20h (NYSE 2PM).
+    Busca FVG que se formo dentro de la ventana y al que el precio regresa para retestear.
+    EMA200 alineada para no ir en contra del sesgo macro. Una de las estrategias ICT
+    mas estudiadas y documentadas: el institucional deja huellas en esas horas concretas."""
+    h = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+    if h not in (8, 15, 19):   # solo dentro de las 3 killzones de 1h
+        return None
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    cl = d["cierre"].to_numpy()
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    j = len(cl) - 1
+    if j < 215 or np.isnan(ema[j]):
+        return None
+    for i in range(max(2, j - 8), j - 1):
+        # FVG alcista: hi[i-1] < lo[i+1] → zona de imbalance que el precio regresa a tocar
+        if lo[i + 1] > hi[i - 1]:
+            fvg_bot = hi[i - 1]; fvg_top = lo[i + 1]
+            if cl[j] > ema[j] and fvg_bot <= cl[j] <= fvg_top:
+                return _setup("largo", cl[j], fvg_bot * 0.999, 2.0)
+        # FVG bajista: lo[i-1] > hi[i+1]
+        if hi[i + 1] < lo[i - 1]:
+            fvg_bot = hi[i + 1]; fvg_top = lo[i - 1]
+            if cl[j] < ema[j] and fvg_bot <= cl[j] <= fvg_top:
+                return _setup("corto", cl[j], fvg_top * 1.001, 2.0)
+    return None
+
+
+def det_judas_swing_ob(d):
+    """JUDAS SWING + OB: London open (07-10 UTC) barre el rango asiatico (trampa institucional)
+    y luego forma un Order Block en la direccion CONTRARIA. El 'Judas Swing' es el patron ICT
+    mas documentado: Londres engana al retail (breakout falso sobre Asia H/L) antes de moverse
+    en la direccion real con los institucionales. Entrada en el primer OB de reversal."""
+    h = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+    if not (7 <= h < 10):
+        return None
+    ts_pd = pd.to_datetime(d["t"].to_numpy(), unit="ms", utc=True)
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    cl = d["cierre"].to_numpy(); op = d["apertura"].to_numpy()
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    j = len(cl) - 1
+    if j < 215 or np.isnan(ema[j]):
+        return None
+    # Rango asiatico (0-7 UTC del mismo dia)
+    mask_asia = ts_pd.hour < 7
+    idx_asia = np.where(mask_asia)[0]
+    if len(idx_asia) < 3:
+        return None
+    asia_hi = hi[idx_asia].max(); asia_lo = lo[idx_asia].min()
+    # Velas de Londres ya transcurridas (07-10 UTC)
+    mask_lon = (ts_pd.hour >= 7) & (ts_pd.hour < 10)
+    idx_lon = np.where(mask_lon)[0]
+    if len(idx_lon) < 2:
+        return None
+    swept_hi = hi[idx_lon].max() > asia_hi   # Londres barrio el maximo asiatico → trampa bajista
+    swept_lo = lo[idx_lon].min() < asia_lo   # Londres barrio el minimo asiatico → trampa alcista
+    if not swept_hi and not swept_lo:
+        return None
+    # Buscar OB de reversal en las ultimas velas (dentro de la ventana de Londres)
+    if swept_hi and cl[j] < ema[j]:
+        for i in range(max(0, j - 10), j - 1):
+            if (hi[i] - lo[i]) / cl[i] < 0.0005: continue
+            if cl[i] > op[i] and cl[i + 1] < lo[i] and lo[i] <= cl[j] <= hi[i]:
+                return _setup("corto", cl[j], hi[i] * 1.001, 2.0)
+    if swept_lo and cl[j] > ema[j]:
+        for i in range(max(0, j - 10), j - 1):
+            if (hi[i] - lo[i]) / cl[i] < 0.0005: continue
+            if cl[i] < op[i] and cl[i + 1] > hi[i] and lo[i] <= cl[j] <= hi[i]:
+                return _setup("largo", cl[j], lo[i] * 0.999, 2.0)
+    return None
+
+
+def det_ny_london_sweep(d):
+    """NY SWEEP DEL RANGO LONDINENSE: NY open (13-15 UTC) barre el maximo/minimo de Londres
+    y luego revierte con OB. Paralelo del Judas Swing en la transicion London → NY.
+    Tesis: NY primero 'roba' la liquidez que Londres acumulo (stops por encima/debajo del rango
+    de 7-13h) y luego continua en la direccion opuesta. EMA200 como filtro de sesgo macro."""
+    h = int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+    if not (13 <= h < 15):
+        return None
+    ts_pd = pd.to_datetime(d["t"].to_numpy(), unit="ms", utc=True)
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    cl = d["cierre"].to_numpy(); op = d["apertura"].to_numpy()
+    ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    j = len(cl) - 1
+    if j < 215 or np.isnan(ema[j]):
+        return None
+    # Rango londinense (7-13 UTC)
+    mask_lon = (ts_pd.hour >= 7) & (ts_pd.hour < 13)
+    idx_lon = np.where(mask_lon)[0]
+    if len(idx_lon) < 4:
+        return None
+    lon_hi = hi[idx_lon].max(); lon_lo = lo[idx_lon].min()
+    # Velas NY actuales (13-15 UTC)
+    mask_ny = (ts_pd.hour >= 13) & (ts_pd.hour < 15)
+    idx_ny = np.where(mask_ny)[0]
+    if len(idx_ny) < 1:
+        return None
+    swept_lon_hi = hi[idx_ny].max() > lon_hi   # NY barrio el maximo de Londres → trampa alcista
+    swept_lon_lo = lo[idx_ny].min() < lon_lo   # NY barrio el minimo de Londres → trampa bajista
+    if not swept_lon_hi and not swept_lon_lo:
+        return None
+    # Buscar OB de reversal tras el sweep
+    if swept_lon_hi and cl[j] < ema[j]:
+        for i in range(max(0, j - 10), j - 1):
+            if (hi[i] - lo[i]) / cl[i] < 0.0005: continue
+            if cl[i] > op[i] and cl[i + 1] < lo[i] and lo[i] <= cl[j] <= hi[i]:
+                return _setup("corto", cl[j], hi[i] * 1.001, 2.0)
+    if swept_lon_lo and cl[j] > ema[j]:
+        for i in range(max(0, j - 10), j - 1):
+            if (hi[i] - lo[i]) / cl[i] < 0.0005: continue
+            if cl[i] < op[i] and cl[i + 1] > hi[i] and lo[i] <= cl[j] <= hi[i]:
+                return _setup("largo", cl[j], lo[i] * 0.999, 2.0)
+    return None
+
+
 def det_ob_scalp(ex, coin, cache):
     """SCALP INSTITUCIONAL (la madre de la estrategia final): el OB en 15m marca la ZONA
     (OB válido + EMA200 + sin clímax de volumen), y la vela de 1m da el TIMING exacto dentro
@@ -1052,6 +1245,29 @@ def sesion_de(ts):
     if h < 7:
         return "asia"
     return "cierre"
+
+
+def sub_sesion_de(ts):
+    """Sub-sesión más granular: aperturas/cierres específicos de bolsas reales.
+    Cripto opera 24/7 pero los movimientos siguen los horarios de las bolsas tradicionales:
+      - Tokyo (TYO):   abre 0:00 UTC, cierra 6:00 UTC (Nikkei, JPY)
+      - London (LON):  abre 8:00 UTC, cierra 16:30 UTC (FTSE, EUR)
+      - NYSE/NASDAQ:   abre 13:30 UTC, cierra 20:00 UTC (S&P500, Nasdaq)
+    Las aperturas son los momentos de mayor volatilidad e institucional."""
+    h = pd.to_datetime(ts, unit="ms").hour
+    m = pd.to_datetime(ts, unit="ms").minute
+    if 0 <= h < 2:   return "tokyo_open"      # Nikkei, JPY activo
+    if 2 <= h < 5:   return "tokyo_mid"       # Sesion tokio plena
+    if 5 <= h < 7:   return "tokyo_close"     # Cierre Tokio, bancos japoneses cierran posiciones
+    if 7 <= h < 9:   return "london_open"     # Frankfurt 8:00, London 8:00 — maxima volatilidad EU
+    if 9 <= h < 13:  return "london_mid"      # Sesion Londres plena
+    if h == 13 or (h == 14 and m < 30):
+        return "ny_preopen"                    # CME/NASDAQ pre-market activo (hasta 13:30 NYSE open)
+    if h == 14 and m >= 30 or (h == 15 and m < 30):
+        return "nyse_open"                     # Primeros 60min de NYSE (9:30-10:30 ET) — mayor vol
+    if 15 <= h < 20: return "ny_mid"          # Sesion NY plena
+    if 20 <= h < 21: return "ny_close"        # 4PM ET cierre NYSE, square de posiciones
+    return "overnight"                         # Baja liquidez, solo cripto-nativo
 
 
 def det_elliott(d):
@@ -1248,6 +1464,18 @@ def detectar_cerr(estr, cerr, coin):
         return det_choch(cerr)
     if estr == "ema_pullback":
         return det_ema_pullback(cerr)
+    if estr == "fvg_ob_asia":
+        return det_fvg_ob_asia(cerr)
+    if estr == "adrig2_asia":
+        return det_adrig2_asia(cerr)
+    if estr == "ob_trend_r3":
+        return det_ob_trend_r3(cerr)
+    if estr == "silver_bullet":
+        return det_silver_bullet(cerr)
+    if estr == "judas_swing_ob":
+        return det_judas_swing_ob(cerr)
+    if estr == "ny_london_sweep":
+        return det_ny_london_sweep(cerr)
     return None
 
 
@@ -1589,7 +1817,8 @@ def main():
                     if any(o["ts"] == ts_p for o in ops):
                         continue
                     s.update(status="abierta", ts=ts_p, estr=estr, coin=coin, tf=tf,
-                             fecha=str(pd.to_datetime(ts_p, unit="ms")), sesion=sesion_de(ts_p))
+                             fecha=str(pd.to_datetime(ts_p, unit="ms")),
+                             sesion=sesion_de(ts_p), sub_sesion=sub_sesion_de(ts_p))
                     try:
                         s.update(contexto(ex, coin, L, ctx_cache, cerr=cerr_sig))
                     except Exception:
