@@ -260,11 +260,28 @@ def estrategias_para(coin):
         "mean_rev_mean": (det_mean_rev_mean, "fija"),
     }
 
+# ------------------------------------------------------------------ clasificacion de REGIMEN (sin mirar al futuro)
+def clasificar_regimen(d, dias=90, umbral=0.25):
+    """Etiqueta CADA vela por el régimen de mercado en ese instante, usando SOLO el pasado
+    (retorno de los últimos `dias`): así una operación sabe si ocurrió en crash, lateral o subida.
+      alcista  = el precio subió  > +umbral en 90 días (toro/euforia)
+      bajista  = el precio cayó   < -umbral en 90 días (crash/oso)
+      lateral  = se movió en medio (rango/aburrimiento)
+    Objetivo (no se eligen fechas a dedo = sin autoengaño). 96 velas de 15m = 1 día."""
+    cl = d["cierre"].to_numpy()
+    n_atras = dias * 96
+    reg = np.full(len(cl), "?", dtype=object)
+    if len(cl) > n_atras:
+        r = cl[n_atras:] / cl[:-n_atras] - 1
+        reg[n_atras:] = np.where(r > umbral, "alcista", np.where(r < -umbral, "bajista", "lateral"))
+    return reg
+
 # ------------------------------------------------------------------ motor
 def backtest(d, coin):
     estr = estrategias_para(coin)
     res = {e: [] for e in estr}
     ts = pd.to_datetime(d["t"], unit="ms")
+    reg = clasificar_regimen(d)                       # régimen por vela (alcista/bajista/lateral)
     for j in range(LOOKBACK, len(d) - 1):
         ventana = d.iloc[j - LOOKBACK: j + 1].reset_index(drop=True)
         for nombre, (det, modo) in estr.items():
@@ -278,7 +295,7 @@ def backtest(d, coin):
                 pnl = salida_donchian(d, j, sig["stop"], es_largo)
             else:
                 pnl = salida_fija(d, j, sig["stop"], sig["target"], es_largo)
-            res[nombre].append({"anio": ts.iloc[j].year, "pnl": pnl, "dir": sig["dir"]})
+            res[nombre].append({"anio": ts.iloc[j].year, "regimen": reg[j], "pnl": pnl, "dir": sig["dir"]})
     return res
 
 def stat(v):
@@ -329,8 +346,29 @@ def main():
             print(f"  {e:<18} " + " ".join(celdas))
         print()
 
-    print("FIN — busca estrategias POSITIVAS en VARIOS años/regimenes (no solo en uno).")
-    print("Un edge que solo gana en 1 año = suerte de regimen. Que gana en 4-5 años = robusto.")
+        # --- DESGLOSE POR RÉGIMEN: lo que de verdad importa (¿gana en crash/lateral/subida?) ---
+        print(f"  POR RÉGIMEN {coin} (exp/op | n) — ¿en qué CLIMA de mercado gana cada una?:")
+        regs = ["alcista", "lateral", "bajista"]
+        # cuántas velas hubo de cada régimen (para contexto)
+        reg_all = clasificar_regimen(d)
+        from collections import Counter
+        cnt = Counter(reg_all[LOOKBACK:])
+        print(f"  {'(velas por clima)':<18} " + " ".join(f"{r}={cnt.get(r,0):,}".rjust(15) for r in regs))
+        print(f"  {'estrategia':<18} " + " ".join(f"{r:>15}" for r in regs))
+        for e, ops in res.items():
+            celdas = []
+            for r in regs:
+                pn = [o["pnl"] for o in ops if o.get("regimen") == r]
+                if len(pn) >= 10:
+                    _, _, ex = stat(pn)
+                    celdas.append(f"{ex:>+7.2f}({len(pn):>5})")
+                else:
+                    celdas.append(f"{'—':>15}")
+            print(f"  {e:<18} " + " ".join(celdas))
+        print()
+
+    print("FIN — busca estrategias POSITIVAS en VARIOS climas (alcista Y lateral Y bajista).")
+    print("Un edge que solo gana en bajista = herramienta de un clima. Que gana en los 3 = robusto de verdad.")
 
 if __name__ == "__main__":
     main()
