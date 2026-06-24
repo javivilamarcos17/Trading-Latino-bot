@@ -136,7 +136,9 @@ ESTRATEGIAS_TF = {
     #   DISTINTO: gana en NY (+0.53R) donde las OB mueren (-0.12R) -> diversifica de verdad. Canal
     #   adaptativo (EMA20 ± 2·ATR14): en alta volatilidad las bandas se abren y filtran fakeouts mejor
     #   que el Donchian fijo. La variante con filtro Asia/EMA200 NO mejoraba la base -> entra la base sola.
-    "atr_break": ["15m", "1h"],
+    #   VINDICADA en multi-año (BTC 2021-2026: +0.018R, mejor en bajista +0.11R). El -0.47R en vivo era
+    #   mala suerte de muestra pequeña (n=51). RETIRADO 1h 2026-06-24 (-0.72R live, patrón sistémico).
+    "atr_break": ["15m"],
     "orf": ["5m", "15m"],
     "fvg_ob": ["15m", "1h"],     # RETIRADO 5m (6 ops -1.40R); 15m +1.83R 100%win es el star
     # breaker RETIRADA 2026-06-23: n=104, hasta su MEJOR salida = -0.05R. 104 ops sin edge y sin

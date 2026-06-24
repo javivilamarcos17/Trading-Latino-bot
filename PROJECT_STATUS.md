@@ -116,6 +116,24 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-06-24** — 🚨 GIRO ESTRATÉGICO: el multi-año (BTC 2021-2026, ~50k ops/estrategia) destapa la verdad.
+  1. **La familia OB base NO tiene edge multi-año:** ob_trend/ob_plus/ob_regime = **−0.028R**, NEGATIVA en
+     los 6 años Y en los 3 climas (alcista/lateral/bajista). Lo que veíamos en vivo era específico del
+     filtro Asia + régimen reciente (o sesgo). El multi-año hizo su trabajo: destapar el autoengaño.
+     ⚠️ MATIZ: el multi-año prueba el DETECTOR BASE; las versiones Asia-filtradas (ob_plus_asia...) NO
+     se testearon aún — el filtro Asia podría añadir edge real. Pendiente de validar.
+  2. **⭐ merinox = EL EDGE ROBUSTO:** +0.080R, POSITIVA en los 6 años Y en lateral (+0.10) + bajista
+     (+0.15). merino base también (+0.058R). Es la estrategia de Trading Latino/Merino (EMA10/55 + ADX +
+     squeeze + EMA200 + sin clímax). **Promocionada a estrategia PRINCIPAL.** Quitado su 1h (era veneno).
+  3. **atr_break VINDICADA:** +0.018R multi-año (trend variant +0.023R, mejor). Su −0.47R en vivo era
+     muestra pequeña (n=51). Mantenida, quitado el 1h.
+  4. **Mean Reversion MUERTA:** −0.20R en TODOS los climas, incluido lateral. Hipótesis enterrada.
+  5. **vwap muerta** (−0.023R), **donchian neutral** (±0.00R).
+  6. **PATRÓN SISTÉMICO confirmado:** el 1h es malo en casi todas (pocas señales, peores). El 15m (y el
+     4h para Merino) es el punto dulce. Retirado el 1h de 7 estrategias. El 5m es ruido salvo para orf.
+  7. **HONESTIDAD:** son salidas de 15m sin slippage, solo BTC (ETH/SOL pendientes). Edges pequeños
+     (+0.08R) que el slippage puede comerse. Hay que confirmar en ETH/SOL antes de fiarse del todo.
+
 - **2026-06-23 (tarde)** — 🧹 PROFESIONALIZACIÓN + nueva familia validada + poda con evidencia.
   1. **`atr_break` (canal de Keltner adaptativo) — NUEVA estrategia VALIDADA** en Binance 50d (1m exacto):
      **+0.41R en BTC Y ETH, win 52%** (vs 36-41% de las OB), positiva en los 2 meses y las 2 monedas.
