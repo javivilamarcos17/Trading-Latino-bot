@@ -162,7 +162,8 @@ ESTRATEGIAS_TF = {
     "choch": ["15m", "1h", "4h"],
     # RETIRADO 5m de ema_pullback 2026-06-24: 5m=-0.46R (n=32) = ruido. El pullback a EMA necesita
     # estructura que el 5m no da tiempo a formar. (Nota: el 5m SÍ sirve para orf, +0.12R -> no se generaliza.)
-    "ema_pullback": ["15m", "1h"],
+    # RETIRADO 1h tambien 2026-06-24 (n=21, -0.65R): patron sistemico, el 1h pierde. El 15m es +0.19R.
+    "ema_pullback": ["15m"],
     # ===== AÑADIDAS 2026-06-23 — segunda ronda, basadas en analisis de datos en vivo =====
     # N) fvg_ob_asia: EL HALLAZGO DEL DIA — fvg_ob 15m Asia = 100% win +1.8R (n=15).
     #    El mismo setup en Londres/NY = negativo. Filtrar a Asia pura es la clave.
