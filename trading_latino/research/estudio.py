@@ -32,6 +32,7 @@ from collections import defaultdict
 REG = Path(__file__).resolve().parents[2] / "data_store" / "paper_arena"
 MIN_N = 20            # mínimo de ops para que un slice cuente (anti-ruido)
 MIN_N_POCKET = 25     # más estricto para el ranking de bolsas/fugas
+POLITICAS = ("fixed", "be05", "be10", "t125", "trail")   # las 5 salidas que mide el arena
 
 # ------------------------------------------------------------------ bucketización de cada dimensión
 def _b_funding(v):
@@ -200,6 +201,92 @@ def _curva(cerr, risk_pct):
         maxdd = max(maxdd, (pico - cap) / pico)
     return (cap - 1) * 100, maxdd * 100
 
+def _mejor_exit_de( v_por_pol):
+    best, bv = "fixed", -99
+    for p in POLITICAS:
+        if len(v_por_pol[p]) >= 10:
+            m = sum(v_por_pol[p]) / len(v_por_pol[p])
+            if m > bv: bv = m; best = p
+    return best, bv
+
+CORE = {"merinox", "merino", "atr_break"}   # núcleo validado multi-año
+
+# FAMILIAS: estrategias de la misma familia hacen apuestas CORRELACIONADAS (no diversifican).
+# Para desplegar de verdad se coge la MEJOR de cada familia, no todas.
+FAMILIAS = {
+    "ob_trend": "OB", "ob_plus": "OB", "ob_regime": "OB", "ob_asia": "OB", "ob_asia_close": "OB",
+    "ob_plus_asia": "OB", "ob_plus_asia_r3": "OB", "ob_trend_r3": "OB", "ob_regime_asia": "OB",
+    "ob_ny_open": "OB", "fvg": "FVG", "fvg_ob": "FVG", "fvg_ob_asia": "FVG", "fvg_asia": "FVG",
+    "merino": "MOMENTUM", "merinox": "MOMENTUM",
+    "atr_break": "BREAKOUT", "donchian": "BREAKOUT",
+    "orf": "RANGE_OPEN", "london_fade": "FADE", "ema_pullback": "PULLBACK",
+    "adrig": "SMART_MONEY", "adrig2": "SMART_MONEY", "choch": "ESTRUCTURA",
+}
+
+def _mejor_por_familia(ops, desplegables):
+    """Devuelve {familia: mejor_estrategia} usando la exp de la mejor salida — diversificación REAL."""
+    exits = defaultdict(lambda: {p: [] for p in POLITICAS})
+    for o in ops:
+        if o.get("estr") in desplegables:
+            for p in POLITICAS:
+                if p in o.get("exits", {}): exits[o["estr"]][p].append(o["exits"][p])
+    best_fam = {}
+    for e in desplegables:
+        fam = FAMILIAS.get(e, e)
+        _, bv = _mejor_exit_de(exits[e])
+        if fam not in best_fam or bv > best_fam[fam][1]:
+            best_fam[fam] = (e, bv)
+    return {fam: e for fam, (e, bv) in best_fam.items()}
+
+def _sim_escenario(cerr, risk_pct, slippage_R, max_dia, haircut):
+    """Una pasada de simulación REALISTA: slippage por trade, tope de N entradas/día (anti-concentración),
+    y haircut de de-inflación sobre el R en vivo. Devuelve (ret%, maxdd%, n, win%)."""
+    import datetime as dt
+    cap = pico = 1.0; maxdd = 0.0; wins = 0; n = 0
+    por_dia = defaultdict(int)
+    for o in cerr:
+        dia = dt.datetime.fromtimestamp(o["ts"]/1000, dt.timezone.utc).strftime("%Y-%m-%d")
+        if por_dia[dia] >= max_dia:        # tope de concentración: no más de max_dia entradas/día
+            continue
+        por_dia[dia] += 1
+        r = o["exits"]["fixed"] / haircut - slippage_R   # de-inflar + restar slippage
+        n += 1; wins += 1 if r > 0 else 0
+        cap *= (1 + (risk_pct / 100.0) * r)
+        pico = max(pico, cap); maxdd = max(maxdd, (pico - cap) / pico)
+    return (cap - 1) * 100, maxdd * 100, n, (100*wins/n if n else 0)
+
+def simular_cuenta(ops):
+    """SIMULACIÓN EN VIVO REALISTA — compara ESCENARIOS de despliegue. Cada uno con su universo de
+    estrategias, riesgo/trade, slippage, tope de concentración (entradas/día) y de-inflación del R en vivo."""
+    exits = defaultdict(lambda: {p: [] for p in POLITICAS})
+    for o in ops:
+        for p in POLITICAS:
+            if p in o.get("exits", {}): exits[o["estr"]][p].append(o["exits"][p])
+    desplegables = {e for e, vp in exits.items() if len(vp["fixed"]) >= 20 and _mejor_exit_de(vp)[1] > 0.05}
+    cerr_all = sorted([o for o in ops if o.get("ts") and o.get("estr") in desplegables], key=lambda o: o["ts"])
+    cerr_core = [o for o in cerr_all if o.get("estr") in CORE]
+    dias = (cerr_all[-1]["ts"] - cerr_all[0]["ts"]) / 86400000 if len(cerr_all) > 1 else 1
+
+    # SLIPPAGE REAL medido del spread en vivo (BTC 0.005R, ETH 0.012R, SOL 0.002R) + colchón de timing.
+    SLIP = 0.015   # antes era 0.04R (pesimista); el spread real en vivo es ~3-8x menor
+    # ESCENARIOS: (nombre, universo, risk%, slippage_R, max_entradas/dia, haircut de-inflacion)
+    escenarios = [
+        ("Naive (lo que NO hacer)",     cerr_all,  1.0, 0.00, 99, 1),
+        ("Conservador",                 cerr_all,  0.5, SLIP, 3,  6),
+        ("Moderado",                    cerr_all,  1.0, SLIP, 5,  6),
+        ("Solo núcleo robusto",         cerr_core, 1.0, SLIP, 5,  6),
+        ("Agresivo (riesgo alto)",      cerr_all,  2.0, SLIP, 8,  6),
+    ]
+    print(f"\n=== SIMULACIÓN EN VIVO — ESCENARIOS DE DESPLIEGUE ({dias:.0f} días, régimen BAJISTA) ===")
+    print(f"  Desplegables: {len(desplegables)} estrategias | de-inflación=÷6 (OB-Asia infla 6-8×) | slippage REAL={SLIP}R (medido del spread)")
+    print(f"  {'escenario':<24}{'riesgo':>7}{'tope/d':>7}{'ops':>6}{'win':>6}{'retorno':>10}{'peor caída':>12}{'/mes':>9}")
+    for nom, base, rp, sl, md, hc in escenarios:
+        ret, dd, n, w = _sim_escenario(base, rp, sl, md, hc)
+        mes = ret/dias*30 if dias else 0
+        print(f"  {nom:<24}{rp:>6.1f}%{md:>7}{n:>6}{w:>5.0f}%{ret:>+9.1f}%{('-'+format(dd,'.0f')+'%'):>12}{mes:>+8.1f}%")
+    print(f"  ⚠️ UN SOLO RÉGIMEN (bajista). El 'Naive' muestra por qué la concentración arruina (caída brutal).")
+    print(f"     Los realistas (de-inflados + tope + slippage) son creíbles. Para OTROS climas -> multi-año (research).")
+
 def riesgo_ruina(ops, risk_pct=1.0):
     """SEGURIDAD: ¿puede un mal momento reventar el trabajo de muchos días?
     Compara la curva de capital de TODAS las estrategias vs SOLO LAS CURADAS (las
@@ -272,6 +359,8 @@ def main():
         mapa_router(ops)
     elif "--riesgo" in args:
         riesgo_ruina(ops)
+    elif "--simular" in args:
+        simular_cuenta(ops)
     elif args and not args[0].startswith("--"):
         desglose_estrategia(ops, args[0])
     else:

@@ -102,6 +102,17 @@ def det_merinox(d):
         return _setup("corto", cl[j], swh, 2.0)
     return None
 
+def det_merinox_adx(d):
+    """merinox + ADX SUBIENDO (momentum acelerando). Hipótesis: la pista en vivo (ADX-sube=+1.96R vs
+    ADX-baja=-0.68R) era n=7 (ruido); aquí se prueba a ESCALA multi-año (miles de ops) si el filtro
+    'solo entrar cuando el momentum acelera' mejora a merinox de verdad."""
+    sig = det_merinox(d)
+    if sig is None: return None
+    adx = _adx(d)
+    if len(adx) >= 2 and not np.isnan(adx[-1]) and not np.isnan(adx[-2]) and adx[-1] > adx[-2]:
+        return sig
+    return None
+
 def det_vwap(d):
     """Rebote en VWAP(50): el precio vuelve al VWAP y aguanta -> largo (y espejo)."""
     tp = (d["maximo"] + d["minimo"] + d["cierre"]) / 3
@@ -287,9 +298,10 @@ def estrategias_para(coin):
         "ob_plus_asia":    (det_ob_plus_asia,    "fija"),   # ¿el filtro Asia es robusto o suerte reciente?
         "ob_regime_asia":  (det_ob_regime_asia,  "fija"),
         "ob_trend_nofade": (det_ob_trend_nofade, "fija"),   # ¿saltar longs tras sesión previa bajista mejora?
-        # --- Merino / momentum ---
-        "merino":    (_mk_merino(coin), "fija"),
-        "merinox":   (det_merinox,   "fija"),
+        # --- Merino / momentum (LA familia robusta del multi-año) ---
+        "merino":      (_mk_merino(coin), "fija"),
+        "merinox":     (det_merinox,     "fija"),
+        "merinox_adx": (det_merinox_adx, "fija"),   # PRUEBA: ¿ADX subiendo (momentum acelera) mejora merinox?
         # --- VWAP rolling (sin anclar — baseline) ---
         "vwap":      (det_vwap,      "fija"),
         # --- Donchian: 2 hipótesis de salida enfrentadas ---
