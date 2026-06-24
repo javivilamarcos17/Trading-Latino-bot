@@ -90,9 +90,10 @@ ESTRATEGIAS_TF = {
     # breaker_prev_ny RETIRADA 2026-06-23: con mas datos (n=19) el edge se evaporo — hasta su
     #   MEJOR salida (be05) = -0.58R. El +1.52R inicial (n=18) era ruido de muestra pequena.
     # "breaker_prev_ny": ["15m"],
-    # RETIRADO 1h de ob_regime (12 ops -0.37R): switcher funciona en 15m (+0.99R) y 5m.
-    # 5m bordeando el neutro (-0.04R 13ops) pero lo mantenemos para confirmar con SOL.
-    "ob_regime": ["5m", "15m"],
+    # RETIRADO 1h de ob_regime (12 ops -0.37R). RETIRADO 5m 2026-06-24: con muestra grande
+    # (n=124) el 5m daba -0.74R mientras el 15m da +0.35R -> el 5m era RUIDO (los Order Block en
+    # 5m no dan tiempo a formar estructura). Quitarlo transforma ob_regime de -0.44R a +0.35R.
+    "ob_regime": ["15m"],
 
     # --- PRUEBAS DE SESION ---
     # ob_asia: RETIRADO 1h (9 ops -0.43R). El edge de sesion es solo en 15m (+0.97R) y 4h vigila.
@@ -137,7 +138,9 @@ ESTRATEGIAS_TF = {
     "ob_plus_asia": ["5m", "15m", "1h"],
     "smc_asia": ["15m", "1h", "4h"],
     "choch": ["15m", "1h", "4h"],
-    "ema_pullback": ["5m", "15m", "1h"],
+    # RETIRADO 5m de ema_pullback 2026-06-24: 5m=-0.46R (n=32) = ruido. El pullback a EMA necesita
+    # estructura que el 5m no da tiempo a formar. (Nota: el 5m SÍ sirve para orf, +0.12R -> no se generaliza.)
+    "ema_pullback": ["15m", "1h"],
     # ===== AÑADIDAS 2026-06-23 — segunda ronda, basadas en analisis de datos en vivo =====
     # N) fvg_ob_asia: EL HALLAZGO DEL DIA — fvg_ob 15m Asia = 100% win +1.8R (n=15).
     #    El mismo setup en Londres/NY = negativo. Filtrar a Asia pura es la clave.
