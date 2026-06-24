@@ -59,8 +59,10 @@ ESTRATEGIAS_TF = {
     # fvg n=533 exp=-0.049R: muestra maxima de confianza, negativo en todos los TFs y salidas.
     # fvg_asia n=167 exp=-0.072R: el filtro Asia NO ayuda al FVG sin OB.
     # LECCION: FVG solo no tiene edge. FVG+OB (fvg_ob) si funciona (+0.380R). La confluencia es clave.
-    # TRANSFORMADOS: rsidiv_ob solo 15m/1h, quitamos 4h (rsidiv 4h -0.61R con 18 ops)
-    "rsi_ob": ["5m", "15m", "1h"],
+    # rsi_ob RETIRADA 2026-06-24: se aflojo para que disparara (estaba en n=0), y al hacerlo CONFIRMO que
+    # pierde (-0.64R, n=10). La familia RSI ya fallo 4 veces (rsi -0.92R, rsidiv -0.60R, rsidiv_ob, rsi_ob).
+    # El rescate cumplio su funcion: darnos la respuesta. Las divergencias/extremos RSI no tienen edge aqui.
+    # "rsi_ob": ["5m", "15m", "1h"],
     # rsidiv_ob RETIRADA 2026-06-24: n=7 en 5 dias (apenas dispara, 1.3/dia) Y pierde (-0.60R mejor
     # salida). La familia divergencia ya fallo antes (rsidiv base retirada). Confirma: las divergencias
     # RSI no tienen edge aqui (cazan giros que no ocurren). Menos es mas.
@@ -104,10 +106,10 @@ ESTRATEGIAS_TF = {
     # breaker_prev_ny RETIRADA 2026-06-23: con mas datos (n=19) el edge se evaporo — hasta su
     #   MEJOR salida (be05) = -0.58R. El +1.52R inicial (n=18) era ruido de muestra pequena.
     # "breaker_prev_ny": ["15m"],
-    # RETIRADO 1h de ob_regime (12 ops -0.37R). RETIRADO 5m 2026-06-24: con muestra grande
-    # (n=124) el 5m daba -0.74R mientras el 15m da +0.35R -> el 5m era RUIDO (los Order Block en
-    # 5m no dan tiempo a formar estructura). Quitarlo transforma ob_regime de -0.44R a +0.35R.
-    "ob_regime": ["15m"],
+    # ob_regime base RETIRADA 2026-06-24: DOBLE confirmacion sin edge — multi-año (BTC/ETH/SOL,
+    # ~47k ops): -0.026 a -0.029R, negativa en 6 años y 3 climas; Y en vivo -0.23R (n=198). El switcher
+    # OB sin filtro de sesion no funciona en NINGUN clima. Se mantiene ob_regime_asia (+0.35R, a validar).
+    # "ob_regime": ["15m"],
 
     # --- PRUEBAS DE SESION ---
     # ob_asia: RETIRADO 1h (9 ops -0.43R). El edge de sesion es solo en 15m (+0.97R) y 4h vigila.
