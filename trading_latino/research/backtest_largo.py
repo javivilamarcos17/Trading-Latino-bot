@@ -82,6 +82,41 @@ def det_merino(d, coin="ETH"):
         return _setup("corto", cl[j], swh)
     return None
 
+def _dmi(d, n=14):
+    """DMI completo de Wilder: devuelve (DI+, DI-, ADX). Merino REAL usa DI+/DI- para la DIRECCION,
+    no solo el ADX como umbral. Esto expone las dos lineas direccionales."""
+    h, l, c = d["maximo"], d["minimo"], d["cierre"]
+    up = h.diff(); dn = -l.diff()
+    pdm = up.clip(lower=0).where(up > dn, 0.0)
+    ndm = dn.clip(lower=0).where(dn > up, 0.0)
+    atr = (h - l).ewm(alpha=1 / n, adjust=False).mean()
+    pdi = 100 * pdm.ewm(alpha=1 / n, adjust=False).mean() / atr.replace(0, np.nan)
+    ndi = 100 * ndm.ewm(alpha=1 / n, adjust=False).mean() / atr.replace(0, np.nan)
+    dx = 100 * (pdi - ndi).abs() / (pdi + ndi).replace(0, np.nan)
+    adx = dx.ewm(alpha=1 / n, adjust=False).mean()
+    return pdi.to_numpy(), ndi.to_numpy(), adx.to_numpy()
+
+def det_merino_fiel(d, coin="ETH"):
+    """Merino 100% FIEL a Trading Latino: EMA 11/55 + DMI completo (DI+ vs DI- = direccion) +
+    ADX>23 Y SUBIENDO (fuerza de tendencia CRECIENTE, como lo lee Merino) + giro de Squeeze Momentum.
+    Anade lo que a la version simple le faltaba: la direccionalidad DI+/DI- y el ADX creciente."""
+    c = d["cierre"]
+    e11 = c.ewm(span=11, adjust=False).mean().to_numpy()
+    e55 = c.ewm(span=55, adjust=False).mean().to_numpy()
+    hh = d["maximo"].rolling(20).max(); ll = d["minimo"].rolling(20).min()
+    mom = (c - ((hh + ll) / 2 + c.rolling(20).mean()) / 2).to_numpy()
+    pdi, ndi, adx = _dmi(d)
+    cl = c.to_numpy(); j = len(cl) - 1
+    if j < 60 or np.isnan(adx[j]) or np.isnan(adx[j - 1]) or np.isnan(mom[j - 1]) or np.isnan(pdi[j]):
+        return None
+    swl = d["minimo"].iloc[j - 10:j].min(); swh = d["maximo"].iloc[j - 10:j].max()
+    sube = adx[j] > adx[j - 1]
+    if e11[j] > e55[j] and pdi[j] > ndi[j] and adx[j] > 23 and sube and mom[j] > 0 >= mom[j - 1]:
+        return _setup("largo", cl[j], swl, 2.0)
+    if coin != "BTC" and e11[j] < e55[j] and ndi[j] > pdi[j] and adx[j] > 23 and sube and mom[j] < 0 <= mom[j - 1]:
+        return _setup("corto", cl[j], swh, 2.0)
+    return None
+
 def det_merinox(d):
     """Merino enriquecido: + alineacion EMA200 + sin climax de volumen."""
     c = d["cierre"]
@@ -319,6 +354,7 @@ def estrategias_para(coin):
         "merino":      (_mk_merino(coin), "fija"),
         "merinox":     (det_merinox,     "fija"),
         "merinox_adx": (det_merinox_adx, "fija"),   # PRUEBA: ¿ADX subiendo (momentum acelera) mejora merinox?
+        "merino_fiel": (lambda d: det_merino_fiel(d, coin), "fija"),  # 100% Trading Latino: DMI + ADX subiendo
         # --- VWAP rolling (sin anclar — baseline) ---
         "vwap":      (det_vwap,      "fija"),
         # --- Donchian: 2 hipótesis de salida enfrentadas ---
