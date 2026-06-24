@@ -1762,6 +1762,25 @@ def contexto(ex, coin, L, cache, cerr=None):
             out["ema200_dist_%"] = round((px / ema200_1h - 1) * 100, 2)
     except Exception:
         pass
+    # MICRO-CONTEXTO 5m (INFORMATIVO, no señal): el 5m como timing fino de entrada. NO genera trades
+    # (eso era ruido), pero registra si el micro-momentum CONFIRMA o CONTRADICE la entrada del 15m.
+    # El laboratorio cruzará "m5_trend vs dirección" para ver si las entradas 5m-alineadas ganan más.
+    try:
+        if ("5m_data", coin) in cache:
+            d5 = cache[("5m_data", coin)]
+        else:
+            d5 = velas_cached(ex, coin, "5m", cache)
+            cache[("5m_data", coin)] = d5
+        c5 = d5["cierre"]
+        if len(c5) >= 21:
+            e9 = float(c5.ewm(span=9, adjust=False).mean().iloc[-1])
+            e21 = float(c5.ewm(span=21, adjust=False).mean().iloc[-1])
+            out["m5_trend"] = "up" if e9 > e21 else "down"      # micro-tendencia 5m
+            out["m5_rsi"] = round(float(_rsi(c5)[-1]), 1)        # micro momentum
+            vm5 = float(d5["volumen"].tail(20).mean())
+            out["m5_vol_rel"] = round(float(d5["volumen"].iloc[-1] / vm5), 2) if vm5 else None
+    except Exception:
+        pass
     # RANGO ASIATICO del dia actual (fundamental para setup Sensei / ICT Killzone)
     try:
         hoy_utc = pd.Timestamp.now("UTC").date()

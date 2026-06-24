@@ -82,6 +82,9 @@ DIMENSIONES = [
     ("fear_greed",  lambda o: _b_fng(o.get("fng"))),
     ("pos_rango",   lambda o: _b_pos(o.get("pos_rango"))),
     ("ses_ant_dir", lambda o: o.get("ses_ant_dir")),
+    ("m5_trend",    lambda o: o.get("m5_trend")),                 # micro-tendencia 5m (informativo)
+    ("m5_alineado", lambda o: None if o.get("m5_trend") is None else
+                    ("5m_a_favor" if (o.get("m5_trend") == "up") == (o.get("dir") == "largo") else "5m_en_contra")),
     ("coin",        lambda o: o.get("coin")),
     ("tf",          lambda o: o.get("tf")),
 ]
