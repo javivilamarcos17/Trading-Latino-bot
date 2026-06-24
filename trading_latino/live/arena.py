@@ -859,8 +859,13 @@ def det_rsi_ob(d):
     ema = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
     if np.isnan(ema[j]):
         return None
-    sale_sobreventa = rsi[j - 1] < 30 <= rsi[j]
-    sale_sobrecompra = rsi[j - 1] > 70 >= rsi[j]
+    # AFLOJADO 2026-06-24 (RESCATE): exigir el cruce EXACTO en esta vela hacia que rsi_ob NO disparara
+    # NUNCA (n=0 en semanas) — el RSI casi nunca cruza justo cuando el precio esta dentro de un OB.
+    # Ahora: el RSI estuvo en extremo (<35/>65) en las ultimas 5 velas y se esta recuperando ahora,
+    # dando VENTANA para coincidir con la zona OB. Asi generamos datos para evaluarla de verdad.
+    look = rsi[max(0, j - 5):j]
+    sale_sobreventa = len(look) and np.nanmin(look) < 35 and rsi[j] >= 35 and rsi[j] >= rsi[j - 1]
+    sale_sobrecompra = len(look) and np.nanmax(look) > 65 and rsi[j] <= 65 and rsi[j] <= rsi[j - 1]
     if not sale_sobreventa and not sale_sobrecompra:
         return None
     for i in range(max(0, j - 30), j - 1):
