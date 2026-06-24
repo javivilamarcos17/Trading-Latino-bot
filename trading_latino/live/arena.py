@@ -67,8 +67,10 @@ ESTRATEGIAS_TF = {
 
     # --- COMPUESTAS multi-factor ---
     "adrig": ["15m", "1h", "4h"], "merinox": ["15m", "1h", "4h"],
-    # RETIRADO 4h de adrig2 (18 ops -1.10R): adrig2 funciona en 15m (+0.72R) y 1h, no en 4h.
-    "adrig2": ["15m", "1h"],
+    # RETIRADO 4h de adrig2 (18 ops -1.10R). RETIRADO 1h 2026-06-24: con muestra (n=29) el 1h da
+    # -0.72R mientras el 15m da +0.05R. El desplazamiento institucional da pocas señales y malas en 1h.
+    # Queda solo 15m (marginal, +0.05R, y solo BTC gana: +0.29R). En vigilancia.
+    "adrig2": ["15m"],
 
     # --- MULTI-TEMPORALIDAD ---
     "mtf": ["15m", "1h", "4h"],
