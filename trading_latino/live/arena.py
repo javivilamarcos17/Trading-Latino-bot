@@ -44,7 +44,10 @@ ESTRATEGIAS_TF = {
     # ============================================================
 
     # --- ESTRUCTURA / TENDENCIA (medios-altos) ---
-    "smc": ["15m", "1h", "4h"], "merino": ["15m", "1h", "4h"],
+    "smc": ["15m", "1h", "4h"],
+    # merino: RETIRADO 1h 2026-06-24 (n=13, -0.83R). El 4h es el mejor (+0.77R), 15m neutral. La familia
+    # Merino (validada robusta en multi-año: +0.058R en 6 años) vive en 15m/4h, no en 1h.
+    "merino": ["15m", "4h"],
     # sweep RETIRADA 2026-06-23: n=18, hasta su MEJOR salida (t125) = -0.18R. Negativa en todas las salidas.
     # "sweep": ["15m", "1h", "4h"],
     # RETIRADO 5m (58ops -0.32R), 1h (27ops -0.24R), 4h (18ops -0.42R).
@@ -69,7 +72,11 @@ ESTRATEGIAS_TF = {
     # rsi 33ops -0.92R, rsidiv 105ops -0.60R, adx 53ops -0.98R, scalp_sqz 270ops -0.69R.
 
     # --- COMPUESTAS multi-factor ---
-    "adrig": ["15m", "1h", "4h"], "merinox": ["15m", "1h", "4h"],
+    "adrig": ["15m", "1h", "4h"],
+    # merinox = LA ESTRATEGIA ROBUSTA (multi-año BTC: +0.080R, POSITIVA en los 6 años Y en lateral+bajista).
+    # RETIRADO 1h 2026-06-24 (n=9, -1.06R). El 4h (+0.38R) y 15m (+0.15R) son sus TF. Promocionada a
+    # estrategia PRINCIPAL del proyecto (sustituye a la familia OB, que no tiene edge multi-año).
+    "merinox": ["15m", "4h"],
     # RETIRADO 4h de adrig2 (18 ops -1.10R). RETIRADO 1h 2026-06-24: con muestra (n=29) el 1h da
     # -0.72R mientras el 15m da +0.05R. El desplazamiento institucional da pocas señales y malas en 1h.
     # Queda solo 15m (marginal, +0.05R, y solo BTC gana: +0.29R). En vigilancia.
