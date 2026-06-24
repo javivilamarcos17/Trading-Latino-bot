@@ -58,7 +58,10 @@ ESTRATEGIAS_TF = {
     # LECCION: FVG solo no tiene edge. FVG+OB (fvg_ob) si funciona (+0.380R). La confluencia es clave.
     # TRANSFORMADOS: rsidiv_ob solo 15m/1h, quitamos 4h (rsidiv 4h -0.61R con 18 ops)
     "rsi_ob": ["5m", "15m", "1h"],
-    "rsidiv_ob": ["15m", "1h"],
+    # rsidiv_ob RETIRADA 2026-06-24: n=7 en 5 dias (apenas dispara, 1.3/dia) Y pierde (-0.60R mejor
+    # salida). La familia divergencia ya fallo antes (rsidiv base retirada). Confirma: las divergencias
+    # RSI no tienen edge aqui (cazan giros que no ocurren). Menos es mas.
+    # "rsidiv_ob": ["15m", "1h"],
 
     # RETIRADAS definitivamente (muestra suficiente, todas las salidas negativas):
     # vwap 91ops -0.43R (1m -0.72R, 5m -0.38R, 15m -0.20R) — muerto en todos los TF y exits.
