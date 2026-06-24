@@ -59,15 +59,15 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
   - `live/mapa_liquidez.py`: mapa de liquidez en tiempo real (pools de stops + muros del order-book
     + OI + funding). **Verificado contra la API pública en vivo.**
   - `live/sniper.py` y `live/agente_smc.py`: detectores + paper-trading de SMC/barridos.
-  - **`live/arena.py`: ARENA en vivo — 32 estrategias × BTC/ETH/SOL × varias TF (1m→4h) en PAPEL.**
-    Incluye familia OB depurada, FVG+OB, RSI/divergencias, Merino y `merinox`, `atr_break` (Keltner
-    adaptativo, validada), `donchian`, smart-money+price-action (`adrig`), multi-temporalidad real (`mtf`),
-    OB reforzado (`ob_plus`),
-    filtros de sesión Asia, sub-sesión (aperturas reales de bolsa) y estrategias ICT de ventana de
-    mercado (`silver_bullet`, `judas_swing_ob`, `ny_london_sweep`). Cada operación registra **contexto
-    rico** (funding, OI, ΔOI, Fear&Greed, régimen/ADX, sesión/sub-sesión, premium/discount, liquidez,
-    volumen, dirección sesión anterior) y mide **5 políticas de salida** sobre el recorrido real de 1m.
-    Registro CONTINUO de contexto (`_ctx_<coin>.jsonl`). **Funcionando — 1.737 ops cerradas al 2026-06-23.**
+  - **`live/arena.py`: ARENA en vivo — 30 estrategias × BTC/ETH/SOL × TF depuradas (sobre todo 15m) en PAPEL.**
+    **NÚCLEO ROBUSTO (validado multi-año 2021-2026):** `merinox` (+0.06/+0.08R, positiva en 6 años y 3
+    climas — la estrategia de Merino), `merino`, `atr_break`. **Live-winners del régimen actual (pendientes
+    de validar multi-régimen):** familia OB-Asia (`ob_plus_asia`, `ob_asia_close`, `ob_trend_r3`,
+    `fvg_ob_asia`, `ob_regime_asia`). El OB BASE (sin filtro Asia) se retiró: multi-año confirma que NO
+    tiene edge. Cada operación registra **contexto rico** (funding, OI, ΔOI, Fear&Greed, régimen/ADX,
+    sesión/sub-sesión, premium/discount, liquidez, volumen, dir. sesión anterior, **micro-contexto 5m**) y
+    mide **5 políticas de salida** sobre el recorrido real de 1m. El análisis por condiciones está en
+    `research/estudio.py` (pockets/leaks/exits/mapa/riesgo). **Funcionando — ~2.430 ops cerradas al 2026-06-24.**
   - ⚠️ **AVISO CRÍTICO (anti-autoengaño):** las 1.737 ops son de **UN SOLO RÉGIMEN** (1.736 de 1.737 con
     Fear&Greed <30 = miedo; mercado bajista: cortos +0.42R vs largos −0.06R; Asia +0.75R vs NY −0.48R).
     Las "ganadoras" (familia OB-Asia) son **la misma apuesta medida muchas veces**: *corto + OB + Asia +
