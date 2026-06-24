@@ -17,7 +17,7 @@ Uso:  python -m trading_latino.research.backtest_largo
       python -m trading_latino.research.backtest_largo 2023-01-01   (fecha de inicio)
 """
 from __future__ import annotations
-import sys
+import sys, time
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 import numpy as np
@@ -40,11 +40,20 @@ def descargar_15m_binance(coin: str, desde_ts: int, hasta_ts: int) -> pd.DataFra
     TF_MS = 15 * 60_000
     bloques, t, n = [], desde_ts, 0
     while t < hasta_ts:
-        try:
-            o = ex.fetch_ohlcv(simbolo, "15m", since=t, limit=1000)
-        except Exception as e:
-            print(f"    [Binance] error bloque {n}: {e}"); break
-        if not o: break
+        o = None
+        for intento in range(6):                       # REINTENTOS: un hipo de red no debe cortar la descarga
+            try:
+                o = ex.fetch_ohlcv(simbolo, "15m", since=t, limit=1000)
+                break
+            except Exception as e:
+                espera = 2 * (intento + 1)
+                print(f"    [Binance] error bloque {n} (intento {intento+1}/6): {e} — reintento en {espera}s")
+                time.sleep(espera)
+        if o is None:                                  # solo se rinde tras 6 intentos fallidos
+            print(f"    [Binance] bloque {n} FALLA tras 6 intentos. Descarga PARCIAL (hasta aqui).")
+            break
+        if not o:
+            break
         bloques.extend(o)
         t = o[-1][0] + TF_MS
         n += 1
@@ -318,7 +327,13 @@ def main():
             print(f"  {coin}: datos insuficientes ({len(d)} velas), salto."); continue
         ini = pd.to_datetime(int(d['t'].iloc[0]), unit='ms').strftime('%Y-%m-%d')
         fin = pd.to_datetime(int(d['t'].iloc[-1]), unit='ms').strftime('%Y-%m-%d')
-        print(f"  {len(d):,} velas 15m  ({ini} -> {fin})\n")
+        print(f"  {len(d):,} velas 15m  ({ini} -> {fin})")
+        # AVISO de truncamiento: si la descarga quedó >2 dias corta, los datos NO son completos
+        horas_falta = (hasta_ts - int(d['t'].iloc[-1])) / 3_600_000
+        if horas_falta > 48:
+            print(f"  ⚠️⚠️ DATOS INCOMPLETOS: faltan {horas_falta/24:.0f} dias hasta hoy. "
+                  f"El regimen reciente NO esta cubierto. Revisar descarga antes de fiarse.")
+        print()
 
         res = backtest(d, coin)
 
