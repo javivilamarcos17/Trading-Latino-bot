@@ -76,8 +76,9 @@ ESTRATEGIAS_TF = {
     "mtf": ["15m", "1h", "4h"],
 
     # --- FAMILIA OB DEPURADA ---
-    # RETIRADO 5m de ob_plus (57 ops -0.35R). TF dulce = 15m (+0.56R 31ops).
-    "ob_plus": ["15m", "1h"],
+    # RETIRADO 5m de ob_plus (57 ops -0.35R). RETIRADO 1h 2026-06-24 (n=30, -0.55R): el 1h da pocas
+    # señales y malas. TF dulce = 15m (+0.19R). Patron sistemico: el OB se afina en 15m, no en 1h.
+    "ob_plus": ["15m"],
     # ob_plus_asia_r3: COMBINATION de los dos mejores hallazgos:
     #   ob_plus_asia (reina, +1.295R n=66) + objetivo 3R (como ob_trend_r3, +1.085R n=79).
     #   Si el precio alcanza 2R y continua (evidenciado por trail < fixed), probar 3R captura mas.
@@ -137,7 +138,8 @@ ESTRATEGIAS_TF = {
     "london_fade": ["15m", "1h"],
 
     # ===== AÑADIDAS 2026-06-23 — de la primera ronda de calibración =====
-    "ob_plus_asia": ["5m", "15m", "1h"],
+    # RETIRADO 5m de ob_plus_asia 2026-06-24 (n=76, -0.18R): arrastraba a la ganadora. 15m/1h se quedan.
+    "ob_plus_asia": ["15m", "1h"],
     "smc_asia": ["15m", "1h", "4h"],
     "choch": ["15m", "1h", "4h"],
     # RETIRADO 5m de ema_pullback 2026-06-24: 5m=-0.46R (n=32) = ruido. El pullback a EMA necesita
@@ -146,14 +148,16 @@ ESTRATEGIAS_TF = {
     # ===== AÑADIDAS 2026-06-23 — segunda ronda, basadas en analisis de datos en vivo =====
     # N) fvg_ob_asia: EL HALLAZGO DEL DIA — fvg_ob 15m Asia = 100% win +1.8R (n=15).
     #    El mismo setup en Londres/NY = negativo. Filtrar a Asia pura es la clave.
-    "fvg_ob_asia": ["15m", "1h"],
+    #    RETIRADO 1h 2026-06-24 (n=23, -0.55R): la ganadora vive en 15m, el 1h la lastra.
+    "fvg_ob_asia": ["15m"],
     # O) adrig2_asia RETIRADA 2026-06-23: n=120 exp=-0.140R — el filtro de sesion DESTROZA adrig2.
     #    adrig2 base = +0.030R; con filtro Asia = -0.140R. Adrig2 necesita NY/Londres (volumen alto).
     #    LECCION: los patrones de desplazamiento institucional NO mejoran con filtro Asia (al reves que OB).
     # P) ob_trend_r3: ob_trend en Asia con objetivo 3R. Los datos muestran que ob_plus_asia
     #    (fixed=+1.30R) NO se mejora con trailing (trail=+0.14R). El precio alcanza el objetivo
     #    Y sigue. Probar 3R para ver si podemos capturar mas ganancia en los mejores setups.
-    "ob_trend_r3": ["15m", "1h"],
+    #    RETIRADO 1h 2026-06-24 (n=32, -0.67R): la ganadora (+0.89R) vive en 15m; el 1h la lastra.
+    "ob_trend_r3": ["15m"],
     # RONDA 3 — estrategias de ventana de mercado basadas en ICT + datos propios
     # Q) silver_bullet: FVG en las 3 killzones ICT (08h London, 15h NYSE 10AM, 19h NYSE 2PM).
     #    El institucional opera en ventanas horarias muy concretas; el FVG dentro de esa ventana
