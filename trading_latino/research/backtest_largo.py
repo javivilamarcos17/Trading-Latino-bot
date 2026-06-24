@@ -242,6 +242,37 @@ def salida_donchian(d, j_ent, stop, es_largo, n=DONCHIAN_N, max_bars=1500):
     pnl = (salida - entry) / D if es_largo else (entry - salida) / D
     return pnl - COSTE
 
+# ------------------------------------------------------------------ variantes con FILTRO (la pregunta abierta)
+def _hora(d):
+    return int(pd.to_datetime(int(d["t"].iloc[-1]), unit="ms").hour)
+
+def _ses_ant_bajista(d):
+    """¿La sesión anterior (Asia/Londres/NY) cerró por debajo de donde abrió? (deducible del precio)."""
+    h = _hora(d)
+    if 7 <= h < 13:   rng = (0, 7)
+    elif 13 <= h < 21: rng = (7, 13)
+    else:              rng = (13, 21)
+    t = d["t"].to_numpy(); cl = d["cierre"].to_numpy()
+    hh = pd.to_datetime(t, unit="ms").hour
+    idx = np.where((hh >= rng[0]) & (hh < rng[1]))[0]
+    if len(idx) < 2: return None
+    blo = idx[idx >= idx.max() - 30]
+    return cl[blo[-1]] < cl[blo[0]]
+
+# La PREGUNTA: ¿el filtro Asia hace robusto al OB (que base no tiene edge)?
+def det_ob_plus_asia(d):
+    if _hora(d) >= 7: return None
+    return det_ob_plus(d)
+def det_ob_regime_asia(d):
+    if _hora(d) >= 13: return None
+    return det_ob_regime(d)
+# La 2ª palanca: ¿saltarse longs tras sesión previa bajista mejora el OB?
+def det_ob_trend_nofade(d):
+    sig = det_ob_trend(d)
+    if sig and sig["dir"] == "largo" and _ses_ant_bajista(d) is True:
+        return None
+    return sig
+
 # ------------------------------------------------------------------ registro de estrategias
 # cada entrada: (detector, modo_salida)  modo: "fija" | "donchian"
 def _mk_merino(coin):
@@ -249,10 +280,13 @@ def _mk_merino(coin):
 
 def estrategias_para(coin):
     return {
-        # --- familia OB (ya validada en 50 días) ---
+        # --- familia OB base (multi-año: SIN edge, -0.03R) ---
         "ob_trend":  (det_ob_trend,  "fija"),
         "ob_plus":   (det_ob_plus,   "fija"),
-        "ob_regime": (det_ob_regime, "fija"),
+        # --- LA PREGUNTA ABIERTA: ¿el filtro Asia/prev-sesión rescata el OB across regímenes? ---
+        "ob_plus_asia":    (det_ob_plus_asia,    "fija"),   # ¿el filtro Asia es robusto o suerte reciente?
+        "ob_regime_asia":  (det_ob_regime_asia,  "fija"),
+        "ob_trend_nofade": (det_ob_trend_nofade, "fija"),   # ¿saltar longs tras sesión previa bajista mejora?
         # --- Merino / momentum ---
         "merino":    (_mk_merino(coin), "fija"),
         "merinox":   (det_merinox,   "fija"),
