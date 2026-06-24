@@ -113,6 +113,23 @@ def det_merinox_adx(d):
         return sig
     return None
 
+def det_trend_rider(d):
+    """TREND-FOLLOWING con filtro de tendencia mayor (EMA200): largo solo en UPTREND que rompe máximos
+    de 20, corto solo en DOWNTREND que rompe mínimos. Salida TRAILING (dejar correr la tendencia).
+    HIPÓTESIS: rellenar el agujero del sistema — NINGUNA estrategia gana en ALCISTA. El trend-following
+    (seguir tendencias persistentes) es el edge más validado de la historia; debería capturar los toros."""
+    cl = d["cierre"].to_numpy(); hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); j = len(cl) - 1
+    if j < 215: return None
+    ema200 = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    if np.isnan(ema200[j]): return None
+    hh = hi[j - 20:j].max(); ll = lo[j - 20:j].min()
+    sl = lo[j - 10:j].min(); sh = hi[j - 10:j].max()
+    if cl[j] > hh and cl[j - 1] <= hh and cl[j] > ema200[j]:
+        return _setup("largo", cl[j], sl, 2.0)
+    if cl[j] < ll and cl[j - 1] >= ll and cl[j] < ema200[j]:
+        return _setup("corto", cl[j], sh, 2.0)
+    return None
+
 def det_vwap(d):
     """Rebote en VWAP(50): el precio vuelve al VWAP y aguanta -> largo (y espejo)."""
     tp = (d["maximo"] + d["minimo"] + d["cierre"]) / 3
@@ -310,6 +327,9 @@ def estrategias_para(coin):
         # --- ATR Breakout (canal adaptativo vs Donchian fijo) ---
         "atr_break":       (det_atr_break,       "fija"),  # baseline sin filtros
         "atr_break_trend": (det_atr_break_trend, "fija"),  # + EMA200: ¿mejora en todos los regímenes?
+        # --- TREND-RIDER: rellenar el AGUJERO alcista (trend-following, el edge mas validado) ---
+        "trend_rider":     (det_trend_rider, "donchian"),  # salida trailing (dejar correr la tendencia)
+        "trend_rider_2R":  (det_trend_rider, "fija"),      # salida fija 2R (para comparar)
         # --- Mean Reversion (anti-tendencia): perdió en 50d bajista, ¿gana en lateral 2023? ---
         "mean_rev_2R":   (det_mean_rev_2R,   "fija"),
         "mean_rev_mean": (det_mean_rev_mean, "fija"),
