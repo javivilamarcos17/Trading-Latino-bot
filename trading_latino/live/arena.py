@@ -86,9 +86,10 @@ ESTRATEGIAS_TF = {
     "mtf": ["15m", "1h", "4h"],
 
     # --- FAMILIA OB DEPURADA ---
-    # RETIRADO 5m de ob_plus (57 ops -0.35R). RETIRADO 1h 2026-06-24 (n=30, -0.55R): el 1h da pocas
-    # señales y malas. TF dulce = 15m (+0.19R). Patron sistemico: el OB se afina en 15m, no en 1h.
-    "ob_plus": ["15m"],
+    # ob_plus base RETIRADA 2026-06-24: DOBLE confirmacion de que no tiene edge — multi-año
+    # (BTC/ETH/SOL 2021-2026, ~47k ops): -0.006 a -0.029R, negativa en los 6 años y 3 climas; Y en vivo
+    # -0.214R (n=155). El OB SIN filtro de sesion no funciona. Se mantiene ob_plus_asia (filtro Asia, a validar).
+    # "ob_plus": ["15m"],
     # ob_plus_asia_r3: COMBINATION de los dos mejores hallazgos:
     #   ob_plus_asia (reina, +1.295R n=66) + objetivo 3R (como ob_trend_r3, +1.085R n=79).
     #   Si el precio alcanza 2R y continua (evidenciado por trail < fixed), probar 3R captura mas.
@@ -129,7 +130,10 @@ ESTRATEGIAS_TF = {
     # pero deberia brillar en tendencia fuerte (toro). El arena mide LAS 5 SALIDAS a la vez (fixed=cortar
     # pronto, trail=dejar correr) -> con esto medimos EN VIVO la tesis del video (cortar vs dejar correr)
     # y en QUE regimen gana cada una. 15m (el TF que el video dice que filtra el ruido) + 1h de control.
-    "donchian": ["15m", "1h"],
+    # RETIRADO 1h 2026-06-24 (-0.65R live). Multi-año: donchian_2R (salida FIJA) gana en alts
+    # (+0.036R ETH/SOL); donchian_trend (dejar correr) PIERDE -> la tesis del video era falsa, el corte
+    # en 2R funciona mejor. El arena mide las 5 salidas en 15m y confirma cual gana.
+    "donchian": ["15m"],
     # atr_break: AÑADIDA 2026-06-23 tras validar en Binance 50d (1m exacto): +0.41R en BTC Y ETH,
     #   win 52% (vs 36-41% de las OB), positivo los 2 meses y las 2 monedas. Sesgo de diseño BAJO
     #   (canal de Keltner de manual + concepto del video, no exprimido de estos datos). Perfil de edge
