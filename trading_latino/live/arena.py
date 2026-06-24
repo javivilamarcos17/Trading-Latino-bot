@@ -554,6 +554,9 @@ def det_atr_break(d):
     bu = ema20[j] + 2.0 * atr[j]; bd = ema20[j] - 2.0 * atr[j]
     bu1 = ema20[j - 1] + 2.0 * atr[j - 1]; bd1 = ema20[j - 1] - 2.0 * atr[j - 1]
     sl = lo[max(0, j - 10):j].min(); sh = hi[max(0, j - 10):j].max()
+    # NOTA 2026-06-24: el multi-año sugeria añadir filtro EMA200 (atr_break_trend > base), PERO el VIVO
+    # (lo MAS real) lo contradice en el régimen actual: sobre_ema200 = -0.82R = el peor caso. Como el vivo
+    # manda, se deja la base SIN filtro y se deja que los datos en vivo decidan. (Revertido tras revisar.)
     if cl[j] > bu and cl[j - 1] <= bu1:
         return _setup("largo", cl[j], sl, 2.0)
     if cl[j] < bd and cl[j - 1] >= bd1:
