@@ -116,6 +116,24 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-06-25** — 🧭 PROTOCOLO SISTEMÁTICO + el edge vive en 4h + scalping cerrado.
+  1. **Construido el PROTOCOLO** (`research/protocolo.py`, metodología en `docs/PROTOCOLO_PRUEBAS.md`):
+     cada estrategia pasa por las MISMAS etapas — multi-TF (15m/1h/4h) × multi-régimen (toro/lateral/oso)
+     × costes reales → veredicto comparable (ROBUSTA / DE RÉGIMEN / DESCARTAR). La columna vertebral.
+  2. **⭐ HALLAZGO: la familia momentum/breakout es ROBUSTA en 4h, no en 15m.** El protocolo (3 años,
+     3 monedas, NETO de costes): atr_break_trend **+0.229R**, merino +0.219R, atr_break +0.201R,
+     merinox +0.198R — **positivas en LOS 3 CLIMAS**, 3× mejor que en 15m. En 4h los stops anchos hacen
+     que la comisión no pese. El OB base sigue sin edge (−0.019R, solo lateral).
+  3. **Aplicado a la arena** (pendiente de push): atr_break/donchian +4h; `atr_break_trend` y
+     `trend_rider` (rellena el TORO, ROBUSTA) nuevas en 4h. merino/merinox ya en 4h.
+  4. **SCALPING 5m: CERRADO, no viable.** Probado exhaustivo (5 operativas × normal/alta-vol × taker/maker
+     × fija/trailing). El trailing mejora el bruto pero net@maker solo da positivo marginal en 1 moneda
+     por operativa (ETH breakout +0.05R) = no robusto. La comisión se come el edge diminuto del 5m.
+     El MISMO edge (momentum+trailing) rinde 4× y consistente en 4h. Retirado scalp_break (falló a escala).
+  5. **Datos en vivo:** la nube nunca paró (commits cada 3-4 min); el desfase local era por el PC dormido.
+     ⚠️ **PUSH pendiente del dueño** (`git push origin master`) — hasta entonces la nube corre el código viejo.
+
+
 - **2026-06-24** — 🚨 GIRO ESTRATÉGICO: el multi-año (BTC 2021-2026, ~50k ops/estrategia) destapa la verdad.
   1. **La familia OB base NO tiene edge multi-año:** ob_trend/ob_plus/ob_regime = **−0.028R**, NEGATIVA en
      los 6 años Y en los 3 climas (alcista/lateral/bajista). Lo que veíamos en vivo era específico del
