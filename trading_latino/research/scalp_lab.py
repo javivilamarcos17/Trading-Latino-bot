@@ -115,40 +115,50 @@ OPERATIVAS = {"breakout_5m": s_breakout, "breakout_wide": s_breakout_wide,
               "pullback_5m": s_pullback, "trend_scalp": s_trend, "vwap_revert": s_vwap_revert}
 
 def stat(v):
-    n = len(v);
+    n = len(v)
     return (n, sum(1 for x in v if x > 0)/n if n else 0, sum(v)/n if n else 0)
 
+TAKER, MAKER = 0.0008, 0.0003   # comisión round-trip: taker 0.08% vs maker 0.03%
+
+def _atr_pct(d, n=14):
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy()
+    tr = np.maximum(hi[1:]-lo[1:], np.maximum(np.abs(hi[1:]-cl[:-1]), np.abs(lo[1:]-cl[:-1])))
+    atr = pd.Series(np.concatenate([[hi[0]-lo[0]], tr])).ewm(span=n, adjust=False).mean().to_numpy()
+    return atr / cl * 100   # ATR en %
+
 def main():
-    print("SCALP LAB — operativas de 5m, costes REALES, honesto con el régimen (oso = cortos mandan)\n")
+    print("SCALP LAB — PRUEBA TOTAL: 5 operativas × normal/alta-volatilidad × coste taker/maker\n")
     for coin in ["BTC", "ETH", "SOL"]:
         d = bajar_5m(coin)
+        atrp = _atr_pct(d)
+        vol_alta = atrp > np.nanmedian(atrp[100:])   # alta volatilidad = ATR sobre la mediana
         ini = pd.to_datetime(int(d['t'].iloc[0]), unit='ms').strftime('%m-%d')
         fin = pd.to_datetime(int(d['t'].iloc[-1]), unit='ms').strftime('%m-%d')
         print(f"=== {coin} ({len(d)} velas 5m, {ini}->{fin}) ===")
+        print(f"  {'operativa':<13}{'filtro':<10}{'n':>5}{'win':>5}{'gross':>8}{'net@taker':>11}{'net@maker':>11}")
         for nom, fn in OPERATIVAS.items():
-            res = {"largo": [], "corto": []}
-            stops = []
-            for j in range(25, len(d)-1):
-                sig = fn(d, j)
-                if not sig: continue
-                dirc, entry, stop, target = sig
-                r = _salida(d, j, entry, stop, target, dirc == "largo")
-                if r is None: continue
-                res[dirc].append(r)
-                stops.append(abs(entry-stop)/entry*100)
-            allr = res["largo"] + res["corto"]
-            if len(allr) < 10:
-                print(f"  {nom:<13} pocas señales ({len(allr)})"); continue
-            n, w, gross = stat(allr)
-            # coste en R = comision / distancia_stop_media
-            stop_med = np.median(stops) if stops else 0.5
-            coste_R = COSTE / (stop_med/100)
-            neto = gross - coste_R
-            nl, wl, gl = stat(res["largo"]); ns, ws, gs = stat(res["corto"])
-            print(f"  {nom:<13} n={n:<4} win={w*100:.0f}%  GROSS={gross:+.3f}R  coste={coste_R:.3f}R  NETO={neto:+.3f}R  "
-                  f"[largo {gl:+.2f}({nl}) | corto {gs:+.2f}({ns})]")
+            for filtro, usar_vol in [("normal", False), ("alta-vol", True)]:
+                pnls, stops = [], []
+                for j in range(25, len(d)-1):
+                    if usar_vol and not vol_alta[j]: continue
+                    sig = fn(d, j)
+                    if not sig: continue
+                    dirc, entry, stop, target = sig
+                    r = _salida(d, j, entry, stop, target, dirc == "largo")
+                    if r is None: continue
+                    pnls.append(r); stops.append(abs(entry-stop)/entry*100)
+                if len(pnls) < 15:
+                    continue
+                n, w, gross = stat(pnls)
+                stop_med = np.median(stops) if stops else 0.5
+                net_t = gross - TAKER/(stop_med/100)
+                net_m = gross - MAKER/(stop_med/100)
+                flag_t = "OK" if net_t > 0 else ""
+                flag_m = "OK" if net_m > 0 else ""
+                print(f"  {nom:<13}{filtro:<10}{n:>5}{w*100:>4.0f}%{gross:>+8.3f}{net_t:>+10.3f}{flag_t:>2}{net_m:>+10.3f}{flag_m:>2}")
         print()
-    print("CLAVE: en scalping el coste (comision/stop) es enorme. Si NETO<0, la operativa no sobrevive a costes.")
+    print("VEREDICTO: si net@maker tampoco es positivo y consistente, el scalping 5m no es viable para nosotros.")
+    print("(net@taker = órdenes a mercado; net@maker = órdenes límite, solo posible en operativas pasivas/reversión)")
 
 if __name__ == "__main__":
     main()
