@@ -142,7 +142,9 @@ ESTRATEGIAS_TF = {
     # RETIRADO 1h 2026-06-24 (-0.65R live). Multi-año: donchian_2R (salida FIJA) gana en alts
     # (+0.036R ETH/SOL); donchian_trend (dejar correr) PIERDE -> la tesis del video era falsa, el corte
     # en 2R funciona mejor. El arena mide las 5 salidas en 15m y confirma cual gana.
-    "donchian": ["15m"],
+    # AÑADIDO 4h 2026-06-25: el PROTOCOLO (3 años, 3 monedas) dice que donchian_2R es ROBUSTA en 4h
+    # (+0.084R NETO, positiva en alcista+lateral) — su edge real está en 4h, no en 15m.
+    "donchian": ["15m", "4h"],
     # atr_break: AÑADIDA 2026-06-23 tras validar en Binance 50d (1m exacto): +0.41R en BTC Y ETH,
     #   win 52% (vs 36-41% de las OB), positivo los 2 meses y las 2 monedas. Sesgo de diseño BAJO
     #   (canal de Keltner de manual + concepto del video, no exprimido de estos datos). Perfil de edge
@@ -151,7 +153,13 @@ ESTRATEGIAS_TF = {
     #   que el Donchian fijo. La variante con filtro Asia/EMA200 NO mejoraba la base -> entra la base sola.
     #   VINDICADA en multi-año (BTC 2021-2026: +0.018R, mejor en bajista +0.11R). El -0.47R en vivo era
     #   mala suerte de muestra pequeña (n=51). RETIRADO 1h 2026-06-24 (-0.72R live, patrón sistémico).
-    "atr_break": ["15m"],
+    # AÑADIDO 4h 2026-06-25: el PROTOCOLO dice que atr_break es ROBUSTA en 4h (+0.201R NETO, positiva
+    # en los 3 climas) — 3x mejor que en 15m. En 4h los stops anchos hacen que la comisión no pese.
+    "atr_break": ["15m", "4h"],
+    # atr_break_trend + trend_rider: AÑADIDAS 2026-06-25 en 4h. El protocolo: atr_break_trend es la nº1
+    # ROBUSTA (+0.229R NETO, los 3 climas); trend_rider rellena el TORO (ROBUSTA +0.070R, alcista +0.083R).
+    "atr_break_trend": ["4h"],
+    "trend_rider": ["4h"],
     "orf": ["5m", "15m"],
     "fvg_ob": ["15m", "1h"],     # RETIRADO 5m (6 ops -1.40R); 15m +1.83R 100%win es el star
     # breaker RETIRADA 2026-06-23: n=104, hasta su MEJOR salida = -0.05R. 104 ops sin edge y sin
@@ -589,6 +597,42 @@ def det_scalp_break(d):
         return _setup("largo", cl[j], lo[j - 8:j].min(), 1.5)
     if cl[j] < ll and cl[j] < e20[j] and e20[j] < e20[j - 1]:
         return _setup("corto", cl[j], hi[j - 8:j].max(), 1.5)
+    return None
+
+
+def det_atr_break_trend(d):
+    """atr_break + filtro de tendencia EMA200 (largos solo sobre EMA200, cortos bajo). El PROTOCOLO
+    (4h, 3 años, 3 monedas) la corona Nº1 ROBUSTA: +0.229R NETO de costes, positiva en LOS 3 CLIMAS.
+    En 4h el filtro de tendencia SÍ ayuda (en 15m vivo parecía contradecirlo, pero era muestra pequeña)."""
+    sig = det_atr_break(d)
+    if sig is None:
+        return None
+    cl = d["cierre"].to_numpy(); j = len(cl) - 1
+    ema200 = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    if np.isnan(ema200[j]):
+        return sig
+    if sig["dir"] == "largo" and cl[j] < ema200[j]:
+        return None
+    if sig["dir"] == "corto" and cl[j] > ema200[j]:
+        return None
+    return sig
+
+
+def det_trend_rider(d):
+    """Trend-following: ruptura del máx/mín de 20 velas EN la dirección de la tendencia mayor (EMA200).
+    El PROTOCOLO la valida ROBUSTA en 4h (+0.070R NETO, gana en ALCISTA +0.083R) -> rellena el agujero
+    del mercado alcista (donde nada más gana). El edge más validado de la historia: seguir tendencias."""
+    cl = d["cierre"].to_numpy(); hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); j = len(cl) - 1
+    if j < 215:
+        return None
+    ema200 = d["cierre"].ewm(span=200, adjust=False).mean().to_numpy()
+    if np.isnan(ema200[j]):
+        return None
+    hh = hi[j - 20:j].max(); ll = lo[j - 20:j].min()
+    if cl[j] > hh and cl[j - 1] <= hh and cl[j] > ema200[j]:
+        return _setup("largo", cl[j], lo[j - 10:j].min(), 2.0)
+    if cl[j] < ll and cl[j - 1] >= ll and cl[j] < ema200[j]:
+        return _setup("corto", cl[j], hi[j - 10:j].max(), 2.0)
     return None
 
 
@@ -1625,6 +1669,10 @@ def detectar_cerr(estr, cerr, coin):
         return det_atr_break(cerr)
     if estr == "scalp_break":
         return det_scalp_break(cerr)
+    if estr == "atr_break_trend":
+        return det_atr_break_trend(cerr)
+    if estr == "trend_rider":
+        return det_trend_rider(cerr)
     if estr == "elliott":
         return det_elliott(cerr)
     if estr == "adrig":
