@@ -32,6 +32,25 @@ def bajar_5m(coin, velas=6000):
     d = pd.DataFrame(bl, columns=["t", "apertura", "maximo", "minimo", "cierre", "volumen"])
     return d.drop_duplicates("t").sort_values("t").reset_index(drop=True)
 
+def _salida_trail(d, j, entry, stop, es_largo, atr_mult=2.0, max_bars=240):
+    """Salida TRAILING: deja correr el momentum. El stop persigue al precio a atr_mult×ATR. La idea:
+    capturar las pocas rupturas que se convierten en movimientos grandes (que pagan las perdidas)."""
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy()
+    D = abs(entry - stop)
+    if D == 0: return None
+    atr = (d["maximo"] - d["minimo"]).rolling(14).mean().to_numpy()[j]
+    if np.isnan(atr) or atr == 0: atr = D
+    trail = stop
+    for i in range(j + 1, min(j + max_bars, len(d))):
+        if es_largo:
+            if lo[i] <= trail: return (trail - entry) / D
+            trail = max(trail, hi[i] - atr_mult * atr)
+        else:
+            if hi[i] >= trail: return (entry - trail) / D
+            trail = min(trail, lo[i] + atr_mult * atr)
+    fin = min(j + max_bars, len(d)) - 1
+    return ((cl[fin] - entry) if es_largo else (entry - cl[fin])) / D
+
 def _salida(d, j, entry, stop, target, es_largo, max_bars=60):
     hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy()
     D = abs(entry - stop)
@@ -135,30 +154,27 @@ def main():
         ini = pd.to_datetime(int(d['t'].iloc[0]), unit='ms').strftime('%m-%d')
         fin = pd.to_datetime(int(d['t'].iloc[-1]), unit='ms').strftime('%m-%d')
         print(f"=== {coin} ({len(d)} velas 5m, {ini}->{fin}) ===")
-        print(f"  {'operativa':<13}{'filtro':<10}{'n':>5}{'win':>5}{'gross':>8}{'net@taker':>11}{'net@maker':>11}")
+        print(f"  {'operativa':<13}{'n':>5}  ||  SALIDA FIJA: gross/net@maker  ||  SALIDA TRAILING: gross/net@maker")
         for nom, fn in OPERATIVAS.items():
-            for filtro, usar_vol in [("normal", False), ("alta-vol", True)]:
-                pnls, stops = [], []
-                for j in range(25, len(d)-1):
-                    if usar_vol and not vol_alta[j]: continue
-                    sig = fn(d, j)
-                    if not sig: continue
-                    dirc, entry, stop, target = sig
-                    r = _salida(d, j, entry, stop, target, dirc == "largo")
-                    if r is None: continue
-                    pnls.append(r); stops.append(abs(entry-stop)/entry*100)
-                if len(pnls) < 15:
-                    continue
-                n, w, gross = stat(pnls)
-                stop_med = np.median(stops) if stops else 0.5
-                net_t = gross - TAKER/(stop_med/100)
-                net_m = gross - MAKER/(stop_med/100)
-                flag_t = "OK" if net_t > 0 else ""
-                flag_m = "OK" if net_m > 0 else ""
-                print(f"  {nom:<13}{filtro:<10}{n:>5}{w*100:>4.0f}%{gross:>+8.3f}{net_t:>+10.3f}{flag_t:>2}{net_m:>+10.3f}{flag_m:>2}")
+            pf, pt, stops = [], [], []
+            for j in range(25, len(d)-1):
+                sig = fn(d, j)
+                if not sig: continue
+                dirc, entry, stop, target = sig
+                rf = _salida(d, j, entry, stop, target, dirc == "largo")
+                rt = _salida_trail(d, j, entry, stop, dirc == "largo")
+                if rf is None or rt is None: continue
+                pf.append(rf); pt.append(rt); stops.append(abs(entry-stop)/entry*100)
+            if len(pf) < 15: continue
+            stop_med = np.median(stops) if stops else 0.5
+            cm = MAKER/(stop_med/100)
+            nf, _, gf = stat(pf); _, _, gt = stat(pt)
+            netf, nett = gf - cm, gt - cm
+            ff = "OK" if netf > 0 else "  "; ft = "OK" if nett > 0 else "  "
+            print(f"  {nom:<13}{nf:>5}  ||  {gf:>+7.3f} / {netf:>+7.3f}{ff}  ||  {gt:>+7.3f} / {nett:>+7.3f}{ft}")
         print()
-    print("VEREDICTO: si net@maker tampoco es positivo y consistente, el scalping 5m no es viable para nosotros.")
-    print("(net@taker = órdenes a mercado; net@maker = órdenes límite, solo posible en operativas pasivas/reversión)")
+    print("VEREDICTO: ¿la salida TRAILING (dejar correr) hace positivo algún scalp donde la fija fallaba?")
+    print("Si ni con trailing ni con maker hay edge consistente en 3 monedas, el scalping 5m no es viable.")
 
 if __name__ == "__main__":
     main()
