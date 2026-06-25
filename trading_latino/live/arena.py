@@ -123,7 +123,12 @@ ESTRATEGIAS_TF = {
 
     # --- SCALP/MULTI-TF especiales ---
     "ob_scalp": ["1m"],
-    "sensei": ["1m", "5m"],
+    # sensei RETIRADA 2026-06-25: n=0 en semanas (no dispara nunca) = hueco muerto. La reemplaza
+    # scalp_break, una operativa de scalping que SI funciona en el test (5m breakout, neto +0.08/+0.10R).
+    # "sensei": ["1m", "5m"],
+    # scalp_break: AÑADIDA 2026-06-25. Breakout 5m validado en Binance (oso): neto positivo en 3 monedas,
+    # short-biased. Rellena el hueco de scalping (las de 1m apenas disparan). Forward-test en vivo.
+    "scalp_break": ["5m"],
 
     # --- ALTERNATIVAS (en recoleccion de datos) ---
     # donchian: RE-ACTIVADA 2026-06-23 con criterio. Se retiro por -0.39R en vivo... pero se midio
@@ -564,6 +569,24 @@ def det_atr_break(d):
         return _setup("largo", cl[j], sl, 2.0)
     if cl[j] < bd and cl[j - 1] >= bd1:
         return _setup("corto", cl[j], sh, 2.0)
+    return None
+
+
+def det_scalp_break(d):
+    """SCALP 5m: ruptura del máx/mín de 10 velas + EMA20 a favor (momentum corto plazo). Stop al swing
+    de 8 velas (ANCHO a propósito: en scalping un stop pegado hace que la comisión se coma el edge),
+    objetivo 1.5R. Validada inicialmente en Binance 5m (oso): NETO +0.08/+0.10R en BTC/ETH, short-biased
+    (los breakout-largos en oso son trampas). Rellena el hueco de scalping (ob_scalp/sensei no disparan).
+    El arena mide las 5 salidas; en 5m el coste pesa, por eso el stop ancho es clave."""
+    cl = d["cierre"].to_numpy(); hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); j = len(cl) - 1
+    if j < 25:
+        return None
+    e20 = d["cierre"].ewm(span=20, adjust=False).mean().to_numpy()
+    hh = hi[j - 10:j].max(); ll = lo[j - 10:j].min()
+    if cl[j] > hh and cl[j] > e20[j] and e20[j] > e20[j - 1]:
+        return _setup("largo", cl[j], lo[j - 8:j].min(), 1.5)
+    if cl[j] < ll and cl[j] < e20[j] and e20[j] < e20[j - 1]:
+        return _setup("corto", cl[j], hi[j - 8:j].max(), 1.5)
     return None
 
 
@@ -1598,6 +1621,8 @@ def detectar_cerr(estr, cerr, coin):
         return det_donchian(cerr)
     if estr == "atr_break":
         return det_atr_break(cerr)
+    if estr == "scalp_break":
+        return det_scalp_break(cerr)
     if estr == "elliott":
         return det_elliott(cerr)
     if estr == "adrig":
