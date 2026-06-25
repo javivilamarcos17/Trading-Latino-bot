@@ -126,9 +126,11 @@ ESTRATEGIAS_TF = {
     # sensei RETIRADA 2026-06-25: n=0 en semanas (no dispara nunca) = hueco muerto. La reemplaza
     # scalp_break, una operativa de scalping que SI funciona en el test (5m breakout, neto +0.08/+0.10R).
     # "sensei": ["1m", "5m"],
-    # scalp_break: AÑADIDA 2026-06-25. Breakout 5m validado en Binance (oso): neto positivo en 3 monedas,
-    # short-biased. Rellena el hueco de scalping (las de 1m apenas disparan). Forward-test en vivo.
-    "scalp_break": ["5m"],
+    # scalp_break RETIRADA 2026-06-25 (mismo día): se añadió con muestra de 3.5 días (+0.08R), pero al
+    # probar con 3 SEMANAS (n~900/moneda) da NETO -0.05/-0.17R. El edge bruto del scalp (~+0.05R) NO supera
+    # la comisión (0.08% = 0.07-0.15R con stops pequeños). LECCIÓN: el scalping 5m no es viable con nuestros
+    # costes (taker). Confirmado a escala. El protocolo hizo su trabajo: test grande mató al pequeño.
+    # "scalp_break": ["5m"],
 
     # --- ALTERNATIVAS (en recoleccion de datos) ---
     # donchian: RE-ACTIVADA 2026-06-23 con criterio. Se retiro por -0.39R en vivo... pero se midio
