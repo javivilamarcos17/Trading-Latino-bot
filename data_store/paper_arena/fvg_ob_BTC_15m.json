@@ -3665,7 +3665,7 @@
     "entry": 60083.0,
     "stop": 60275.215,
     "target": 59698.57000000001,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782612900000,
     "estr": "fvg_ob",
     "coin": "BTC",
@@ -3698,6 +3698,18 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 7.65
+    "ses_ant_rango_%": 7.65,
+    "exit": 60275.215,
+    "pnl": -0.003999157831666137,
+    "mfe_R": 0.0,
+    "mae_R": 1.05,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.25,
+      "be05": -1.25,
+      "be10": -1.25,
+      "t125": -1.25,
+      "trail": -1.25
+    }
   }
 ]

@@ -368,7 +368,7 @@
     "entry": 1570.9,
     "stop": 1578.4,
     "target": 1555.9,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782612900000,
     "estr": "merinox",
     "coin": "ETH",
@@ -401,6 +401,18 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 9.28
+    "ses_ant_rango_%": 9.28,
+    "exit": 1578.4,
+    "pnl": -0.005574333184798524,
+    "mfe_R": 0.0,
+    "mae_R": 1.05,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.168,
+      "be05": -1.168,
+      "be10": -1.168,
+      "t125": -1.168,
+      "trail": -1.168
+    }
   }
 ]

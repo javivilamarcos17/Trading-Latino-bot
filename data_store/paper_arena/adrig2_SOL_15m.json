@@ -3209,7 +3209,7 @@
     "entry": 70.655,
     "stop": 70.85078,
     "target": 70.26344,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782612900000,
     "estr": "adrig2",
     "coin": "SOL",
@@ -3242,6 +3242,18 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 14.42
+    "ses_ant_rango_%": 14.42,
+    "exit": 70.85078,
+    "pnl": -0.003570929162833475,
+    "mfe_R": 0.0,
+    "mae_R": 1.5,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.289,
+      "be05": -1.289,
+      "be10": -1.289,
+      "t125": -1.289,
+      "trail": -1.289
+    }
   }
 ]
