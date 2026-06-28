@@ -963,7 +963,7 @@
     "entry": 60100.0,
     "stop": 60275.215,
     "target": 59749.57000000001,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782604800000,
     "estr": "fvg_ob_asia",
     "coin": "BTC",
@@ -992,14 +992,26 @@
     "m5_vol_rel": 0.17,
     "ses_ant": "ny",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 10.23
+    "ses_ant_rango_%": 10.23,
+    "exit": 60275.215,
+    "pnl": -0.0037153910149749832,
+    "mfe_R": 0.92,
+    "mae_R": 1.05,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.274,
+      "be05": -0.274,
+      "be10": -1.274,
+      "t125": -1.274,
+      "trail": -0.584
+    }
   },
   {
     "dir": "corto",
     "entry": 60118.0,
     "stop": 60275.215,
     "target": 59803.57000000001,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782607500000,
     "estr": "fvg_ob_asia",
     "coin": "BTC",
@@ -1032,14 +1044,26 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 10.02
+    "ses_ant_rango_%": 10.02,
+    "exit": 60275.215,
+    "pnl": -0.0034151069563191807,
+    "mfe_R": 1.14,
+    "mae_R": 1.06,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.306,
+      "be05": -0.306,
+      "be10": -0.306,
+      "t125": -1.306,
+      "trail": -0.161
+    }
   },
   {
     "dir": "corto",
     "entry": 60053.0,
     "stop": 60275.215,
     "target": 59608.57000000001,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782608400000,
     "estr": "fvg_ob_asia",
     "coin": "BTC",
@@ -1072,6 +1096,18 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 9.96
+    "ses_ant_rango_%": 9.96,
+    "exit": 60275.215,
+    "pnl": -0.004500314721995513,
+    "mfe_R": 0.52,
+    "mae_R": 1.04,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.216,
+      "be05": -0.216,
+      "be10": -1.216,
+      "t125": -1.216,
+      "trail": -0.699
+    }
   }
 ]
