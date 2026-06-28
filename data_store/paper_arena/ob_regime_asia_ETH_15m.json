@@ -3958,7 +3958,7 @@
     "entry": 1578.0,
     "stop": 1580.3787999999997,
     "target": 1573.2424000000005,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782612000000,
     "estr": "ob_regime_asia",
     "coin": "ETH",
@@ -3991,6 +3991,18 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 9.28
+    "ses_ant_rango_%": 9.28,
+    "exit": 1573.2424000000005,
+    "pnl": 0.002214955640050353,
+    "mfe_R": 2.27,
+    "mae_R": 0.42,
+    "res": "1m",
+    "exits": {
+      "fixed": 1.469,
+      "be05": -0.531,
+      "be10": -0.531,
+      "t125": 0.719,
+      "trail": -0.312
+    }
   }
 ]
