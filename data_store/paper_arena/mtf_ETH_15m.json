@@ -1837,7 +1837,7 @@
     "entry": 1623.6,
     "stop": 1609.6,
     "target": 1651.6,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782940500000,
     "estr": "mtf",
     "coin": "ETH",
@@ -1874,6 +1874,18 @@
     "london_dir": "bajista",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 5.47
+    "ses_ant_rango_%": 5.47,
+    "exit": 1609.6,
+    "pnl": -0.009422813500862283,
+    "mfe_R": 1.53,
+    "mae_R": 1.06,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.093,
+      "be05": -0.093,
+      "be10": -0.093,
+      "t125": 1.157,
+      "trail": 0.436
+    }
   }
 ]

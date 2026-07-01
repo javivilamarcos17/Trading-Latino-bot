@@ -3894,7 +3894,7 @@
     "entry": 1627.3,
     "stop": 1609.6,
     "target": 1662.7,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782941400000,
     "estr": "donchian",
     "coin": "ETH",
@@ -3931,14 +3931,26 @@
     "london_dir": "bajista",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 5.44
+    "ses_ant_rango_%": 5.44,
+    "exit": 1609.6,
+    "pnl": -0.01167691267744119,
+    "mfe_R": 1.0,
+    "mae_R": 1.05,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.074,
+      "be05": -0.074,
+      "be10": -0.074,
+      "t125": -1.074,
+      "trail": -0.074
+    }
   },
   {
     "dir": "largo",
     "entry": 1631.5,
     "stop": 1609.6,
     "target": 1675.3000000000002,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782942300000,
     "estr": "donchian",
     "coin": "ETH",
@@ -3975,6 +3987,18 @@
     "london_dir": "bajista",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 5.44
+    "ses_ant_rango_%": 5.44,
+    "exit": 1609.6,
+    "pnl": -0.014223230156297942,
+    "mfe_R": 0.62,
+    "mae_R": 1.04,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.06,
+      "be05": -0.06,
+      "be10": -1.06,
+      "t125": -1.06,
+      "trail": -0.443
+    }
   }
 ]
