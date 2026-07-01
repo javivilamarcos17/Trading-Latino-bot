@@ -1,0 +1,38 @@
+[
+  {
+    "dir": "corto",
+    "entry": 63800.0,
+    "stop": 64306.0,
+    "target": 62535.0,
+    "status": "cerrada",
+    "ts": 1782072000000,
+    "estr": "elliott",
+    "coin": "BTC",
+    "tf": "1h",
+    "fecha": "2026-06-21 20:00:00",
+    "sesion": "ny",
+    "funding": 1.25e-05,
+    "oi": 30688.85274,
+    "d_oi_%": null,
+    "fng": 20,
+    "pos_rango": 0.7,
+    "liq_arriba_%": 0.08,
+    "liq_abajo_%": 0.04,
+    "atr_%": 0.647,
+    "adx": 20.7,
+    "regimen": "rango",
+    "vol_rel": 0.66,
+    "exit": 64306.0,
+    "pnl": -0.008731034482758622,
+    "mfe_R": 1.1,
+    "mae_R": 1.19,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.101,
+      "be05": -0.101,
+      "be10": -0.101,
+      "t125": -1.101,
+      "trail": 0.002
+    }
+  }
+]
