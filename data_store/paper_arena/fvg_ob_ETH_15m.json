@@ -7833,7 +7833,7 @@
     "entry": 1622.6,
     "stop": 1605.1932,
     "target": 1657.4135999999999,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782939600000,
     "estr": "fvg_ob",
     "coin": "ETH",
@@ -7870,6 +7870,18 @@
     "london_dir": "bajista",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 5.47
+    "ses_ant_rango_%": 5.47,
+    "exit": 1605.1932,
+    "pnl": -0.011527720941698495,
+    "mfe_R": 1.29,
+    "mae_R": 1.12,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.075,
+      "be05": -0.075,
+      "be10": -0.075,
+      "t125": 1.175,
+      "trail": 0.212
+    }
   }
 ]
