@@ -8518,7 +8518,7 @@
     "entry": 77.867,
     "stop": 77.10282000000001,
     "target": 79.39536,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782939600000,
     "estr": "fvg_ob",
     "coin": "SOL",
@@ -8555,7 +8555,19 @@
     "london_dir": "alcista",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 11.0
+    "ses_ant_rango_%": 11.0,
+    "exit": 77.10282000000001,
+    "pnl": -0.010613913467836132,
+    "mfe_R": 1.38,
+    "mae_R": 1.01,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.082,
+      "be05": -0.082,
+      "be10": -0.082,
+      "t125": 1.168,
+      "trail": 0.298
+    }
   },
   {
     "dir": "largo",
@@ -8618,7 +8630,7 @@
     "entry": 77.52,
     "stop": 77.10282000000001,
     "target": 78.35435999999997,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782946800000,
     "estr": "fvg_ob",
     "coin": "SOL",
@@ -8655,14 +8667,26 @@
     "london_dir": "alcista",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 10.99
+    "ses_ant_rango_%": 10.99,
+    "exit": 77.10282000000001,
+    "pnl": -0.006181578947368263,
+    "mfe_R": 0.62,
+    "mae_R": 1.02,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.149,
+      "be05": -0.149,
+      "be10": -1.149,
+      "t125": -1.149,
+      "trail": -0.525
+    }
   },
   {
     "dir": "largo",
     "entry": 77.683,
     "stop": 77.10282000000001,
     "target": 78.84336,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782947700000,
     "estr": "fvg_ob",
     "coin": "SOL",
@@ -8699,14 +8723,26 @@
     "london_dir": "alcista",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 11.0
+    "ses_ant_rango_%": 11.0,
+    "exit": 77.10282000000001,
+    "pnl": -0.008268558114387942,
+    "mfe_R": 0.17,
+    "mae_R": 1.02,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.107,
+      "be05": -1.107,
+      "be10": -1.107,
+      "t125": -1.107,
+      "trail": -0.94
+    }
   },
   {
     "dir": "largo",
     "entry": 77.512,
     "stop": 77.10282000000001,
     "target": 78.33035999999998,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782948600000,
     "estr": "fvg_ob",
     "coin": "SOL",
@@ -8743,14 +8779,26 @@
     "london_dir": "alcista",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 10.91
+    "ses_ant_rango_%": 10.91,
+    "exit": 77.10282000000001,
+    "pnl": -0.006078924553617403,
+    "mfe_R": 0.65,
+    "mae_R": 1.02,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.152,
+      "be05": -0.152,
+      "be10": -1.152,
+      "t125": -1.152,
+      "trail": -0.497
+    }
   },
   {
     "dir": "largo",
     "entry": 77.453,
     "stop": 77.10282000000001,
     "target": 78.15335999999999,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782949500000,
     "estr": "fvg_ob",
     "coin": "SOL",
@@ -8779,14 +8827,26 @@
     "m5_vol_rel": 0.4,
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 10.89
+    "ses_ant_rango_%": 10.89,
+    "exit": 77.10282000000001,
+    "pnl": -0.005321193497992261,
+    "mfe_R": 0.46,
+    "mae_R": 1.03,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.177,
+      "be05": -1.177,
+      "be10": -1.177,
+      "t125": -1.177,
+      "trail": -0.717
+    }
   },
   {
     "dir": "largo",
     "entry": 77.309,
     "stop": 77.10282000000001,
     "target": 77.72135999999998,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782950400000,
     "estr": "fvg_ob",
     "coin": "SOL",
@@ -8815,6 +8875,18 @@
     "m5_vol_rel": 0.08,
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 10.83
+    "ses_ant_rango_%": 10.83,
+    "exit": 77.10282000000001,
+    "pnl": -0.003466959862370347,
+    "mfe_R": 0.61,
+    "mae_R": 1.05,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.3,
+      "be05": -0.3,
+      "be10": -1.3,
+      "t125": -1.3,
+      "trail": -0.946
+    }
   }
 ]
