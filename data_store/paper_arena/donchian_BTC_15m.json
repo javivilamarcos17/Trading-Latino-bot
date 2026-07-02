@@ -4519,7 +4519,7 @@
     "entry": 60447.0,
     "stop": 59853.0,
     "target": 61635.0,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782939600000,
     "estr": "donchian",
     "coin": "BTC",
@@ -4556,14 +4556,26 @@
     "london_dir": "bajista",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 59853.0,
+    "pnl": -0.01062679041143481,
+    "mfe_R": 1.53,
+    "mae_R": 1.09,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.081,
+      "be05": -0.081,
+      "be10": -0.081,
+      "t125": 1.169,
+      "trail": 0.451
+    }
   },
   {
     "dir": "largo",
     "entry": 60515.0,
     "stop": 59853.0,
     "target": 61839.0,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782940500000,
     "estr": "donchian",
     "coin": "BTC",
@@ -4600,14 +4612,26 @@
     "london_dir": "bajista",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 59853.0,
+    "pnl": -0.011739436503346279,
+    "mfe_R": 1.27,
+    "mae_R": 1.08,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.073,
+      "be05": -0.073,
+      "be10": -0.073,
+      "t125": 1.177,
+      "trail": 0.199
+    }
   },
   {
     "dir": "largo",
     "entry": 60801.0,
     "stop": 59853.0,
     "target": 62697.0,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782941400000,
     "estr": "donchian",
     "coin": "BTC",
@@ -4644,6 +4668,18 @@
     "london_dir": "bajista",
     "ses_ant": "ny",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 4.61
+    "ses_ant_rango_%": 4.61,
+    "exit": 59853.0,
+    "pnl": -0.016391848818276013,
+    "mfe_R": 0.59,
+    "mae_R": 1.05,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.051,
+      "be05": -0.051,
+      "be10": -1.051,
+      "t125": -1.051,
+      "trail": -0.465
+    }
   }
 ]

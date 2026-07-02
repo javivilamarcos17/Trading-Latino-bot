@@ -7076,7 +7076,7 @@
     "entry": 59918.0,
     "stop": 59793.147,
     "target": 60167.706000000006,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1782950400000,
     "estr": "ob_asia",
     "coin": "BTC",
@@ -7105,6 +7105,18 @@
     "m5_vol_rel": 0.14,
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.64
+    "ses_ant_rango_%": 4.64,
+    "exit": 59793.147,
+    "pnl": -0.0028837310991689106,
+    "mfe_R": 0.53,
+    "mae_R": 1.1,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.384,
+      "be05": -0.384,
+      "be10": -1.384,
+      "t125": -1.384,
+      "trail": -0.855
+    }
   }
 ]
