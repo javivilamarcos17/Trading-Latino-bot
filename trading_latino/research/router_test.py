@@ -98,6 +98,10 @@ def main():
                     r = salida_fija(d, j, sig["stop"], sig["target"], sig["dir"] == "largo")
                     dest.append((int(d["t"].iloc[j]), r, reg[j], e, sig["dir"]))
         print(f"  ops acumuladas: asia={len(ops_asia):,} toro={len(ops_toro):,}")
+    # persistir ops -> nunca mas recomputar (investigacion barata para siempre)
+    pd.DataFrame(ops_asia + ops_toro, columns=["t", "pnl", "regimen", "estr", "dir"]).to_parquet(
+        CACHE / "ops_router.parquet", index=False)
+    print(f"  [cache] ops guardadas en research_cache/ops_router.parquet")
 
     # POR OPERATIVA: exp NETO por régimen y por año (lo que pidió el dueño)
     todas_det = ops_asia + ops_toro
@@ -129,8 +133,24 @@ def main():
     escB = [(t, r) for t, r, g, e, dr in ops_asia + ops_toro]
     escC = [(t, r) for t, r, g, e, dr in ops_asia if g in ("bajista", "lateral")] + \
            [(t, r) for t, r, g, e, dr in ops_toro if g == "alcista"]
+    # D) ROTACIÓN por evidencia reciente (walk-forward, sin lookahead): cada operativa solo se opera
+    # si SU rendimiento en los últimos 45 días (ops ya CERRADAS) es positivo con n>=15. Es el "usar
+    # cada una cuando está funcionando" hecho matemática: rotación adaptativa, no mapa fijo.
+    VENT = 45 * 86400_000
+    hist = defaultdict(list)          # estr -> [(ts, pnl)] cronológico
+    todas_ops = sorted(ops_asia + ops_toro)
+    escD = []
+    MADURA = 2 * 86400_000            # una op solo cuenta para decidir cuando ya habra cerrado (~2d)
+    for ts, r, g, e, dr in todas_ops:
+        h = hist[e]
+        while h and h[0][0] < ts - VENT: h.pop(0)
+        cerradas = [p for hts, p in h if hts < ts - MADURA]
+        if len(cerradas) >= 15 and sum(cerradas)/len(cerradas) > 0:
+            escD.append((ts, r))
+        hist[e].append((ts, r))
     resultados = {}
-    for nom, ops in [("A) Asia siempre", escA), ("B) Todas siempre", escB), ("C) ROUTER por régimen", escC)]:
+    for nom, ops in [("A) Asia siempre", escA), ("B) Todas siempre", escB), ("C) ROUTER por régimen", escC),
+                     ("D) ROTACIÓN 45d adaptativa", escD)]:
         ret, dd, anios, logret = simular(ops)
         resultados[nom] = (ret, dd, logret)
         stranios = "  ".join(f"{a}:{v:+.0f}%" for a, v in sorted(anios.items()))
