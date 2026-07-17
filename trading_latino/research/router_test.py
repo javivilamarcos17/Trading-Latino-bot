@@ -12,7 +12,7 @@ Con CACHÉ de velas en disco (data_store/research_cache) — descargar una vez, 
 Uso:  python -m trading_latino.research.router_test [desde=2021-01-01]
 """
 from __future__ import annotations
-import sys, os
+import sys
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd
 from pathlib import Path
@@ -82,7 +82,7 @@ def main():
     hasta_ts = int(pd.Timestamp.now("UTC").timestamp()*1000)
     print(f"ROUTER TEST — {desde} -> hoy. A=Asia siempre | B=todas siempre | C=ROUTER por régimen\n")
 
-    ops_asia, ops_toro = [], []   # (ts, pnl, regimen)
+    ops_asia, ops_toro = [], []   # (ts, pnl, regimen, estr, dir)
     for coin in ["BTC", "ETH", "SOL"]:
         print(f"[{coin}] velas (caché)...")
         d = velas_cacheadas(coin, desde_ts, hasta_ts)
@@ -96,26 +96,39 @@ def main():
                     except Exception: continue
                     if not sig: continue
                     r = salida_fija(d, j, sig["stop"], sig["target"], sig["dir"] == "largo")
-                    dest.append((int(d["t"].iloc[j]), r, reg[j]))
+                    dest.append((int(d["t"].iloc[j]), r, reg[j], e, sig["dir"]))
         print(f"  ops acumuladas: asia={len(ops_asia):,} toro={len(ops_toro):,}")
 
-    # exp por régimen de cada bloque (contexto)
-    print("\nexp/op NETO por régimen:")
-    for nom, ops in [("familia Asia", ops_asia), ("trend_rider", ops_toro)]:
+    # POR OPERATIVA: exp NETO por régimen y por año (lo que pidió el dueño)
+    todas_det = ops_asia + ops_toro
+    variantes = [("ob_asia_close", "ob_asia_close", None), ("ob_asia_close_LARGOS", "ob_asia_close", "largo"),
+                 ("fvg_ob_asia", "fvg_ob_asia", None), ("fvg_ob", "fvg_ob", None), ("trend_rider", "trend_rider", None)]
+    print("\nPOR OPERATIVA — exp/op NETO (por régimen y por año):")
+    for nom, base, dirf in variantes:
+        sel = [t for t in todas_det if t[3] == base and (dirf is None or t[4] == dirf)]
+        pn = [t[1] - SLIP for t in sel]
+        n, wn, ex = stat(pn)
+        if not n: continue
+        print(f"  {nom}  (n={n:,}, win={wn*100:.0f}%, exp={ex:+.3f}R)")
         cells = []
         for rg in ["alcista", "lateral", "bajista"]:
-            v = [r - SLIP for _, r, g in ops if g == rg]
+            v = [t[1] - SLIP for t in sel if t[2] == rg]
             if len(v) >= 30: cells.append(f"{rg}={stat(v)[2]:+.3f}({len(v)})")
-        print(f"  {nom:<14}: " + "  ".join(cells))
+        print("     RÉGIMEN: " + "  ".join(cells))
+        cells = []
+        for a in sorted({pd.to_datetime(t[0], unit='ms').year for t in sel}):
+            v = [t[1] - SLIP for t in sel if pd.to_datetime(t[0], unit='ms').year == a]
+            if len(v) >= 30: cells.append(f"{a}={stat(v)[2]:+.2f}({len(v)})")
+        print("     AÑO:     " + "  ".join(cells))
 
     # A / B / C
     print("\n" + "="*96)
     print(f"{'escenario':<26}{'ops':>7}{'TOTAL':>10}{'peor caída':>12}  por año")
     print("="*96)
-    escA = [(t, r) for t, r, g in ops_asia]
-    escB = [(t, r) for t, r, g in ops_asia + ops_toro]
-    escC = [(t, r) for t, r, g in ops_asia if g in ("bajista", "lateral")] + \
-           [(t, r) for t, r, g in ops_toro if g == "alcista"]
+    escA = [(t, r) for t, r, g, e, dr in ops_asia]
+    escB = [(t, r) for t, r, g, e, dr in ops_asia + ops_toro]
+    escC = [(t, r) for t, r, g, e, dr in ops_asia if g in ("bajista", "lateral")] + \
+           [(t, r) for t, r, g, e, dr in ops_toro if g == "alcista"]
     resultados = {}
     for nom, ops in [("A) Asia siempre", escA), ("B) Todas siempre", escB), ("C) ROUTER por régimen", escC)]:
         ret, dd, anios, logret = simular(ops)
