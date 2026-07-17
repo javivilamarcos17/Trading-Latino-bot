@@ -122,7 +122,7 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
      (n=1.7k/2.7k); fvg_ob +0.053R vs −0.030R (n=5.4k/8k). Explica por qué 2026 funciona y da la regla:
      operar FVG-Asia SOLO en ciclo profundo (condición CUMPLIDA hoy: 284d, dd 50%). Se aplica al
      desplegar, no al recoger (colector queda crudo).
-  2. **Plan BTC mecanizado VALIDADO** (diario, BTC-only): +0.46R n=49 (2018-26), ROBUSTO 27/27 en
+  2. **Plan BTC mecanizado VALIDADO** (diario, BTC-only): +0.46R n=49 (2018-26) Y **+0.36R n=104 en 14 AÑOS (Bitstamp 2012-2026, 4 ciclos, positiva en las 4 épocas)** — el edge más robusto del proyecto. ROBUSTO 27/27 en
      sensibilidad. En vivo como `planbtc` (1d). NO baja a TF menores (sniper 15m −0.02R, 4h diluye).
   3. **Los % 2021-26 de las intradía actuales: NEGATIVOS** (ob_asia_close −0.04R, carteras estáticas
      −48% a −81%). El edge Asia es un fenómeno de ERA (2026 = ciclo profundo). trend_rider única
