@@ -160,6 +160,9 @@ ESTRATEGIAS_TF = {
     # ROBUSTA (+0.229R NETO, los 3 climas); trend_rider rellena el TORO (ROBUSTA +0.070R, alcista +0.083R).
     "atr_break_trend": ["4h"],
     "trend_rider": ["4h"],
+    # trend_rider_f: A/B EN VIVO 2026-07-17 — trend_rider + filtro de funding (validado en Funding Lab
+    # 2023-26, 3/3 monedas: mejora o mantiene, nunca estorba). Se mide SEPARADA de la base para comparar.
+    "trend_rider_f": ["4h"],
     "orf": ["5m", "15m"],
     "fvg_ob": ["15m", "1h"],     # RETIRADO 5m (6 ops -1.40R); 15m +1.83R 100%win es el star
     # breaker RETIRADA 2026-06-23: n=104, hasta su MEJOR salida = -0.05R. 104 ops sin edge y sin
@@ -634,6 +637,46 @@ def det_trend_rider(d):
     if cl[j] < ll and cl[j - 1] >= ll and cl[j] < ema200[j]:
         return _setup("corto", cl[j], hi[j - 10:j].max(), 2.0)
     return None
+
+
+def _funding_actual(coin):
+    """Último funding CONOCIDO del registro continuo (_ctx_<coin>.jsonl) + percentiles del histórico
+    guardado. Sin llamadas API extra. Devuelve (funding, p90, p10) o (None, None, None)."""
+    try:
+        f = REG / f"_ctx_{coin}.jsonl"
+        vals = []
+        for ln in f.read_text().strip().splitlines()[-600:]:
+            r = json.loads(ln)
+            if r.get("funding") is not None:
+                vals.append(r["funding"])
+        if len(vals) < 50:
+            return None, None, None
+        import numpy as _np
+        return vals[-1], float(_np.quantile(vals, 0.90)), float(_np.quantile(vals, 0.10))
+    except Exception:
+        return None, None, None
+
+
+def det_trend_rider_f(d, coin):
+    """trend_rider + FILTRO DE FUNDING (A/B en vivo contra la base). Validado en Funding Lab
+    (2023-2026, 3 monedas): no entrar LARGO con funding ya extremo-positivo (trade masificado,
+    todos largos pagando) ni CORTO con extremo-negativo. Mejoró o mantuvo en las 3: BTC +0.015->
+    +0.048, ETH +0.117->+0.187, SOL igual. El filtro solo aplica a señales RECIENTES (<8h, un ciclo
+    de funding); señales backfilled antiguas pasan sin filtro (no conocemos su funding histórico)."""
+    sig = det_trend_rider(d)
+    if sig is None:
+        return None
+    ts_sig = int(d["t"].iloc[-1])
+    if time.time() * 1000 - ts_sig > 8 * 3600 * 1000:
+        return sig                       # señal antigua (backfill): sin funding fiable -> no filtrar
+    fr, p90, p10 = _funding_actual(coin)
+    if fr is None:
+        return sig
+    if sig["dir"] == "largo" and fr > p90 and fr > 0:
+        return None
+    if sig["dir"] == "corto" and fr < p10 and fr < 0:
+        return None
+    return sig
 
 
 def det_adrig(d):
@@ -1673,6 +1716,8 @@ def detectar_cerr(estr, cerr, coin):
         return det_atr_break_trend(cerr)
     if estr == "trend_rider":
         return det_trend_rider(cerr)
+    if estr == "trend_rider_f":
+        return det_trend_rider_f(cerr, coin)
     if estr == "elliott":
         return det_elliott(cerr)
     if estr == "adrig":
