@@ -31,6 +31,52 @@ TF_MS = {"15m": 15*60_000, "1h": 60*60_000, "4h": 4*60*60_000}
 VPD = {"15m": 96, "1h": 24, "4h": 6}     # velas por día (para el régimen)
 COSTE_R_FIJO = 0.006                       # slippage medido del spread en vivo (la comisión ya está en salida_fija)
 
+def det_rsi2_rebound(d):
+    """RSI(2) extremo + tendencia a favor (Connors, clásico con evidencia): en tendencia alcista
+    (precio>EMA200) comprar el pánico de corto plazo (RSI2<10); espejo en bajista (RSI2>90 -> corto).
+    Es reversión A FAVOR de la tendencia mayor — lo contrario de mean_rev puro (que murió)."""
+    c = d["cierre"]; cl = c.to_numpy(); j = len(cl) - 1
+    if j < 215: return None
+    ema200 = c.ewm(span=200, adjust=False).mean().to_numpy()
+    if np.isnan(ema200[j]): return None
+    dif = c.diff()
+    up = dif.clip(lower=0).ewm(alpha=1/2, adjust=False).mean()
+    dn = (-dif).clip(lower=0).ewm(alpha=1/2, adjust=False).mean()
+    rsi2 = (100 - 100/(1 + up/dn.replace(0, np.nan))).to_numpy()
+    if np.isnan(rsi2[j]): return None
+    lo = d["minimo"].to_numpy(); hi = d["maximo"].to_numpy()
+    if cl[j] > ema200[j] and rsi2[j] < 10:
+        return {"dir": "largo", "entry": float(cl[j]), "stop": float(lo[j-7:j+1].min()*0.999),
+                "target": float(cl[j] + 2*(cl[j]-lo[j-7:j+1].min()*0.999)), "R": 2.0} if cl[j] > lo[j-7:j+1].min()*0.999 else None
+    if cl[j] < ema200[j] and rsi2[j] > 90:
+        st = hi[j-7:j+1].max()*1.001
+        return {"dir": "corto", "entry": float(cl[j]), "stop": float(st),
+                "target": float(cl[j] - 2*(st-cl[j])), "R": 2.0} if st > cl[j] else None
+    return None
+
+def det_hybrid_momo(d):
+    """Híbrido con evidencia 2025-26: tendencia (EMA20>EMA50) + momentum (RSI14 50-70, no sobrecomprado)
+    + confirmación de VOLUMEN (>1.3x media) + régimen (ADX>20). Entrada en ruptura de 10 velas."""
+    c = d["cierre"]; cl = c.to_numpy(); j = len(cl) - 1
+    if j < 60: return None
+    e20 = c.ewm(span=20, adjust=False).mean().to_numpy()
+    e50 = c.ewm(span=50, adjust=False).mean().to_numpy()
+    dif = c.diff()
+    up = dif.clip(lower=0).ewm(alpha=1/14, adjust=False).mean()
+    dn = (-dif).clip(lower=0).ewm(alpha=1/14, adjust=False).mean()
+    rsi = (100 - 100/(1 + up/dn.replace(0, np.nan))).to_numpy()
+    vol = d["volumen"].to_numpy(); vm = d["volumen"].rolling(20).mean().shift(1).to_numpy()
+    from trading_latino.research.backtest_ganadoras import _adx, _setup
+    adx = _adx(d)
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy()
+    if np.isnan(rsi[j]) or np.isnan(adx[j]) or not vm[j]: return None
+    volok = vol[j] > 1.3 * vm[j]
+    if e20[j] > e50[j] and 50 < rsi[j] < 70 and adx[j] > 20 and volok and cl[j] > hi[j-10:j].max():
+        return _setup("largo", cl[j], lo[j-8:j].min(), 2.0)
+    if e20[j] < e50[j] and 30 < rsi[j] < 50 and adx[j] > 20 and volok and cl[j] < lo[j-10:j].min():
+        return _setup("corto", cl[j], hi[j-8:j].max(), 2.0)
+    return None
+
 # (detector, modo_salida)  modo: "fija" | "donchian"
 def _estrats(coin):
     return {
@@ -45,6 +91,9 @@ def _estrats(coin):
         "trend_rider":  (det_trend_rider, "donchian"),
         "vwap":         (det_vwap, "fija"),
         "mean_rev":     (det_mean_rev_2R, "fija"),
+        # --- NUEVAS 2026-07-17 (de la búsqueda con evidencia) ---
+        "rsi2_rebound": (det_rsi2_rebound, "fija"),   # Connors: reversión corta A FAVOR de tendencia
+        "hybrid_momo":  (det_hybrid_momo, "fija"),    # tendencia+RSI+volumen+ADX (híbrido 2025-26)
     }
 
 def bajar(coin, tf, desde_ts, hasta_ts):
