@@ -100,6 +100,8 @@ ESTRATEGIAS_TF = {
     #   sub_sesion revela: tokyo_close +0.68R vs tokyo_open +0.04R. La ultima parte de Asia
     #   es donde el mercado hace los movimientos mas limpios antes de que abra Londres.
     "ob_asia_close": ["15m"],
+    # ob_asia_close_L: A/B 2026-07-17 — SOLO LARGOS (forward: largos +0.59R vs cortos -0.20R).
+    "ob_asia_close_L": ["15m"],
     # breaker_prev_ny: breaker (+0.014R muerto) RESUCITADO por filtro sesion anterior NY.
     #   Cuando NY anterior fue alcista: breaker = +1.52R win=94% (n=18). El contexto del
     #   dia anterior cambia completamente el edge — el breaker necesita momentum previo de NY.
@@ -1176,6 +1178,18 @@ def det_ob_asia_close(d):
     return det_ob_trend(d)
 
 
+def det_ob_asia_close_L(d):
+    """A/B EN VIVO 2026-07-17: ob_asia_close SOLO LARGOS. La disección forward (n=230, post-diseño)
+    revela asimetría enorme: largos +0.59R (n=116) vs cortos -0.20R (n=114). Lógica: al cierre de
+    Tokio, comprar el dip (rebote nocturno / acumulación asiática) funciona; perseguir cortos ahí no.
+    Se mide SEPARADA de la base para confirmar en forward antes de fiarnos (una sola hipótesis, sin
+    apilar filtros = sin sobreajuste)."""
+    sig = det_ob_asia_close(d)
+    if sig is None or sig["dir"] != "largo":
+        return None
+    return sig
+
+
 def _prev_ny_alcista(d):
     """Calcula si la sesion NY anterior (13-21h UTC del dia anterior) fue alcista.
     Retorna True si cierre NY > apertura NY, False si fue bajista, None si sin datos."""
@@ -1762,6 +1776,8 @@ def detectar_cerr(estr, cerr, coin):
         return det_ob_trend_r3(cerr)
     if estr == "ob_plus_asia_r3":
         return det_ob_plus_asia_r3(cerr)
+    if estr == "ob_asia_close_L":
+        return det_ob_asia_close_L(cerr)
     if estr == "ob_asia_close":
         return det_ob_asia_close(cerr)
     if estr == "breaker_prev_ny":
