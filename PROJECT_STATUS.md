@@ -116,6 +116,24 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-17** — 🎯 EL INTERRUPTOR DE CICLO (Plan BTC) + veredictos a años vista.
+  1. **⭐ HALLAZGO MAYOR: la métrica de ciclo de Plan BTC (>200d desde ATH o caída>50%) es el
+     INTERRUPTOR de nuestra familia FVG:** fvg_ob_asia +0.106R en ciclo profundo vs −0.065R fuera
+     (n=1.7k/2.7k); fvg_ob +0.053R vs −0.030R (n=5.4k/8k). Explica por qué 2026 funciona y da la regla:
+     operar FVG-Asia SOLO en ciclo profundo (condición CUMPLIDA hoy: 284d, dd 50%). Se aplica al
+     desplegar, no al recoger (colector queda crudo).
+  2. **Plan BTC mecanizado VALIDADO** (diario, BTC-only): +0.46R n=49 (2018-26), ROBUSTO 27/27 en
+     sensibilidad. En vivo como `planbtc` (1d). NO baja a TF menores (sniper 15m −0.02R, 4h diluye).
+  3. **Los % 2021-26 de las intradía actuales: NEGATIVOS** (ob_asia_close −0.04R, carteras estáticas
+     −48% a −81%). El edge Asia es un fenómeno de ERA (2026 = ciclo profundo). trend_rider única
+     robusta todos los años (+0.025R). El vivo 2026 (+0.16/+0.20R forward) coincide con el backtest 2026.
+  4. **Rotación adaptativa**: umbral estricto (90d, >+0.10R, n≥30) minimiza pérdidas (−8% total,
+     −35% DD vs −81% naive) pero no convierte estrategias sin edge en cartera ganadora → es la RED DE
+     SEGURIDAD, no el motor. Arquitectura final: CICLO (interruptor) → ROTACIÓN (red) → operativas.
+  5. En vivo nuevos: `planbtc` (1d), `trend_rider_f` (funding 3/3), `ob_asia_close_L` (solo largos).
+     ⚠️ PUSH PENDIENTE del dueño (~14 commits locales; la nube corre código de hace 3 semanas).
+
+
 - **2026-06-25** — 🧭 PROTOCOLO SISTEMÁTICO + el edge vive en 4h + scalping cerrado.
   1. **Construido el PROTOCOLO** (`research/protocolo.py`, metodología en `docs/PROTOCOLO_PRUEBAS.md`):
      cada estrategia pasa por las MISMAS etapas — multi-TF (15m/1h/4h) × multi-régimen (toro/lateral/oso)
