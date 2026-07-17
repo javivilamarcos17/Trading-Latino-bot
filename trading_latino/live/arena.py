@@ -165,6 +165,9 @@ ESTRATEGIAS_TF = {
     # trend_rider_f: A/B EN VIVO 2026-07-17 — trend_rider + filtro de funding (validado en Funding Lab
     # 2023-26, 3/3 monedas: mejora o mantiene, nunca estorba). Se mide SEPARADA de la base para comparar.
     "trend_rider_f": ["4h"],
+    # planbtc: 2026-07-17 — esqueleto del sistema de Plan BTC (BTC-only via dispatch, DIARIO).
+    # Validado 2018-26 (+0.46R, robusto 27/27) y con condiciones de ciclo CUMPLIDAS hoy. ~6 señales/año.
+    "planbtc": ["1d"],
     "orf": ["5m", "15m"],
     "fvg_ob": ["15m", "1h"],     # RETIRADO 5m (6 ops -1.40R); 15m +1.83R 100%win es el star
     # breaker RETIRADA 2026-06-23: n=104, hasta su MEJOR salida = -0.05R. 104 ops sin edge y sin
@@ -679,6 +682,38 @@ def det_trend_rider_f(d, coin):
     if sig["dir"] == "corto" and fr < p10 and fr < 0:
         return None
     return sig
+
+
+def det_planbtc(d):
+    """PLAN BTC mecanizado (BTC-only, DIARIO) — el esqueleto validado del sistema del youtuber:
+    barrido del mínimo de 20 DÍAS + reclaim, SOLO en condiciones de CICLO PROFUNDO (>200 días desde
+    el ATH de la ventana o caída >50% desde ATH) y sin euforia (F&G>75 bloquea longs). Runner 4R
+    (su estilo asimétrico). Historial 2018-2026: +0.46R (n=49), ROBUSTO 27/27 en sensibilidad de
+    parámetros; el filtro de ciclo es LO que transforma un gatillo perdedor (-0.17R) en ganador.
+    HOY (jul-2026) las condiciones están CUMPLIDAS (284d desde ATH, dd 50%) -> estrategia viva.
+    Nota: días-desde-ATH saturado por la ventana (~300d) — suficiente para el umbral de 200."""
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy(); j = len(cl) - 1
+    if j < 250:
+        return None
+    ath = hi[:j + 1].max(); i_ath = int(np.argmax(hi[:j + 1]))
+    dias_ath = j - i_ath
+    dd = (ath - cl[j]) / ath
+    if not (dias_ath > 200 or dd > 0.50):
+        return None                      # "tramo de engaño": sin compras de fondo (regla del sistema)
+    try:                                  # gate contrarian: no comprar en euforia extrema
+        f = REG / "_ctx_BTC.jsonl"
+        r = json.loads(f.read_text().strip().splitlines()[-1])
+        if r.get("fng") is not None and r["fng"] > 75:
+            return None
+    except Exception:
+        pass
+    N = 20
+    ll = lo[j - N:j].min()
+    if lo[j] < ll and cl[j] > ll:        # mecha limpia el mínimo de 20d y CIERRA de vuelta (reclaim)
+        stop = lo[j] * 0.995
+        if cl[j] > stop:
+            return _setup("largo", cl[j], stop, 4.0)
+    return None
 
 
 def det_adrig(d):
@@ -1732,6 +1767,8 @@ def detectar_cerr(estr, cerr, coin):
         return det_trend_rider(cerr)
     if estr == "trend_rider_f":
         return det_trend_rider_f(cerr, coin)
+    if estr == "planbtc":
+        return det_planbtc(cerr) if coin == "BTC" else None   # sistema nativo de BTC (ciclo/ATH)
     if estr == "elliott":
         return det_elliott(cerr)
     if estr == "adrig":
