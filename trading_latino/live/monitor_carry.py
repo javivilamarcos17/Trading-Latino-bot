@@ -42,8 +42,8 @@ def main():
     if not filas:
         print("sin datos de funding"); return
     filas.sort(key=lambda x: -x[1])
-    cesta = filas[:TOP_N]
-    media = sum(a for _, a in cesta) / len(cesta)
+    media = sum(a for _, a in filas) / len(filas)          # luz de régimen: universo completo
+    cesta = [(c, a) for c, a in filas if a > 2.0][:TOP_N]  # cesta: solo monedas que PAGAN (>2% APR)
 
     # dial lead-lag: percentil del funding BTC de Binance vs 180d
     pct = None
@@ -62,8 +62,9 @@ def main():
         pass
 
     print("🧺 MONITOR MOTOR 3 — carry delta-neutral (informativo, NO opera)")
-    print(f"funding medio cesta top-{len(cesta)}: {media:+.1f}% APR → "
+    print(f"funding medio del universo ({len(filas)}): {media:+.1f}% APR → "
           f"{'🟢 ZONA ON' if media > UMBRAL_ON else ('🟡 marginal' if media > 0 else '🔴 OFF (oso)')}")
+    print(f"cesta candidata (solo pagan >2% APR): {len(cesta)} monedas")
     if pct is not None:
         print(f"dial lead-lag: Binance percentil {pct:.0f}/180d → "
               f"{'🟢 abrir/rebalancear' if pct >= PCT_DIAL else '⏳ esperar mejor momento'}")
