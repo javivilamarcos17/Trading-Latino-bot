@@ -10,6 +10,15 @@ from pathlib import Path
 from trading_latino.research.backtest_largo import (det_trend_rider, det_atr_break, det_atr_break_trend,
     det_merino, det_merinox, det_merino_fiel, det_donchian, det_mean_rev_2R, salida_fija, clasificar_regimen)
 from trading_latino.research.protocolo import det_rsi2_rebound, det_hybrid_momo
+
+def det_turtle55(d):
+    """Turtle Traders: ruptura del max/min de 55 velas (validada 4h +0.136R n=1830, 1D +0.198R)."""
+    hi=d["maximo"].to_numpy(); lo=d["minimo"].to_numpy(); cl=d["cierre"].to_numpy(); j=len(cl)-1
+    if j<60: return None
+    from trading_latino.research.backtest_ganadoras import _setup
+    if cl[j]>hi[j-55:j].max(): return _setup("largo", cl[j], lo[j-10:j].min(), 2.0)
+    if cl[j]<lo[j-55:j].min(): return _setup("corto", cl[j], hi[j-10:j].max(), 2.0)
+    return None
 from trading_latino.research.backtest_ganadoras import LOOKBACK, det_ob_trend, det_fvg_ob
 
 CACHE = Path("data_store/research_cache"); SLIP = 0.01
@@ -39,7 +48,7 @@ def main():
                     "atr_break_trend":det_atr_break_trend, "trend_rider":det_trend_rider,
                     "merino":lambda w: det_merino(w,coin), "merinox":det_merinox,
                     "merino_fiel":lambda w: det_merino_fiel(w,coin), "donchian":det_donchian,
-                    "mean_rev":det_mean_rev_2R, "rsi2":det_rsi2_rebound, "hybrid":det_hybrid_momo}
+                    "mean_rev":det_mean_rev_2R, "rsi2":det_rsi2_rebound, "hybrid":det_hybrid_momo, "turtle55":det_turtle55}
             for j in range(LOOKBACK, len(d)-1):
                 w = d.iloc[j-LOOKBACK:j+1].reset_index(drop=True)
                 for e,det in dets.items():
