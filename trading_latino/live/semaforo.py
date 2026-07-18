@@ -1,7 +1,7 @@
 """
 SEMÁFORO DIARIO — qué operar HOY y con qué riesgo. Integra todas las reglas validadas:
   1. CICLO (Plan BTC): días desde ATH / caída — enciende la familia Asia y planbtc.
-  2. FINDE OFF: sáb/dom −0.33R en vivo (3/3 monedas) → intradía apagado.
+  2. FINDE OFF solo cluster Asia (sab/dom -0.33R en vivo); la TENDENCIA rinde MAS en finde (+0.32R vs +0.23R).
   3. ROLLING 21d por estrategia (kill-switch de decay): exp vivo reciente <0 → banquillo.
   4. DIRECCIÓN rolling 7d (calibrado: reacciona en 2-4 dias vs 2 semanas, mismos cambios de bando).
 Solo datos EN VIVO (costes reales correctos) + diario Binance para el ciclo.
@@ -78,8 +78,8 @@ def main():
             req_ciclo = e in ("fvg_ob_asia", "ob_asia_close", "ob_asia_close_L", "fvg_ob", "ob_regime_asia")
             if req_ciclo and not ciclo_or:
                 estado = "🟠 OFF (fuera de ciclo profundo)"
-            elif finde:
-                estado = "🟠 OFF HOY (finde)"
+            elif finde and req_ciclo:
+                estado = "🟠 OFF HOY (finde: solo aplica al cluster Asia)"
             else:
                 estado = "🟢 ON (riesgo 0.25%)"
         ex_s = f"{exp:+.2f}R" if exp is not None and n else "—"
