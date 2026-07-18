@@ -116,6 +116,17 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19e** — 🔄 EL TERCER MOTOR: carry como pata de régimen opuesto.
+  1. Carry selectivo p90 (propuesta del investigador): REFUTADO con datos (pierde vs siempre-dentro:
+     2024 +4.9% vs +11.9% — los picos no compensan perderse la acumulación).
+  2. **HALLAZGO de arquitectura: el carry paga en TORO/LATERAL (2021 +47%, 2024 +12%) y duerme en
+     oso (2025 +2.6%, 2026 −0.4%) — el régimen OPUESTO a las armas de ciclo.** Sistema final de 3
+     motores complementarios: Núcleo 1D (todo tiempo) + armas de ciclo (fin de oso) + CESTA CARRY
+     15 monedas (toro/lateral, +11.7% CAGR neto histórico, DD −2.3%, riesgo de cola aparte).
+     El semáforo ganará una luz más: funding estructural de la cesta > 0 → carry ON.
+  3. Covered calls Deribit: overlay de tenencia (Sharpe~1 pata corta) — solo si algún día se
+     mantiene BTC spot; nunca puts. ETF-flows: mi test previo manda (muere a costes) sobre la cita.
+
 - **2026-07-19d** — ⚖️ RONDA 5: breadth RETRACTADO (lookahead mío: la ventana ±5d miraba el
   futuro; la versión causal sin-2023 da +0.086R ≈ nada — era la V oct23-24 redescubierta por
   3ª vez). Fade-del-fallo: DUDOSO (12 episodios, p=0.28 — a vigilar, no hallazgo).
