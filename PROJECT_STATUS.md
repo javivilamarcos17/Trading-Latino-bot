@@ -98,6 +98,15 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19r** — 🌩️ CANDIDATA SERIA: ICHIMOKU 4h CON NUBE (script oficial
+  research/ichimoku_test.py). Pasa las 6 leyes a la primera: familia coherente (6/6 celdas
+  positivas solo el bloque 4h+nube; sin nube y 1D = ruido), mejor config 12/30 3R n=655 +0.178R,
+  LOS 6 AÑOS POSITIVOS (2022 bajista +0.093 incluido), sin-2023 +0.151, largos/cortos
+  equilibrados (+0.182/+0.173 — rareza en el cementerio), bootstrap por semana p=0.021,
+  causalidad verificada (nube proyectada kj velas). PENDIENTE antes de desplegar: (a) veredicto
+  del auditor, (b) test de redundancia vs nucleo trend (¿mismas operaciones con otro nombre?).
+  Si sobrevive ambos, a la arena en papel.
+
 - **2026-07-19q** — 🧮 RIESGO DE COLA DEL CARRY DIMENSIONADO (cierra la propuesta nº4 por
   completo): a escala retail (sin custodia off-exchange), la muerte subita de un venue cuesta
   ~0.5*manga*(1/lev + 0.3) — margen depositado + gap de la pata spot sin cobertura. Con lev=3 y

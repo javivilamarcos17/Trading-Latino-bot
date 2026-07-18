@@ -13,6 +13,7 @@ from pathlib import Path
 
 CACHE = Path("data_store/research_cache"); COSTE = 0.0008; SLIP = 0.01
 
+
 def ops_config(tf="4h", tk=12, kj=30, target_R=3.0, filtro_nube=True):
     rows = []
     for coin in ["BTC", "ETH", "SOL"]:
@@ -52,12 +53,12 @@ def ops_config(tf="4h", tk=12, kj=30, target_R=3.0, filtro_nube=True):
             rows.append((idx[j], coin, "L" if largo else "C", r - cR - SLIP))
     return pd.DataFrame(rows, columns=["dt", "coin", "dir", "r"])
 
+
 def main():
     rng = np.random.default_rng(21)
     for tk, kj in [(9, 26), (12, 30)]:
         df = ops_config(tk=tk, kj=kj)
-        print(f"
-== ichimoku 4h nube {tk}/{kj} 3R: n={len(df)} exp={df.r.mean():+.3f} ==")
+        print(f"\n== ichimoku 4h nube {tk}/{kj} 3R: n={len(df)} exp={df.r.mean():+.3f} ==")
         df["a"] = df.dt.dt.year
         for a, g in df.groupby("a"):
             print(f"   {a}: {g.r.mean():+.3f} (n={len(g)})")
@@ -66,6 +67,7 @@ def main():
         sems = [g.r.values for _, g in df.groupby("sem")]
         bs = [np.concatenate([sems[i] for i in rng.integers(0, len(sems), len(sems))]).mean() for _ in range(2000)]
         print(f"   bootstrap semanal: p(<=0)={np.mean(np.array(bs) <= 0):.3f}")
+
 
 if __name__ == "__main__":
     main()
