@@ -43,6 +43,23 @@ def ciclo_hoy():
     dd = (ath - cl[-1]) / ath
     return dias, dd * 100, (dias > 200 or dd > 0.50), (dias > 250 and dd > 0.40)
 
+
+def carry_hoy():
+    """4a luz: motor CARRY. Funding medio anualizado de la cesta (muestra de 6 monedas liquidas).
+    >5% APR = ON (toro/lateral pagando el alquiler); <0 = OFF (oso, funding negativo)."""
+    ex = ccxt.binance({"options": {"defaultType": "future"}})
+    aprs = []
+    for c in ["BTC", "ETH", "XRP", "LINK", "DOGE", "AVAX"]:
+        try:
+            fr = ex.fetch_funding_rate(f"{c}/USDT:USDT").get("fundingRate")
+            if fr is not None: aprs.append(fr * 3 * 365 * 100)
+        except Exception:
+            pass
+    if not aprs: return None, "sin datos"
+    m = sum(aprs) / len(aprs)
+    estado = "ON (cesta pagando)" if m > 5 else ("neutral (marginal)" if m > 0 else "OFF (funding negativo = oso)")
+    return m, estado
+
 def main():
     hoy = dt.datetime.now(dt.timezone.utc)
     ahora_ms = time.time() * 1000
@@ -54,6 +71,9 @@ def main():
     print(f"CICLO BTC: {dias_ath}d desde ATH · caída {dd_pct:.0f}%  → "
           f"{'PROFUNDO (Asia/planbtc habilitadas)' if ciclo_or else 'NO profundo (Asia OFF)'}"
           f"{' [estricto: SÍ]' if ciclo_strict else ' [estricto: NO]'}")
+    apr, carry_est = carry_hoy()
+    if apr is not None:
+        print(f"CARRY (4a luz): funding cesta {apr:+.1f}% APR -> {carry_est}")
     print(f"FINDE: {'SÍ → intradía OFF hoy' if finde else 'no (laborable)'}")
 
     # dirección rolling 30d (ganadoras)
