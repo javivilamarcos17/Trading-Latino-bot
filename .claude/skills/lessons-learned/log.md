@@ -223,3 +223,11 @@ con stop NaN que nunca saltan bien!
 no dan el mismo número de operaciones, hay un bug.
 **Contexto:** Cualquier condición numérica del cerebro/estrategia.
 
+
+## 2026-07-18 — Procesos largos SIEMPRE con seguimiento del harness
+**Qué pasó:** el barrido de la matriz (8 TFs, horas de cálculo) se lanzó con `&` suelto y murió
+en silencio a mitad de la 2ª temporalidad al cerrarse una sesión; se perdieron horas y nadie avisó.
+**Causa raíz:** un proceso en background de shell no sobrevive al ciclo de vida de la sesión y no
+notifica su muerte.
+**Lección:** todo cómputo >10 min se lanza con run_in_background del harness (notifica al
+terminar y su muerte es visible), nunca con `&` suelto. Verificar procesos vivos al retomar sesión.
