@@ -116,6 +116,19 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19j** — 📚 INFORME DEL INVESTIGADOR (con fuentes): (1) CORRECCION a 19i: la evidencia
+  publicada (232k ordenes maker REALES en Binance, arXiv 2502.18625; arXiv 2407.16527; arXiv
+  2607.01550) mide seleccion adversa real que mi simulacion a 15m no puede ver (cola, precio debe
+  atravesar el limite): los fills se concentran en las operaciones perdedoras y en señales
+  direccionales el coste dominante son los fills perdidos → regla final: TAKER en entradas de
+  ruptura, maker solo en salidas pasivas. Mi sim del 19i era optimista por granularidad. (2) CARRY
+  TAIL: manual Ethena replicable a retail (colateral fuera del exchange/stable-margin, cap por
+  venue, desmontaje por funding<0 persistente o de-peg); OJO: carry agregado con Sharpe NEGATIVO
+  en 2025 (crowding) → motor 3 exige el semaforo de funding, no es rentable siempre. (3) 5 edges
+  con paper detras; mejores ratio esfuerzo/originalidad: lead-lag de funding entre exchanges
+  (MDPI 14(2):346, el mas virgen) y re-test estacionalidad horaria era-ETF 2024-26 (test barato
+  con cache 15m propia). Ambos a la cola de pruebas.
+
 - **2026-07-19i** — 🧾 EJECUCION MAKER cuantificada (nucleo 1D, 545 ops 2021-26): limite al cierre
   llena ~100% historicamente (granularidad 15m), sin seleccion adversa medible, pero el ahorro es
   DESPRECIABLE en 1D (+1R total en 5.5 años, ~+0.002R/op) porque los stops anchos diluyen la
