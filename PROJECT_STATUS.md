@@ -116,6 +116,17 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-18 (noche)** — 📅 FOMC-fade VALIDADA con datos propios + semáforo recalibrado.
+  1. **SHORT 48h post-anuncio FOMC** (hipótesis pre-registrada del investigador, calendario oficial):
+     replicada con nuestras velas 15m: n=44 eventos 2021-26, win 66%, +0.44%/evento NETO, positiva
+     5/6 años (~+3.5%/año, 8 ops/año). Satélite de calendario estilo planbtc. Pre-drift largo: descartada
+     (muerta desde 2023). PENDIENTE: auditoría adversarial antes de desplegar.
+  2. **Semáforo recalibrado con backtests del analista**: dirección 30d→7d (reacciona en 2-4 días),
+     kill-switch 21d→14d (mejor R y menos falsas retiradas). Primera lectura: modo DEFENSIVO correcto
+     (Asia banquillada por decay real mientras el mercado gira a largo). scalp_break reactivada
+     (+0.19R forward vivo limpio, único scalp con evidencia viva positiva).
+
+
 - **2026-07-18 (tarde)** — 🔬 CAMPAÑA AUTÓNOMA: investigación externa × datos propios.
   1. **Estacionalidad horaria (papers Quantpedia):** la anomalía 21-23h UTC EXISTE en nuestros datos
      pero muere a costes como estrategia. CRÍTICA ORIGINAL: para nuestro sistema corto-sesgado esas
