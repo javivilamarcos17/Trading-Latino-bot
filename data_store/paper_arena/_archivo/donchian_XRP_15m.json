@@ -1,0 +1,48 @@
+[
+  {
+    "dir": "corto",
+    "entry": 1.1308,
+    "stop": 1.1474,
+    "target": 1.0976000000000001,
+    "status": "cerrada",
+    "ts": 1782075600000,
+    "estr": "donchian",
+    "coin": "XRP",
+    "tf": "15m",
+    "fecha": "2026-06-21 21:00:00",
+    "funding": 9.8102e-06,
+    "oi": 74679238.0,
+    "pos_rango": 0.5,
+    "liq_arriba_%": 0.04,
+    "liq_abajo_%": 0.04,
+    "exit": 1.1474,
+    "pnl": -0.015479872656526308,
+    "mfe_R": 0.58,
+    "mae_R": 1.22,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.054,
+      "be05": -0.054,
+      "be10": -1.054,
+      "t125": -1.054,
+      "trail": -0.476
+    }
+  },
+  {
+    "dir": "largo",
+    "entry": 1.147,
+    "stop": 1.1231,
+    "target": 1.1948,
+    "status": "abierta",
+    "ts": 1782090900000,
+    "estr": "donchian",
+    "coin": "XRP",
+    "tf": "15m",
+    "fecha": "2026-06-22 01:15:00",
+    "funding": 9.8102e-06,
+    "oi": 74679238.0,
+    "pos_rango": 0.5,
+    "liq_arriba_%": 0.04,
+    "liq_abajo_%": 0.04
+  }
+]

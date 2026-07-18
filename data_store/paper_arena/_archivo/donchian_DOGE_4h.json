@@ -1,0 +1,36 @@
+[
+  {
+    "dir": "corto",
+    "entry": 0.085326,
+    "stop": 0.089028,
+    "target": 0.077922,
+    "status": "abierta",
+    "ts": 1781712000000,
+    "estr": "donchian",
+    "coin": "DOGE",
+    "tf": "4h",
+    "fecha": "2026-06-17 16:00:00",
+    "funding": null,
+    "oi": null,
+    "pos_rango": 0.36,
+    "liq_arriba_%": 0.09,
+    "liq_abajo_%": 0.07
+  },
+  {
+    "dir": "corto",
+    "entry": 0.081995,
+    "stop": 0.08805,
+    "target": 0.06988499999999999,
+    "status": "abierta",
+    "ts": 1781784000000,
+    "estr": "donchian",
+    "coin": "DOGE",
+    "tf": "4h",
+    "fecha": "2026-06-18 12:00:00",
+    "funding": null,
+    "oi": null,
+    "pos_rango": 0.36,
+    "liq_arriba_%": 0.09,
+    "liq_abajo_%": 0.07
+  }
+]

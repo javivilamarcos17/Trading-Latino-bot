@@ -1,0 +1,19 @@
+[
+  {
+    "dir": "largo",
+    "entry": 6.2884,
+    "stop": 6.195,
+    "target": 6.4752,
+    "status": "abierta",
+    "ts": 1782111600000,
+    "estr": "merino",
+    "coin": "AVAX",
+    "tf": "15m",
+    "fecha": "2026-06-22 07:00:00",
+    "funding": 1.25e-05,
+    "oi": 3516571.4600000004,
+    "pos_rango": 0.72,
+    "liq_arriba_%": 0.02,
+    "liq_abajo_%": 0.0
+  }
+]

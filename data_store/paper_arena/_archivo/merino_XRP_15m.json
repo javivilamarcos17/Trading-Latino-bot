@@ -1,0 +1,19 @@
+[
+  {
+    "dir": "corto",
+    "entry": 1.1322,
+    "stop": 1.1514,
+    "target": 1.0938000000000003,
+    "status": "abierta",
+    "ts": 1782097200000,
+    "estr": "merino",
+    "coin": "XRP",
+    "tf": "15m",
+    "fecha": "2026-06-22 03:00:00",
+    "funding": 1.25e-05,
+    "oi": 74871626.0,
+    "pos_rango": 0.3,
+    "liq_arriba_%": 0.01,
+    "liq_abajo_%": 0.04
+  }
+]

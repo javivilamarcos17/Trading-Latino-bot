@@ -1,0 +1,19 @@
+[
+  {
+    "dir": "largo",
+    "entry": 1.1342,
+    "stop": 1.1204151599999999,
+    "target": 1.1617696800000006,
+    "status": "abierta",
+    "ts": 1782075600000,
+    "estr": "sweep",
+    "coin": "XRP",
+    "tf": "1h",
+    "fecha": "2026-06-21 21:00:00",
+    "funding": 1.25e-05,
+    "oi": 74871626.0,
+    "pos_rango": 0.17,
+    "liq_arriba_%": 0.04,
+    "liq_abajo_%": 0.14
+  }
+]

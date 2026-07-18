@@ -1,0 +1,26 @@
+[
+  {
+    "dir": "largo",
+    "entry": 62481.0,
+    "stop": 61857.6693,
+    "target": 63727.6614,
+    "status": "abierta",
+    "ts": 1782201600000,
+    "estr": "sweep",
+    "coin": "BTC",
+    "tf": "4h",
+    "fecha": "2026-06-23 08:00:00",
+    "sesion": "londres",
+    "funding": 1.25e-05,
+    "oi": 30721.9874,
+    "d_oi_%": -0.3,
+    "fng": 23,
+    "pos_rango": 0.3,
+    "liq_arriba_%": 0.22,
+    "liq_abajo_%": 0.01,
+    "atr_%": 1.251,
+    "adx": 17.0,
+    "regimen": "rango",
+    "vol_rel": 1.76
+  }
+]

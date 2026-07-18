@@ -1,0 +1,38 @@
+[
+  {
+    "dir": "corto",
+    "entry": 1712.5,
+    "stop": 1735.8,
+    "target": 1654.25,
+    "status": "cerrada",
+    "ts": 1782190800000,
+    "estr": "elliott",
+    "coin": "ETH",
+    "tf": "1h",
+    "fecha": "2026-06-23 05:00:00",
+    "sesion": "asia",
+    "funding": 1.25e-05,
+    "oi": 803516.7619999998,
+    "d_oi_%": 0.01,
+    "fng": 23,
+    "pos_rango": 0.34,
+    "liq_arriba_%": 0.05,
+    "liq_abajo_%": 0.01,
+    "atr_%": 0.687,
+    "adx": 13.2,
+    "regimen": "rango",
+    "vol_rel": 0.76,
+    "exit": 1654.25,
+    "pnl": 0.03321459854014598,
+    "mfe_R": 2.74,
+    "mae_R": 0.34,
+    "res": "1m",
+    "exits": {
+      "fixed": 2.441,
+      "be05": 2.441,
+      "be10": 2.441,
+      "t125": 1.191,
+      "trail": 2.441
+    }
+  }
+]

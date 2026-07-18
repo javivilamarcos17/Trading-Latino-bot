@@ -1,0 +1,36 @@
+[
+  {
+    "dir": "largo",
+    "entry": 71.779,
+    "stop": 68.704,
+    "target": 77.929,
+    "status": "abierta",
+    "ts": 1781931600000,
+    "estr": "donchian",
+    "coin": "SOL",
+    "tf": "1h",
+    "fecha": "2026-06-20 05:00:00",
+    "funding": 7.9614e-06,
+    "oi": 5133640.800000003,
+    "pos_rango": 0.82,
+    "liq_arriba_%": 0.22,
+    "liq_abajo_%": 0.05
+  },
+  {
+    "dir": "largo",
+    "entry": 73.574,
+    "stop": 70.447,
+    "target": 79.82799999999999,
+    "status": "abierta",
+    "ts": 1781992800000,
+    "estr": "donchian",
+    "coin": "SOL",
+    "tf": "1h",
+    "fecha": "2026-06-20 22:00:00",
+    "funding": 7.9614e-06,
+    "oi": 5133640.800000003,
+    "pos_rango": 0.82,
+    "liq_arriba_%": 0.22,
+    "liq_abajo_%": 0.05
+  }
+]

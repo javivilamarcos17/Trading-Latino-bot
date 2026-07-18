@@ -1,0 +1,48 @@
+[
+  {
+    "dir": "corto",
+    "entry": 6.2947,
+    "stop": 6.3030968,
+    "target": 6.2821048,
+    "status": "cerrada",
+    "ts": 1782104700000,
+    "estr": "scalp_rev3",
+    "coin": "AVAX",
+    "tf": "5m",
+    "fecha": "2026-06-22 05:05:00",
+    "funding": 1.25e-05,
+    "oi": 3494729.54,
+    "pos_rango": 0.78,
+    "liq_arriba_%": 0.06,
+    "liq_abajo_%": 0.02,
+    "exit": 6.2821048,
+    "pnl": 0.001200921410075112,
+    "mfe_R": 2.64,
+    "mae_R": 0.0,
+    "res": "1m",
+    "exits": {
+      "fixed": 0.9,
+      "be05": 0.9,
+      "be10": 0.9,
+      "t125": 0.65,
+      "trail": 0.9
+    }
+  },
+  {
+    "dir": "largo",
+    "entry": 6.279,
+    "stop": 6.188805,
+    "target": 6.414292499999999,
+    "status": "abierta",
+    "ts": 1782108300000,
+    "estr": "scalp_rev3",
+    "coin": "AVAX",
+    "tf": "5m",
+    "fecha": "2026-06-22 06:05:00",
+    "funding": 1.25e-05,
+    "oi": 3494729.54,
+    "pos_rango": 0.78,
+    "liq_arriba_%": 0.06,
+    "liq_abajo_%": 0.02
+  }
+]

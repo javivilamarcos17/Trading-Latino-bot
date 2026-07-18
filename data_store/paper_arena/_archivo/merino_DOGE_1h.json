@@ -1,0 +1,19 @@
+[
+  {
+    "dir": "corto",
+    "entry": 0.082889,
+    "stop": 0.084177,
+    "target": 0.08031300000000001,
+    "status": "abierta",
+    "ts": 1782097200000,
+    "estr": "merino",
+    "coin": "DOGE",
+    "tf": "1h",
+    "fecha": "2026-06-22 03:00:00",
+    "funding": 1.25e-05,
+    "oi": 262186202.0,
+    "pos_rango": 0.32,
+    "liq_arriba_%": 0.0,
+    "liq_abajo_%": 0.0
+  }
+]

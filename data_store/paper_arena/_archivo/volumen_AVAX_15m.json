@@ -1,0 +1,19 @@
+[
+  {
+    "dir": "largo",
+    "entry": 6.2689,
+    "stop": 6.188805,
+    "target": 6.42909,
+    "status": "abierta",
+    "ts": 1782108000000,
+    "estr": "volumen",
+    "coin": "AVAX",
+    "tf": "15m",
+    "fecha": "2026-06-22 06:00:00",
+    "funding": 1.25e-05,
+    "oi": 3519888.4,
+    "pos_rango": 0.57,
+    "liq_arriba_%": 0.07,
+    "liq_abajo_%": 0.04
+  }
+]
