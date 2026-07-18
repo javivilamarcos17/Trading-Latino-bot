@@ -240,3 +240,11 @@ mismo régimen). El auditor tumbó ambas: datos válidos, narrativa inventada en
 **Lección:** toda afirmación sobre <5 episodios es decoración, no hallazgo; antes de narrar un
 "cambio de régimen" en vivo, calcular el percentil histórico de esa misma ventana bajo la misma
 condición — si no es extremo (<10 o >90), es un martes cualquiera.
+
+## 2026-07-18 — Numero sin script guardado = numero que no existe
+**Qué pasó:** en la conciliación del portfolio, DOS números de cabecera (+114% del auditor sin
+tope; mi +6.3%/+49% de heredocs inline no guardados) resultaron irreproducibles y hubo que
+retirarlos. El único número que sobrevivió fue el del script publicado en disco.
+**Lección:** todo resultado que entre en PROJECT_STATUS debe nacer de un script GUARDADO
+(scratchpad/ o research/) y nombrado en la entrada. Los heredocs inline valen para explorar,
+nunca para números de cabecera.

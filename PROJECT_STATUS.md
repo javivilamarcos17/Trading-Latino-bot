@@ -116,6 +116,18 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19p** — 🧮 CONCILIACION CERRADA (2 cuentas pendientes, un muerto por cabeza):
+  (1) PORTFOLIO 2023: causa raiz = la simulacion R4 del auditor NO tenia tope de riesgo abierto
+  (apilaba 21+ posiciones, 25% de capital en riesgo → su +114% RETIRADO); mi +6.3%/5.5a y mi +49%
+  de 2023 tambien RETIRADOS por irreproducibles (heredoc no guardado). NUMEROS OFICIALES (script
+  publicado scratchpad/concilia_portfolio.py, verificado por ambos): variante-espec C (nucleo 4R
+  0.25%/op + turtle 3R 0.5% + tope 5% riesgo abierto) = 2023 +35.0% · TOTAL +44.5%/5.5a ·
+  DD -12.4%; variantes conservadoras D/E = +32-38% total. Caveat vigente: top-5 episodios = 110%
+  del R total, p_episodio 0.0504 — la concentracion en pocos episodios sigue siendo el riesgo
+  estructural. (2) FADE-DEL-FALLO: de watch-list a DESCARTE — rejilla completa de definiciones
+  n=67-106, exp +0.011/+0.154R, p_episodio 0.27-0.46 en TODAS las celdas; mi n=139 irreproducible.
+  Regla nueva derivada: numero no respaldado por script guardado = numero que no existe.
+
 - **2026-07-19o** — ⚖️ AUDITORIA RONDA 6 (4 veredictos, todos aplicados):
   (1) Dial de fase MATIZADO: la familia de ventanas aguanta (5/10/15/20d, mismos episodios nucleo,
   +121-138% vs +33% base) pero la regla "esperar al 2o disparo" es post-hoc con n=2 pares
