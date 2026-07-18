@@ -57,3 +57,21 @@
 - Se eliminó la funcionalidad X porque...
 
 -->
+
+
+## 2026-07-18 — Sesión de investigación continua (propuestas + auditoría r6)
+
+### Añadido
+- Semáforo: 4ª luz (carry) + dial de persistencia de funding + dial de fase (contexto n/3).
+- `monitor_carry.py`: puente semáforo→cesta del motor 3 con triggers de desmontaje.
+- `barrido_5m.py`: última casilla del mapa de temporalidades (5min nativo 2024-26).
+
+### Decidido con datos (STATUS §5, entradas 19f-19o)
+- Descartes: arma de techo, estacionalidad horaria era-ETF, ventana fixing ETF, dial lead-lag
+  cross-venue (redundante con persistencia propia), be05 como salida del núcleo (fixed gana 4/6 años).
+- Confirmado: lead-lag estadístico de funding; dial de fase como contexto (familia de ventanas robusta).
+- Retractado tras auditoría r6: regla del "2º disparo" (n=2) y "relevo de régimen en vivo" (percentil 60-71).
+
+### Corregido
+- Ejecución: taker en entradas de ruptura (la evidencia publicada mata el maker en breakouts).
+- Lección operativa: procesos largos siempre con seguimiento del harness.

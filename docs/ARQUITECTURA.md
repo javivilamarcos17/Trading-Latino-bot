@@ -124,3 +124,19 @@ python -m venv .venv
 HYPERLIQUID_API_WALLET=descripcion   # cartera/clave para Hyperliquid (fase 6+)
 HYPERLIQUID_TESTNET=true             # true en paper, false en real
 ```
+
+
+---
+
+## Panel operativo en vivo (actualizado 2026-07-18)
+
+| Pieza | Comando | Qué hace |
+|---|---|---|
+| Semáforo | `python -m trading_latino.live.semaforo` | 4 luces (ciclo, carry, dirección 7d, kill-switch 14d) + 2 diales contextuales (persistencia de funding; fase con convergencia n/3 — sin regla de disparo, auditoría r6) |
+| Monitor motor 3 | `python -m trading_latino.live.monitor_carry` | Cesta carry candidata (solo monedas que pagan >2% APR), dial de persistencia y triggers de desmontaje (funding<0 3d; de-peg >1%; máx 50%/exchange; colateral solo stables). Informativo, NO opera |
+| Arena 24/7 | colector nube (GitHub Actions, rama `arena-data`) + tarea local `TradingArenaPaper` | Paper-trading Hyperliquid con costes reales; registra 5 políticas de salida por op (A/B de salidas gratis) |
+| Barridos | `barrido_tf <tfs>` / `barrido_5m` | Matriz 13 familias × temporalidad, neto de costes (cR = COSTE/(D/entry) + slip) |
+
+Advertencia de datos: las ops "vivas" de una estrategia recién desplegada incluyen replay
+histórico con metadata contextual (funding/OI/FNG) estampada al registro — excluir pre-despliegue
+en análisis contextual (ver memoria `arena-backfill-contaminacion`).
