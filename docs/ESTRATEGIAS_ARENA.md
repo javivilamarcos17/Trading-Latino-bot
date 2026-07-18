@@ -10,7 +10,21 @@
 - `python -m trading_latino.live.board`  → vista instantánea (solo lectura) del ranking acumulado.
 - Recolección 24/7: GitHub Actions (`.github/workflows/arena.yml`) cada 15 min en la nube.
 
-## Las 11 estrategias (a 2026-06-21)
+## Estado actual (2026-07-18)
+
+La arena ha crecido a **56 estrategias históricas** (~17.100 ops cerradas); la mayoría ya están
+DESCARTADAS con datos y siguen registrando solo como control. Lo vigente:
+
+- **Desplegadas del sistema final**: `trend_rider`/`trend_rider_f`, `atr_break_trend` (núcleo),
+  `planbtc`, `turtle_ciclo` (armas de ciclo — ARMADAS), `fvg_ob`/cluster Asia (régimen oso,
+  en decaimiento vigilado), `scalp_break` (en revisión, vivo negativo).
+- **Quién decide qué opera**: `live/semaforo.py` (4 luces + 2 diales) — no la arena.
+- **Veredictos y números**: PROJECT_STATUS §5 y `docs/decisiones/` (ADRs). El board sigue siendo
+  la vista de ranking en bruto.
+- ⚠️ Ops de estrategias recién desplegadas incluyen replay con metadata contextual falsa
+  (memoria `arena-backfill-contaminacion`).
+
+## Las 11 estrategias fundacionales (histórico, a 2026-06-21)
 
 | # | Clave | Herramienta / teoría | Lógica de entrada (resumen) | Temporalidades |
 |---|-------|----------------------|------------------------------|----------------|
