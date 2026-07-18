@@ -96,6 +96,7 @@ def main():
                     except Exception: continue
                     if not sig: continue
                     r = salida_fija(d, j, sig["stop"], sig["target"], sig["dir"] == "largo")
+                    if r is None: continue
                     dest.append((int(d["t"].iloc[j]), r, reg[j], e, sig["dir"]))
         print(f"  ops acumuladas: asia={len(ops_asia):,} toro={len(ops_toro):,}")
     # persistir ops -> nunca mas recomputar (investigacion barata para siempre)

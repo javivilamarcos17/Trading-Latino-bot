@@ -12,13 +12,15 @@ from trading_latino.research.backtest_largo import (det_trend_rider, det_atr_bre
 from trading_latino.research.backtest_ganadoras import LOOKBACK, det_ob_trend, det_fvg_ob
 
 CACHE = Path("data_store/research_cache"); SLIP = 0.01
-VPD = {"30min": 48, "2h": 12}
+VPD = {"30min":48,"1h":24,"2h":12,"8h":3,"12h":2,"1D":1}
 
 def stat(v):
     n=len(v); return n,(sum(1 for x in v if x>0)/n if n else 0),(sum(v)/n if n else 0)
 
 def main():
-    for tf in ["30min", "2h"]:
+    import sys as _s
+    tfs=_s.argv[1:] or ["30min","2h"]
+    for tf in tfs:
         print(f"\n===== TEMPORALIDAD {tf} (2021-2026, 3 monedas, NETO) =====")
         agg = {}
         for coin in ["BTC","ETH","SOL"]:
@@ -42,6 +44,7 @@ def main():
                     except Exception: continue
                     if not sig: continue
                     r = salida_fija(d, j, sig["stop"], sig["target"], sig["dir"]=="largo")
+                    if r is None: continue
                     agg.setdefault(e,{"all":[],"alcista":[],"lateral":[],"bajista":[]})
                     agg[e]["all"].append(r-SLIP)
                     if reg[j] in agg[e]: agg[e][reg[j]].append(r-SLIP)
