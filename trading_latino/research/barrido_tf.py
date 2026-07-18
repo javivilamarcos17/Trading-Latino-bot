@@ -8,7 +8,8 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd
 from pathlib import Path
 from trading_latino.research.backtest_largo import (det_trend_rider, det_atr_break, det_atr_break_trend,
-    det_merino, det_merinox, salida_fija, clasificar_regimen)
+    det_merino, det_merinox, det_merino_fiel, det_donchian, det_mean_rev_2R, salida_fija, clasificar_regimen)
+from trading_latino.research.protocolo import det_rsi2_rebound, det_hybrid_momo
 from trading_latino.research.backtest_ganadoras import LOOKBACK, det_ob_trend, det_fvg_ob
 
 CACHE = Path("data_store/research_cache"); SLIP = 0.01
@@ -36,7 +37,9 @@ def main():
                 reg[na:] = np.where(r>0.25,"alcista",np.where(r<-0.25,"bajista","lateral"))
             dets = {"ob_trend":det_ob_trend, "fvg_ob":det_fvg_ob, "atr_break":det_atr_break,
                     "atr_break_trend":det_atr_break_trend, "trend_rider":det_trend_rider,
-                    "merino":lambda w: det_merino(w,coin), "merinox":det_merinox}
+                    "merino":lambda w: det_merino(w,coin), "merinox":det_merinox,
+                    "merino_fiel":lambda w: det_merino_fiel(w,coin), "donchian":det_donchian,
+                    "mean_rev":det_mean_rev_2R, "rsi2":det_rsi2_rebound, "hybrid":det_hybrid_momo}
             for j in range(LOOKBACK, len(d)-1):
                 w = d.iloc[j-LOOKBACK:j+1].reset_index(drop=True)
                 for e,det in dets.items():
