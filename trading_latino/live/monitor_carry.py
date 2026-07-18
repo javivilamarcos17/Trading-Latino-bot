@@ -15,6 +15,14 @@ Reglas (validadas en STATUS 2026-07-19e/j/l):
       * tope duro por exchange: nunca > 50% de la cesta en un solo venue
       * colateral SIEMPRE en stables, nunca coin-margin (convexidad negativa)
 
+  DIMENSIONADO POR RIESGO DE COLA (2026-07-19q — aritmetica retail sin custodia off-exchange):
+    perdida en muerte subita de un venue ~ 0.5*manga*(1/apalancamiento + 0.3)
+      [0.5 = tope por venue; 1/lev = margen depositado; 0.3 = gap direccional estimado de la
+       pata spot sin cobertura durante el desmontaje forzoso]
+    con lev=3: cola ~ 0.32*manga → presupuesto de cola 3% del capital ⇒ MANGA MAXIMA ~9-10%.
+    A +11.7% CAGR del carry, eso aporta ~1.0-1.2%/año al portfolio: motor MODESTO por diseño.
+    Subir la manga = subir la cola linealmente. No hay comida gratis.
+
 Uso:  python -m trading_latino.live.monitor_carry
 """
 from __future__ import annotations

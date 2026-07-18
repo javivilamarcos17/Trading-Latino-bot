@@ -98,6 +98,16 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19q** — 🧮 RIESGO DE COLA DEL CARRY DIMENSIONADO (cierra la propuesta nº4 por
+  completo): a escala retail (sin custodia off-exchange), la muerte subita de un venue cuesta
+  ~0.5*manga*(1/lev + 0.3) — margen depositado + gap de la pata spot sin cobertura. Con lev=3 y
+  presupuesto de cola del 3% del capital ⇒ MANGA CARRY MAXIMA ~9-10% del capital, que a +11.7%
+  CAGR aporta ~1.0-1.2%/año al portfolio. Conclusion honesta: el motor 3 es MODESTO por diseño —
+  paga el alquiler en toro/lateral pero no es palanca de rentabilidad; su valor es ser el motor
+  del regimen OPUESTO a las armas de ciclo. Formula en el docstring de monitor_carry.py.
+  ADRs 001-004 registradas (3 motores, tope 5%, taker, tribunal). Cabecera del STATUS reescrita
+  al estado real. Matriz: 2h en curso (BTC+ETH hechos).
+
 - **2026-07-19p** — 🧮 CONCILIACION CERRADA (2 cuentas pendientes, un muerto por cabeza):
   (1) PORTFOLIO 2023: causa raiz = la simulacion R4 del auditor NO tenia tope de riesgo abierto
   (apilaba 21+ posiciones, 25% de capital en riesgo → su +114% RETIRADO); mi +6.3%/5.5a y mi +49%
