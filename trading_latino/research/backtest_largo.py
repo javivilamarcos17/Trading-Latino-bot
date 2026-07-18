@@ -269,19 +269,20 @@ def salida_fija(d, j_ent, stop, target, es_largo, max_bars=192):
     """Sale en stop o target (lo que toque antes). Conservador: stop gana si ambos en la misma vela."""
     hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy()
     entry = cl[j_ent]; D = abs(entry - stop)
-    if D == 0: return -COSTE
+    if D == 0: return None
+    cR = COSTE / (D / entry)   # FIX auditoria 2026-07-18: coste nocional -> unidades R
     Rt = abs(target - entry) / D
     fin = min(j_ent + max_bars, len(d))
     for i in range(j_ent + 1, fin):
         if es_largo:
-            if lo[i] <= stop: return -1.0 - COSTE
-            if hi[i] >= target: return Rt - COSTE
+            if lo[i] <= stop: return -1.0 - cR
+            if hi[i] >= target: return Rt - cR
         else:
-            if hi[i] >= stop: return -1.0 - COSTE
-            if lo[i] <= target: return Rt - COSTE
+            if hi[i] >= stop: return -1.0 - cR
+            if lo[i] <= target: return Rt - cR
     salida = cl[min(fin - 1, len(d) - 1)]
     pnl = (salida - entry) / D if es_largo else (entry - salida) / D
-    return pnl - COSTE
+    return pnl - cR
 
 def salida_donchian(d, j_ent, stop, es_largo, n=DONCHIAN_N, max_bars=1500):
     """Trend-following REAL: aguanta hasta que el precio cruza la LINEA MEDIA del canal
