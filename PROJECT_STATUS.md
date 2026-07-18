@@ -116,6 +116,14 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19i** — 🧾 EJECUCION MAKER cuantificada (nucleo 1D, 545 ops 2021-26): limite al cierre
+  llena ~100% historicamente (granularidad 15m), sin seleccion adversa medible, pero el ahorro es
+  DESPRECIABLE en 1D (+1R total en 5.5 años, ~+0.002R/op) porque los stops anchos diluyen la
+  comision en R. Veredicto: usar maker al ejecutar en real como higiene (gratis), pero NO es
+  palanca de rentabilidad; lo habria sido en intradia (stops 10x mas finos) pero el intradia esta
+  descartado por costes. Propuesta cerrada. Investigador externo lanzado en paralelo (maker/carry
+  tail/edges 2026) — informe pendiente.
+
 - **2026-07-19h** — 🧭 DETECTOR DE TRANSICION DE FASE backtesteado (BTC 2019-26, funding real Binance):
   triple convergencia (ciclo maduro 30d + funding 7d cruza a positivo + giro direccional 7d).
   7 episodios cerrados: media +180d +95% vs +33% base, pero 2/7 negativos → n=7 = DIAL CONTEXTUAL,
