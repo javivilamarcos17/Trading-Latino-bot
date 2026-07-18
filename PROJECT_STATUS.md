@@ -116,6 +116,14 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19d** — ⚖️ RONDA 5: breadth RETRACTADO (lookahead mío: la ventana ±5d miraba el
+  futuro; la versión causal sin-2023 da +0.086R ≈ nada — era la V oct23-24 redescubierta por
+  3ª vez). Fade-del-fallo: DUDOSO (12 episodios, p=0.28 — a vigilar, no hallazgo).
+  **LEY NUEVA DEL TRIBUNAL (obligatoria para toda estrategia): (i) bootstrap por EPISODIO,
+  (ii) test SIN-2023, (iii) chequeo de CAUSALIDAD de cada filtro.** Los dos errores sistémicos
+  del proyecto quedan institucionalizados como checks: ops corales contadas como independientes
+  y validación dominada por el episodio 2023-24.
+
 - **2026-07-19c** — ⚖️ AUDITORÍA R4 del portfolio + versión CORREGIDA + 2 originales al tribunal.
   1. **Portfolio +113% → INFLADO-PERO-REAL**: el 4R era ajuste a 2023 (años recientes favorecen
      2R-3R); riesgo abierto llegaba al 25% simultáneo (¡72 posiciones!); las 3 patas disparan sobre
