@@ -116,6 +116,15 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19h** — 🧭 DETECTOR DE TRANSICION DE FASE backtesteado (BTC 2019-26, funding real Binance):
+  triple convergencia (ciclo maduro 30d + funding 7d cruza a positivo + giro direccional 7d).
+  7 episodios cerrados: media +180d +95% vs +33% base, pero 2/7 negativos → n=7 = DIAL CONTEXTUAL,
+  no sistema (ley del tribunal). Patron clave: el PRIMER disparo en un oso es prematuro
+  (2019-10 -12%, 2022-06 -21%, 2026-05-19 -18%); el SEGUNDO caza el suelo real (2020-04 +59%,
+  2022-11 +62%). El disparo prematuro de este ciclo YA ocurrio (mayo 2026); el recruce de funding
+  de julio esta armando el segundo → refuerza mantener armadas turtle_ciclo/planbtc sin añadir
+  riesgo nuevo hasta que dispare. Pendiente: integrarlo como nota informativa en el semaforo.
+
 - **2026-07-19g** — ⛏️ MINERIA DEL VIVO (17.138 ops): (1) la racha de -1R uniforme del nucleo NO es bug
   (mae>=1.0 en todas: stops reales barridos) — son cortos de tendencia barridos por rebotes en V =
   firma de SUELO, confirmacion independiente de la transicion de fase del semaforo. (2) A/B de
