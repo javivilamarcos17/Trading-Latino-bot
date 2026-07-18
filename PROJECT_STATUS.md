@@ -116,6 +116,14 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19m** — 🪟 VENTANA ETF (fixing 14-16h UTC) DESCARTADA: condicionada al flujo de AYER
+  (causal), la deriva sale con signo contrario e insignificante (dif -10.2 bps, p=0.28); el efecto
+  mismo-dia es fuerte (+50.6 bps) pero es simultaneidad no operable. Resto con pulso: momentum de
+  flujos a dia completo (+37 bps/dia dif, p~0.10) — EN el liston, no debajo; reconfirma el
+  descarte previo de ETF-flows standalone. Cola del informe del investigador COMPLETADA
+  (estacionalidad ❌, lead-lag ✅ dial, ventana ETF ❌). Siguiente: monitor del motor 3
+  (puente semaforo→cesta con triggers de desmontaje del manual carry).
+
 - **2026-07-19l** — 📡 LEAD-LAG DE FUNDING CONFIRMADO (primer candidato virgen que sobrevive a la
   primera): Binance lidera el funding de Bybit/Gate mas alla de la inercia propia (coef +0.13 a
   +0.36, p~0.000 bootstrap por bloques 7d; placebo inverso mucho mas debil = asimetria real,
