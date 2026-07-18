@@ -122,7 +122,10 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
      La familia Asia intradía NO tiene soporte histórico en NINGUNA condición a costes reales.
   2. **Maestro v3 (con clúster Asia): −23.2%** — confirmado que el clúster B histórico resta. El
      PORTFOLIO FINAL validado es el NÚCLEO 1D: trend_rider + atr_break_trend + vol-targeting =
-     **+51% total 2021-26, peor caída −17.4%, positivo 5/6 años** (2021 −3%) + armas de ciclo
+     **+51% total 2021-26, peor caída −17.4%, positivo 5/6 años** (2021 −3%) + armas de ciclo.
+     MEJORA (19-jul): salidas del núcleo — familia monótona 2R +0.255R → 3R +0.280R → **4R +0.337R**
+     (n=545; el trailing empeora: +0.10R). Objetivo de DESPLIEGUE del núcleo: 4R. La arena sigue
+     midiendo las 5 salidas para el juicio forward. + armas de ciclo
      (planbtc, turtle_ciclo — honestas por episodios) + FOMC simbólica.
   3. **La familia Asia queda SOLO-VIVO**: su única evidencia es el forward de la arena (costes
      limpios, 2026). Tamaño mínimo, gobernada por semáforo — que de hecho la tiene banquillada
