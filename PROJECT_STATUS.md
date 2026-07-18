@@ -116,6 +116,20 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19c** — ⚖️ AUDITORÍA R4 del portfolio + versión CORREGIDA + 2 originales al tribunal.
+  1. **Portfolio +113% → INFLADO-PERO-REAL**: el 4R era ajuste a 2023 (años recientes favorecen
+     2R-3R); riesgo abierto llegaba al 25% simultáneo (¡72 posiciones!); las 3 patas disparan sobre
+     el MISMO episodio (V oct23-24) → era UNA apuesta de ciclo con tres tamaños.
+  2. **PORTFOLIO CORREGIDO (3R + tope de RIESGO ABIERTO 5% + book al cierre): +6.3% total,
+     peor caída −3.7%** ≈ +1.1%/año ultraseguro. El retorno escala ~proporcional al presupuesto de
+     riesgo elegido (tope 10% ≈ doble). LA VERDAD: el edge es real pero pequeño; los números grandes
+     eran concentración. Decisión de tamaño = decisión de cuánta concentración de ciclo se acepta.
+  3. **VIVO coherente con el histórico**: trend_rider 1D vivo +0.35R (n=44), atr_break_trend +0.29R
+     (n=23) — la columna 1D es real en ambas lentes. planbtc/turtle en ventana, esperando señal.
+  4. **2 hallazgos ORIGINALES en ronda 5 del auditor**: fade-del-fallo (9/9, p=0.000 por op) y
+     breadth coral (6/6, +0.555R confirmada vs −0.129R solitaria). Retest: MUERTO (−0.015R).
+     Breadth-cortos: débil. Pendiente veredicto por episodios.
+
 - **2026-07-19b** — 💼 PORTFOLIO FINAL simulado (todo a costes reales, 2021-26, 610 ops):
   **Núcleo 1D@4R × vol-targeting (0.3%) + planbtc (1%) + turtle_ciclo (0.5%) =
   TOTAL +113.2% · peor caída −19.4%** · años: 2021 −2.0 / 2022 +16.2 / 2023 +49.0 /
