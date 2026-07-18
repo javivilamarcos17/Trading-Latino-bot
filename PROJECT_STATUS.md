@@ -116,6 +116,15 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-18 (cierre)** — 🐢 TURTLE CONTRA-RÉGIMEN: auditada y desplegada con etiqueta honesta.
+  Hallazgo propio (breakout de 55d CONTRA el clima dominante): familia 6/6 (+0.59/+0.86R), robusta
+  a umbrales 9/9, sin lookahead, exits idénticos a 15m. VERDAD del auditor: n_efectivo=7 episodios
+  (p~0.02-0.05), 80% del R de la V de oct23-24 → ARMA DE CICLO hermana de planbtc (~1 ventana/2 años).
+  Desplegada  (1D, SOLO largos, ciclo profundo) — ventana ACTIVA hoy, esperando ruptura.
+  También: stat-arb pares DESCARTADA (todas las TF), hash-ribbons rota desde 2025, PSAR/Heikin/TTM
+  descartadas, ichimoku solo 4h. Permisos: aceptar-todo configurado manteniendo los 5 candados.
+
+
 - **2026-07-18 (noche-2)** — ⚖️ AUDITORÍA RONDA 2: vol-targeting CONFIRMADO (18/18 configs
   reducen caída — familia entera, no una celda); FOMC-fade degradada a HIPÓTESIS VIVA (bootstrap
   p=0.23 con n=44 — dirección plausible, riesgo simbólico solo); finde-en-tendencia REFUTADA como
