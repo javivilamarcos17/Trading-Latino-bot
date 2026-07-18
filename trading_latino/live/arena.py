@@ -170,6 +170,8 @@ ESTRATEGIAS_TF = {
     # planbtc: 2026-07-17 — esqueleto del sistema de Plan BTC (BTC-only via dispatch, DIARIO).
     # Validado 2018-26 (+0.46R, robusto 27/27) y con condiciones de ciclo CUMPLIDAS hoy. ~6 señales/año.
     "planbtc": ["1d"],
+    # turtle_ciclo: 2026-07-18 auditada (INFLADO-PERO-REAL, arma de ciclo). Ventana ACTIVA hoy.
+    "turtle_ciclo": ["1d"],
     "orf": ["5m", "15m"],
     "fvg_ob": ["15m", "1h"],     # RETIRADO 5m (6 ops -1.40R); 15m +1.83R 100%win es el star
     # breaker RETIRADA 2026-06-23: n=104, hasta su MEJOR salida = -0.05R. 104 ops sin edge y sin
@@ -684,6 +686,26 @@ def det_trend_rider_f(d, coin):
     if sig["dir"] == "corto" and fr < p10 and fr < 0:
         return None
     return sig
+
+
+def det_turtle_ciclo(d):
+    """TURTLE CONTRA-REGIMEN (1D, SOLO LARGOS) — auditada ronda 3: INFLADO-PERO-REAL. Ruptura del
+    max de 55 DIAS estando en ciclo profundo (>200d desde ATH de la ventana o dd>50%) = comprar la
+    recuperacion en V tras oso maduro. Historico 21-26: familia 6/6 (+0.59 a +0.86R), robusta a
+    umbrales 9/9 y a exits finos; PERO n_efectivo=7 episodios (p~0.02-0.05), 80% del R de una
+    ventana (oct23-oct24). ETIQUETA HONESTA: arma de ciclo (~1 ventana/2 años), hermana de planbtc.
+    Cortos eliminados (auditor: +0.21R debiles, diluyen). HOY estamos EN ventana (oso maduro)."""
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy(); j = len(cl) - 1
+    if j < 250:
+        return None
+    ath = hi[:j + 1].max(); i_ath = int(np.argmax(hi[:j + 1]))
+    if not ((j - i_ath) > 200 or (ath - cl[j]) / ath > 0.50):
+        return None
+    if cl[j] > hi[j - 55:j].max():
+        stop = lo[j - 10:j].min()
+        if cl[j] > stop:
+            return _setup("largo", cl[j], stop, 3.0)
+    return None
 
 
 def det_planbtc(d):
@@ -1769,6 +1791,8 @@ def detectar_cerr(estr, cerr, coin):
         return det_trend_rider(cerr)
     if estr == "trend_rider_f":
         return det_trend_rider_f(cerr, coin)
+    if estr == "turtle_ciclo":
+        return det_turtle_ciclo(cerr)
     if estr == "planbtc":
         return det_planbtc(cerr) if coin == "BTC" else None   # sistema nativo de BTC (ciclo/ATH)
     if estr == "elliott":
