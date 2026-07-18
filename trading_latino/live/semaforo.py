@@ -3,7 +3,7 @@ SEMÁFORO DIARIO — qué operar HOY y con qué riesgo. Integra todas las reglas
   1. CICLO (Plan BTC): días desde ATH / caída — enciende la familia Asia y planbtc.
   2. FINDE OFF: sáb/dom −0.33R en vivo (3/3 monedas) → intradía apagado.
   3. ROLLING 21d por estrategia (kill-switch de decay): exp vivo reciente <0 → banquillo.
-  4. DIRECCIÓN rolling 30d: qué lado (largo/corto) está pagando AHORA.
+  4. DIRECCIÓN rolling 7d (calibrado: reacciona en 2-4 dias vs 2 semanas, mismos cambios de bando).
 Solo datos EN VIVO (costes reales correctos) + diario Binance para el ciclo.
 
 Uso:  python -m trading_latino.live.semaforo
@@ -57,23 +57,23 @@ def main():
     print(f"FINDE: {'SÍ → intradía OFF hoy' if finde else 'no (laborable)'}")
 
     # dirección rolling 30d (ganadoras)
-    v30 = df[(df.ts >= ahora_ms - 30 * 86400_000) & (df.estr.isin(UNIVERSO))]
+    v30 = df[(df.ts >= ahora_ms - 7 * 86400_000) & (df.estr.isin(UNIVERSO))]
     gl = v30[v30.dir == "largo"]["r"]; gc = v30[v30.dir == "corto"]["r"]
-    if len(gl) >= 20 and len(gc) >= 20:
-        print(f"DIRECCIÓN 30d: largos {gl.mean():+.2f}R (n={len(gl)}) · cortos {gc.mean():+.2f}R (n={len(gc)})"
+    if len(gl) >= 40 and len(gc) >= 40:
+        print(f"DIRECCIÓN 7d: largos {gl.mean():+.2f}R (n={len(gl)}) · cortos {gc.mean():+.2f}R (n={len(gc)})"
               f" → sesgo {'LARGO' if gl.mean() > gc.mean() else 'CORTO'}")
 
-    print(f"\n{'estrategia':<17}{'exp21d':>9}{'n':>5}   estado")
+    print(f"\n{'estrategia':<17}{'exp14d':>9}{'n':>5}   estado")
     for e in UNIVERSO:
-        s = df[(df.estr == e) & (df.ts >= ahora_ms - 21 * 86400_000)]
+        s = df[(df.estr == e) & (df.ts >= ahora_ms - 14 * 86400_000)]
         n = len(s); exp = s.r.mean() if n else None
         # gates
         if e == "planbtc":
             estado = "🟢 EN GUARDIA (arma de ciclo, 1%)" if ciclo_or else "⚪ ciclo no profundo"
         elif n < 10:
-            estado = "⚪ sin muestra 21d (banquillo)"
+            estado = "⚪ sin muestra 14d (banquillo)"
         elif exp is None or exp <= 0:
-            estado = "🔴 BANQUILLO (kill-switch: exp21d<=0)"
+            estado = "🔴 BANQUILLO (kill-switch: exp14d<=0)"
         else:
             req_ciclo = e in ("fvg_ob_asia", "ob_asia_close", "ob_asia_close_L", "fvg_ob", "ob_regime_asia")
             if req_ciclo and not ciclo_or:
@@ -84,7 +84,7 @@ def main():
                 estado = "🟢 ON (riesgo 0.25%)"
         ex_s = f"{exp:+.2f}R" if exp is not None and n else "—"
         print(f"{e:<17}{ex_s:>9}{n:>5}   {estado}")
-    print("\nReglas: ciclo>200d|dd>50% · finde OFF · kill-switch exp21d<=0 · tope 2/día/estrategia · tope clúster Asia 3/día")
+    print("\nReglas: ciclo>200d|dd>50% · finde OFF · kill-switch exp14d<=0 (14d calibrado) · tope 2/día/estrategia · tope clúster Asia 3/día")
 
 if __name__ == "__main__":
     main()

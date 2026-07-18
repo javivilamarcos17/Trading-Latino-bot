@@ -132,7 +132,9 @@ ESTRATEGIAS_TF = {
     # probar con 3 SEMANAS (n~900/moneda) da NETO -0.05/-0.17R. El edge bruto del scalp (~+0.05R) NO supera
     # la comisión (0.08% = 0.07-0.15R con stops pequeños). LECCIÓN: el scalping 5m no es viable con nuestros
     # costes (taker). Confirmado a escala. El protocolo hizo su trabajo: test grande mató al pequeño.
-    # "scalp_break": ["5m"],
+    # RE-ACTIVADA 2026-07-18: el forward VIVO (costes reales de la arena, limpios) da +0.19R n=82 —
+    # el unico scalp con evidencia viva positiva. El veto historico usaba el coste bugueado. Que decida el vivo.
+    "scalp_break": ["5m"],
 
     # --- ALTERNATIVAS (en recoleccion de datos) ---
     # donchian: RE-ACTIVADA 2026-06-23 con criterio. Se retiro por -0.39R en vivo... pero se midio
