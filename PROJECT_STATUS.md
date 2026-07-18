@@ -116,7 +116,15 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
-- **2026-07-18 (noche)** — 📅 FOMC-fade VALIDADA con datos propios + semáforo recalibrado.
+- **2026-07-18 (noche-2)** — ⚖️ AUDITORÍA RONDA 2: vol-targeting CONFIRMADO (18/18 configs
+  reducen caída — familia entera, no una celda); FOMC-fade degradada a HIPÓTESIS VIVA (bootstrap
+  p=0.23 con n=44 — dirección plausible, riesgo simbólico solo); finde-en-tendencia REFUTADA como
+  señal (p=0.55; se mantiene 1D en finde por NEUTRALIDAD, no por edge); dual momentum REFUTADO
+  (sesgo de universo: HODL SOL +3331%; BTC/ETH solo +363%; signo depende del lookback; DD -36/-79%).
+  META-LECCIÓN adoptada: probar FAMILIAS de configuraciones + significancia (bootstrap) ANTES de
+  llamar a algo validado. Turtle-55 pendiente de ese estándar en la matriz total.
+
+- **2026-07-18 (noche)** — 📅 FOMC-fade (ver corrección arriba) + semáforo recalibrado.
   1. **SHORT 48h post-anuncio FOMC** (hipótesis pre-registrada del investigador, calendario oficial):
      replicada con nuestras velas 15m: n=44 eventos 2021-26, win 66%, +0.44%/evento NETO, positiva
      5/6 años (~+3.5%/año, 8 ops/año). Satélite de calendario estilo planbtc. Pre-drift largo: descartada

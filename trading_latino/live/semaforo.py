@@ -1,7 +1,7 @@
 """
 SEMÁFORO DIARIO — qué operar HOY y con qué riesgo. Integra todas las reglas validadas:
   1. CICLO (Plan BTC): días desde ATH / caída — enciende la familia Asia y planbtc.
-  2. FINDE OFF solo cluster Asia (sab/dom -0.33R en vivo); la TENDENCIA rinde MAS en finde (+0.32R vs +0.23R).
+  2. FINDE OFF solo cluster Asia (sab/dom -0.33R en vivo); la tendencia 1D opera en finde por NEUTRALIDAD (auditor: dif no significativa, p=0.55).
   3. ROLLING 21d por estrategia (kill-switch de decay): exp vivo reciente <0 → banquillo.
   4. DIRECCIÓN rolling 7d (calibrado: reacciona en 2-4 dias vs 2 semanas, mismos cambios de bando).
 Solo datos EN VIVO (costes reales correctos) + diario Binance para el ciclo.
