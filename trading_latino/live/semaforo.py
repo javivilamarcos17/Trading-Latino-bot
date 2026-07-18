@@ -41,7 +41,9 @@ def ciclo_hoy():
     ath = hi.max(); i_ath = int(np.argmax(hi))
     dias = len(d) - 1 - i_ath
     dd = (ath - cl[-1]) / ath
-    return dias, dd * 100, (dias > 200 or dd > 0.50), (dias > 250 and dd > 0.40)
+    mom7 = bool(cl[-1] > cl[-8])          # momentum 7d ahora
+    mom7_hace10 = bool(cl[-11] > cl[-18]) # momentum 7d hace 10 dias
+    return dias, dd * 100, (dias > 200 or dd > 0.50), (dias > 250 and dd > 0.40), mom7, mom7_hace10
 
 
 def carry_hoy():
@@ -78,25 +80,43 @@ def carry_hoy():
                 pct = 100 * sum(1 for x in hist if x < actual) / len(hist)
     except Exception:
         pass
-    return m, estado, pct
+    # media 7d del funding y dias desde el ultimo cruce negativo->positivo (para el dial de fase)
+    f7_apr = None; dias_cruce = None
+    if len(hist) > 42:
+        import numpy as _np
+        arr = _np.array(hist, dtype=float)
+        m7 = _np.convolve(arr, _np.ones(21) / 21, mode="valid")  # 21 periodos de 8h = 7d
+        f7_apr = m7[-1] * 3 * 365 * 100
+        neg = _np.where(m7 <= 0)[0]
+        if len(neg) and neg[-1] < len(m7) - 1:
+            dias_cruce = (len(m7) - 1 - neg[-1]) / 3.0
+    return m, estado, pct, f7_apr, dias_cruce
 
 def main():
     hoy = dt.datetime.now(dt.timezone.utc)
     ahora_ms = time.time() * 1000
     df = ops_vivas()
-    dias_ath, dd_pct, ciclo_or, ciclo_strict = ciclo_hoy()
+    dias_ath, dd_pct, ciclo_or, ciclo_strict, mom7, mom7_hace10 = ciclo_hoy()
     finde = hoy.weekday() >= 5
 
     print(f"🚦 SEMÁFORO — {hoy:%Y-%m-%d %H:%M} UTC")
     print(f"CICLO BTC: {dias_ath}d desde ATH · caída {dd_pct:.0f}%  → "
           f"{'PROFUNDO (Asia/planbtc habilitadas)' if ciclo_or else 'NO profundo (Asia OFF)'}"
           f"{' [estricto: SÍ]' if ciclo_strict else ' [estricto: NO]'}")
-    apr, carry_est, pct_lider = carry_hoy()
+    apr, carry_est, pct_lider, f7_apr, dias_cruce = carry_hoy()
     if apr is not None:
         print(f"CARRY (4a luz): funding cesta {apr:+.1f}% APR -> {carry_est}")
         if pct_lider is not None:
             dial = "FAVORABLE para abrir/rebalancear" if pct_lider >= 75 else ("neutro" if pct_lider >= 25 else "desfavorable (esperar)")
             print(f"  dial persistencia: funding del venue en percentil {pct_lider:.0f} de sus 180d -> {dial}")
+    # DIAL DE FASE (contexto historico, SIN regla de disparo — auditoria r6): triple convergencia
+    if f7_apr is not None:
+        c1 = "SÍ" if ciclo_or else "no"
+        c2 = f"+{f7_apr:.1f}% APR" + (f" (cruzó a + hace {dias_cruce:.0f}d)" if dias_cruce is not None and f7_apr > 0 else "")
+        c3 = "LARGO" if mom7 else "corto"
+        n_conv = sum([ciclo_or, f7_apr > 0, mom7])
+        print(f"DIAL DE FASE (contexto): ciclo maduro {c1} · funding7d {c2} · momentum7d {c3}"
+              f" -> convergencia {n_conv}/3" + (" ⚡" if n_conv == 3 else ""))
     print(f"FINDE: {'SÍ → intradía OFF hoy' if finde else 'no (laborable)'}")
 
     # dirección rolling 30d (ganadoras)
