@@ -116,6 +116,13 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19b** — 💼 PORTFOLIO FINAL simulado (todo a costes reales, 2021-26, 610 ops):
+  **Núcleo 1D@4R × vol-targeting (0.3%) + planbtc (1%) + turtle_ciclo (0.5%) =
+  TOTAL +113.2% · peor caída −19.4%** · años: 2021 −2.0 / 2022 +16.2 / 2023 +49.0 /
+  2024 +34.1 / 2025 −9.7 / 2026 +3.8. Vs núcleo solo a 2R: +51%/−17.4%. Positivo 4/6 años,
+  ~+13%/año compuesto con DD<20%. PENDIENTE: auditoría adversarial del ensamblaje
+  (el objetivo 4R se eligió del mismo histórico — mitigado por familia monótona 2R/3R/4R).
+
 - **2026-07-19** — 🏛️ RESOLUCIÓN FINAL DE LA ARQUITECTURA (todo a costes reales).
   1. **RETRACTACIÓN: el "interruptor de ciclo para FVG" era artefacto del bug de costes.** Con el
      parquet regenerado: oso-maduro −0.29/−0.31/−0.37R vs fuera −0.29/−0.30/−0.36R — indistinguible.
