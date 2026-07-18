@@ -20,26 +20,29 @@
 - [ ] 💡 **Idea**
 - [ ] 📄 **Documentación**
 - [ ] 🎬 **Demo**
-- [X] 🛠️ **Prototipo de investigación** — El laboratorio de backtest corre end-to-end y es honesto
-      (sin lookahead, con costes). NO hay bot operando todavía.
+- [X] 🛠️ **Prototipo de investigación** — Laboratorio honesto + arena 24/7 en PAPEL. NO hay dinero real.
 - [ ] 🚀 **MVP**
 - [ ] 🏭 **Producción**
 
-**Estado: 🛠️ Prototipo de investigación.** Tenemos un **laboratorio de backtest serio** (alineado por
-hora de cierre, sin mirar el futuro, con comisiones/funding/slippage, y con **2026 como año de prueba
-ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Conclusión honesta:**
+**Estado: 🛠️ Prototipo de investigación con arena de papel 24/7.** (actualizado 2026-07-18)
+El proyecto tiene un **sistema final de 3 motores** definido, auditado (6 rondas adversariales) y
+con números oficiales reproducibles:
 
-- **Casi todo lo direccional/técnico/ML/scalping FALLA fuera de muestra** (overfitting): se ve bonito
-  en el pasado y se cae en 2026. Esto incluye la estrategia mecánica de Merino, divergencias RSI,
-  Squeeze, etc. probadas en muchas temporalidades.
-- **El ÚNICO edge robusto que hemos encontrado es el CARRY de funding** (delta-neutral: cobrar el
-  "alquiler" del funding con el precio cubierto, sin apostar dirección). Es real y muy estable.
-- **PERO el carry depende del régimen y se ha comprimido:** cesta diversificada de 6-15 monedas,
-  NETO de costes, a 1x → **+11-12%/año de media… pero inflado por 2021 (+45%)**. Quitando 2021,
-  los años recientes (2025-2026) rinden **~+1%/año a 1x**. Drawdown del flujo de funding ~−1,6%.
-- ⚠️ **Ese drawdown bajo es engañoso:** solo mide la volatilidad del funding. **NO** incluye el
-  riesgo de COLA real (quiebra de exchange tipo FTX, liquidación de la pata corta en un flash-crash,
-  pico de funding). Apalancar el carry para llegar al 10%+/año mete ese riesgo de cola en juego.
+1. **Motor 1 — Núcleo 1D** (trend_rider + atr_break_trend, todo-clima): validado 2021-26.
+2. **Motor 2 — Armas de ciclo** (planbtc, turtle_ciclo): disparan al final del oso. **ARMADAS AHORA**
+   (285d desde ATH, −49%); planbtc lleva su primer largo vivo con ~+1.8R latentes.
+3. **Motor 3 — Carry de funding** (cesta delta-neutral): paga en toro/lateral, duerme en oso.
+   **DORMIDO por diseño** (funding del universo aún negativo); monitor construido y esperando.
+
+**Números oficiales del portfolio (script publicado y verificado por 2 agentes):**
+variante-espec (núcleo 4R 0.25%/op + turtle 3R + tope 5% riesgo abierto) = **+44.5% en 5.5 años,
+caída máxima −12.4%, 2023 +35%**; variantes conservadoras +32-38%. ⚠️ Caveat estructural: los 5
+mejores episodios concentran ~todo el resultado (p_episodio 0.05) — el riesgo es la concentración
+episódica, no la volatilidad diaria. Escala ~linealmente con el presupuesto de riesgo.
+
+**Descartes firmes con datos** (~30 familias juzgadas): TODO el intradía a costes reales (1m-30min),
+estacionalidad horaria, ventana ETF, arma de techo, fade-del-fallo, stat-arb, y el resto del
+cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ---
 
@@ -47,72 +50,51 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 > Solo lo comprobado de verdad.
 
-- La **documentación** (visión, biblia de Merino, roadmap, arquitectura) y el **esqueleto** del proyecto.
-- **Descarga de datos** (Binance perp: BTC y altcoins, 1h/4h/1d/1w) verificada sin huecos/duplicados.
-- **Motor de backtest event-driven** con no-lookahead verificado, costes reales (comisiones, funding,
-  slippage) y hold-out de 2026 separado.
-- **Laboratorio de research** (`trading_latino/research/*.py`): decenas de experimentos reproducibles
-  (técnico, ML, carry, on-chain, sentimiento, momentum transversal, macro, Wyckoff, scalping).
-- **Análisis del carry profesional** (`research/carry_pro.py`): cesta diversificada, regla
-  anti-funding-negativo, costes explícitos, barrido de apalancamiento, estrés y desglose por año.
-- **Lectura EN VIVO de Hyperliquid (solo lectura, sin órdenes, sin dinero):**
-  - `live/mapa_liquidez.py`: mapa de liquidez en tiempo real (pools de stops + muros del order-book
-    + OI + funding). **Verificado contra la API pública en vivo.**
-  - `live/sniper.py` y `live/agente_smc.py`: detectores + paper-trading de SMC/barridos.
-  - **`live/arena.py`: ARENA en vivo — 30 estrategias × BTC/ETH/SOL × TF depuradas (sobre todo 15m) en PAPEL.**
-    **NÚCLEO ROBUSTO (validado multi-año 2021-2026):** `merinox` (+0.06/+0.08R, positiva en 6 años y 3
-    climas — la estrategia de Merino), `merino`, `atr_break`. **Live-winners del régimen actual (pendientes
-    de validar multi-régimen):** familia OB-Asia (`ob_plus_asia`, `ob_asia_close`, `ob_trend_r3`,
-    `fvg_ob_asia`, `ob_regime_asia`). El OB BASE (sin filtro Asia) se retiró: multi-año confirma que NO
-    tiene edge. Cada operación registra **contexto rico** (funding, OI, ΔOI, Fear&Greed, régimen/ADX,
-    sesión/sub-sesión, premium/discount, liquidez, volumen, dir. sesión anterior, **micro-contexto 5m**) y
-    mide **5 políticas de salida** sobre el recorrido real de 1m. El análisis por condiciones está en
-    `research/estudio.py` (pockets/leaks/exits/mapa/riesgo). **Funcionando — ~2.430 ops cerradas al 2026-06-24.**
-  - ⚠️ **AVISO CRÍTICO (anti-autoengaño):** las 1.737 ops son de **UN SOLO RÉGIMEN** (1.736 de 1.737 con
-    Fear&Greed <30 = miedo; mercado bajista: cortos +0.42R vs largos −0.06R; Asia +0.75R vs NY −0.48R).
-    Las "ganadoras" (familia OB-Asia) son **la misma apuesta medida muchas veces**: *corto + OB + Asia +
-    bajista*. NO es diversificación, es concentración disfrazada. Cuando el régimen gire (euforia/alcista)
-    podrían caer todas a la vez. **Varias estrategias nuevas se diseñaron VIENDO estos datos** (sesgo de
-    diseño) → su buen resultado es eco, no predicción. **Metodología correcta:** los datos EN VIVO son la
-    verdad (van hacia adelante, sin sesgo); los **50 días de Binance** (`research/backtest_ganadoras.py`)
-    sirven para VALIDAR fuera de muestra cada conclusión antes de fiarse.
-  - **Recolección automática EN LA NUBE (GitHub Actions, patrón bucle-en-job, cada ~3 min, 24/7
-    auto-encadenado) — VERIFICADA.** Ya NO depende del portátil. Datos en la rama `arena-data`.
-    Herramientas de análisis read-only: `_inventario.py`, `_analisis.py`, `_mtf.py`, `board.py`, `salidas.py`.
+- **Arena 24/7 en papel** (Hyperliquid, costes reales): ~17.100 ops cerradas, 56 estrategias
+  históricas, colector nube (rama `arena-data`, ~3 min) + tarea local. Cada op registra contexto
+  rico y 5 políticas de salida (A/B de salidas gratis). ⚠️ Ops de estrategias recién desplegadas
+  incluyen replay con metadata contextual falsa — excluir pre-despliegue (memoria `arena-backfill`).
+- **Panel operativo**: `semaforo.py` (4 luces: ciclo, carry, dirección 7d, kill-switch 14d + 2
+  diales contextuales: persistencia de funding y fase n/3) y `monitor_carry.py` (cesta candidata
+  + triggers de desmontaje del manual carry). Ambos verificados en vivo.
+- **Laboratorio research** con modelo de costes corregido (cR = COSTE/(D/entrada) + slip) y
+  **tribunal de 6 leyes** (familia, bootstrap por episodio, sin-2023, causalidad, p<0.10, n≥100).
+- **Sistema de agentes**: auditor adversarial (6 rondas — ha retirado números de ambos bandos),
+  investigador externo (informes con fuentes), revisor semanal del forward.
+- **Forward limpio A/B pre-registrado** (solo-largos, funding, vetos fvg_ob) acumulando desde
+  2026-07-18; veredictos al llegar n≥30.
+- **Lectura en vivo de Hyperliquid** (mapa de liquidez, order-book) verificada contra la API.
 
 ---
 
 ## 3. ❌ Qué NO funciona / NO existe todavía
 
-- **No hay bot operando** — ni en papel (testnet) ni en real. Solo backtest/research.
-- **El riesgo de cola del carry NO está modelado** (contraparte/exchange, liquidación, pico funding).
-- **No hay gestión de riesgo en vivo** (colchones de liquidación, reparto multi-exchange, monitor de funding).
-- **No hemos demostrado ≥10%/año robusto a apalancamiento seguro.** El carry a 1x reciente está por
-  debajo de ese listón; llegar exige 2-3x (con su riesgo de cola) o esperar regímenes de euforia.
-- Conexión a exchange en vivo, paper trading y operativa real (fases finales).
+- **No hay bot con dinero real** — ni siquiera testnet con órdenes. Todo es papel/lectura.
+- **La cesta carry NO está montada** (dormida por régimen: funding del universo −1.3% APR).
+  El riesgo de cola tiene manual (Ethena replicado) pero NO implementación.
+- **El intradía histórico es INOPERABLE a costes reales** — confirmado por 3 vías independientes.
+- **La concentración episódica** del portfolio (top-5 episodios ≈ todo el R) no tiene mitigación
+  posible: es la naturaleza del edge. Solo se gestiona con el tope de riesgo abierto.
+- **Matriz de temporalidades incompleta**: 30min cerrada (nada operable); 7 TFs computando.
+- Los diales (fase, persistencia) son CONTEXTO, no reglas de disparo (auditoría r6).
 
 ---
 
 ## 4. 🧪 Cómo probarlo
 
 ```bash
-# (1) que el esqueleto y la configuración cargan:
-.venv/Scripts/python.exe -c "from trading_latino.config import CONFIG; print('Altcoins:', len(CONFIG.altcoins))"
+# (1) SEMÁFORO diario — qué operar hoy, 4 luces + 2 diales:
+.venv/Scripts/python.exe -m trading_latino.live.semaforo
 
-# (2) el análisis del carry profesional (cesta diversificada, neto, estrés, por año):
-.venv/Scripts/python.exe -m trading_latino.research.carry_pro
+# (2) MONITOR del motor 3 — estado de la cesta carry y su dial:
+.venv/Scripts/python.exe -m trading_latino.live.monitor_carry
 
-# (3) auditoría de la estrategia "estrella" v2 (atribución, lookahead, asignación):
-.venv/Scripts/python.exe -m trading_latino.research.audit_v2
+# (3) NÚMEROS OFICIALES del portfolio (el script de la conciliación):
+.venv/Scripts/python.exe "<scratchpad>/concilia_portfolio.py"
 
-# (4) MAPA DE LIQUIDEZ EN VIVO de Hyperliquid (solo lectura):
+# (4) MAPA DE LIQUIDEZ en vivo de Hyperliquid (solo lectura):
 .venv/Scripts/python.exe -m trading_latino.live.mapa_liquidez BTC ETH
-
-# (5) PAPER-SNIPER en vivo (ejecutar cada ~15 min para acumular track record):
-.venv/Scripts/python.exe -m trading_latino.live.sniper BTC
 ```
-
----
 
 ## 5. 🔚 Última decisión / hallazgo
 
