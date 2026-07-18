@@ -116,6 +116,17 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19g** — ⛏️ MINERIA DEL VIVO (17.138 ops): (1) la racha de -1R uniforme del nucleo NO es bug
+  (mae>=1.0 en todas: stops reales barridos) — son cortos de tendencia barridos por rebotes en V =
+  firma de SUELO, confirmacion independiente de la transicion de fase del semaforo. (2) A/B de
+  politicas de salida con las 5 que registra la arena: be05 gana en vivo en el nucleo (+0.331R vs
+  -0.013R, n=90) PERO el historico 1D 2021-26 la refuta TODOS los años (pareado -0.10R/op,
+  p=0.999) → artefacto de regimen; se mantiene target fijo; el A/B sigue gratis en la arena
+  (revisar si n>=100 vivo con ventaja sostenida en tendencia). (3) ⚠️ turtle_ciclo/planbtc tienen
+  ops replay-backfill al desplegarse (funding/OI/FNG estampados al registro, no historicos): su
+  metadata contextual NO vale para analisis; precios OHLC si. (4) scalp_break vivo -0.252R (n=202)
+  reconfirma el veredicto anti-intradia → retirar del semaforo si sigue asi al proximo corte.
+
 - **2026-07-19f** — 🔺 ARMA DE TECHO descartada (familia 8/9 negativa, p=0.90) + hallazgo de
   asimetría: en cripto los SUELOS son eventos operables (la V) y los TECHOS son procesos ruidosos
   (los breakdowns tras euforia se recompran). El techo se gestiona con defensas (no-largos en
