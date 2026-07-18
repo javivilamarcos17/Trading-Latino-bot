@@ -116,6 +116,15 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19n** — 🔄 RELEVO DE REGIMEN OBSERVADO EN VIVO (primera validacion en directo de la
+  arquitectura): el cluster Asia (estrellas del oso) en deterioro sostenido 2 semanas
+  (fvg_ob_asia +0.56→-0.15R, fvg_ob +0.23→-0.17R) EXACTAMENTE cuando ciclo maduro + carry
+  despertando + sesgo LARGO — sus condiciones de caza se acaban y el kill-switch del semaforo las
+  banquilla solo, sin mano. A/B forward apunta fuerte (solo-largos +1.113R n=14 vs todas -0.899R
+  n=102) pero sin veredicto hasta n>=30 (protocolo). Matriz relanzada con seguimiento robusto
+  (7 TFs restantes) tras morir el proceso anterior a mitad de 2h. Leccion operativa: procesos
+  largos SIEMPRE con seguimiento del harness, no con & suelto.
+
 - **2026-07-19m** — 🪟 VENTANA ETF (fixing 14-16h UTC) DESCARTADA: condicionada al flujo de AYER
   (causal), la deriva sale con signo contrario e insignificante (dif -10.2 bps, p=0.28); el efecto
   mismo-dia es fuerte (+50.6 bps) pero es simultaneidad no operable. Resto con pulso: momentum de
