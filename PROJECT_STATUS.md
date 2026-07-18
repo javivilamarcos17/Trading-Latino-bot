@@ -116,6 +116,16 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-18** — 🏆 **PORTFOLIO MAESTRO v2: POSITIVO TODOS LOS AÑOS 2021-2026.**
+  Composición: columna 4h (atr_break_trend + merino 4h, siempre) + FVG-Asia y ob_asia_close-largos
+  (SOLO oso maduro: >250d desde ATH y dd>40%) + planbtc (1%). Presupuesto POR estrategia (tope
+  2/día/estrategia), riesgo 0.25%, neto de costes+slippage.
+  **Años: 2021 +11.5% · 2022 +19.9% · 2023 +18.0% · 2024 +11.3% · 2025 −0.0% · 2026 +9.6%
+  · TOTAL +92.5% · peor caída −26.8%** (vs estáticas −48/−81% con caídas −71/−88%).
+  ⚠️ Cautela: ensamblado con piezas validadas independientemente pero COMPUESTO sobre el mismo
+  histórico → el juez final es el forward. Siguiente: semáforo diario sobre esta base (P2 del plan).
+
+
 - **2026-07-17** — 🎯 EL INTERRUPTOR DE CICLO (Plan BTC) + veredictos a años vista.
   1. **⭐ HALLAZGO MAYOR: la métrica de ciclo de Plan BTC (>200d desde ATH o caída>50%) es el
      INTERRUPTOR de nuestra familia FVG:** fvg_ob_asia +0.106R en ciclo profundo vs −0.065R fuera
