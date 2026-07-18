@@ -116,6 +116,19 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19** — 🏛️ RESOLUCIÓN FINAL DE LA ARQUITECTURA (todo a costes reales).
+  1. **RETRACTACIÓN: el "interruptor de ciclo para FVG" era artefacto del bug de costes.** Con el
+     parquet regenerado: oso-maduro −0.29/−0.31/−0.37R vs fuera −0.29/−0.30/−0.36R — indistinguible.
+     La familia Asia intradía NO tiene soporte histórico en NINGUNA condición a costes reales.
+  2. **Maestro v3 (con clúster Asia): −23.2%** — confirmado que el clúster B histórico resta. El
+     PORTFOLIO FINAL validado es el NÚCLEO 1D: trend_rider + atr_break_trend + vol-targeting =
+     **+51% total 2021-26, peor caída −17.4%, positivo 5/6 años** (2021 −3%) + armas de ciclo
+     (planbtc, turtle_ciclo — honestas por episodios) + FOMC simbólica.
+  3. **La familia Asia queda SOLO-VIVO**: su única evidencia es el forward de la arena (costes
+     limpios, 2026). Tamaño mínimo, gobernada por semáforo — que de hecho la tiene banquillada
+     por decay ahora mismo. Si el forward limpio (línea base 18-jul) no la sostiene, se retira.
+  4. Matriz total 13 familias × 9 TF: computando (3 barridos + 5m descargado).
+
 - **2026-07-18 (CIERRE DEL DÍA)** — La verdad final a costes reales + turtle_ciclo desplegada.
   1. **REGEN a costes corregidos (82k ops 15m, 2021-26): el intradía histórico es INOPERABLE** —
      carteras A/B/C = −100% (ruina), rotación adaptativa −82%. El intradía SOLO se justifica por el
