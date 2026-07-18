@@ -22,7 +22,7 @@ def det_turtle55(d):
 from trading_latino.research.backtest_ganadoras import LOOKBACK, det_ob_trend, det_fvg_ob
 
 CACHE = Path("data_store/research_cache"); SLIP = 0.01
-VPD = {"15min":96,"30min":48,"1h":24,"2h":12,"8h":3,"12h":2,"1D":1}
+VPD = {"15min":96,"30min":48,"1h":24,"2h":12,"4h":6,"8h":3,"12h":2,"1D":1}
 
 def stat(v):
     n=len(v); return n,(sum(1 for x in v if x>0)/n if n else 0),(sum(v)/n if n else 0)
