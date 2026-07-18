@@ -116,6 +116,21 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-18 (CIERRE DEL DÍA)** — La verdad final a costes reales + turtle_ciclo desplegada.
+  1. **REGEN a costes corregidos (82k ops 15m, 2021-26): el intradía histórico es INOPERABLE** —
+     carteras A/B/C = −100% (ruina), rotación adaptativa −82%. El intradía SOLO se justifica por el
+     VIVO (arena con costes limpios, régimen 2026, tamaño mínimo, semáforo). Caso cerrado.
+  2. **TURTLE CONTRA-RÉGIMEN** (hallazgo propio auditado): familia 6/6 (+0.59/+0.86R), robusta 9/9
+     umbrales, sin lookahead; verdad del auditor: n_efectivo=7 episodios (p~0.02-0.05), 80% del R de
+     la V oct23-24 → ARMA DE CICLO hermana de planbtc. Desplegada como turtle_ciclo (1D, solo largos,
+     ciclo profundo) — ventana ACTIVA hoy, esperando la ruptura de 55d.
+  3. **El sistema final que queda en pie:** columna 1D/4h (trend_rider/atr_break_trend/turtle55 +
+     vol-targeting CONFIRMADO) + armas de ciclo (planbtc, turtle_ciclo) + FOMC (hipótesis viva, riesgo
+     simbólico) + Asia-15m solo-vivo gobernada por semáforo (kill-switch 14d, dirección 7d, veto spread>p90).
+  4. Descartadas hoy con datos: stat-arb pares (todas TF), hash-ribbons (rota 2025+), PSAR/Heikin/TTM,
+     dual momentum (universo), finde-edge (p=0.55). Permisos aceptar-todo con los 5 candados intactos.
+
+
 - **2026-07-18 (cierre)** — 🐢 TURTLE CONTRA-RÉGIMEN: auditada y desplegada con etiqueta honesta.
   Hallazgo propio (breakout de 55d CONTRA el clima dominante): familia 6/6 (+0.59/+0.86R), robusta
   a umbrales 9/9, sin lookahead, exits idénticos a 15m. VERDAD del auditor: n_efectivo=7 episodios
