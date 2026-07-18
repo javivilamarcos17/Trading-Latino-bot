@@ -116,6 +116,16 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19l** — 📡 LEAD-LAG DE FUNDING CONFIRMADO (primer candidato virgen que sobrevive a la
+  primera): Binance lidera el funding de Bybit/Gate mas alla de la inercia propia (coef +0.13 a
+  +0.36, p~0.000 bootstrap por bloques 7d; placebo inverso mucho mas debil = asimetria real,
+  replica MDPI 14(2):346 con datos propios 2024-26). NO es estrategia sola (decimas de bp/periodo
+  vs 10-20 bps de montaje) → es DIAL DE TIMING del motor 3: condicionar apertura/rebalanceo de la
+  cesta carry a Binance en cuartil alto suma +2.4 pts APR (BTC) / +11 pts (ETH) en zona media, y
+  BTC 8→14.4% APR en zona alta (tabla monotona en casi todas las filas). Pendiente de integrar en
+  la espec del motor 3 cuando se construya. 30min de la matriz cerrada: nada operable (mejor
+  merino_fiel +0.063R, muy bajo liston) — 3a confirmacion anti-intradia.
+
 - **2026-07-19k** — 🕐 ESTACIONALIDAD HORARIA re-testeada en era-ETF (BTC+ETH, bootstrap por dia):
   DESCARTADA. Las ventanas publicadas (22-23h UTC Quantpedia, lunes-Asia Concretum) estan muertas
   o son ruido en 2024-26 (p 0.21-0.97, ninguna significativa); los signos por hora se invierten
