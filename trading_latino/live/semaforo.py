@@ -58,8 +58,9 @@ def carry_hoy():
     if not aprs: return None, "sin datos", None
     m = sum(aprs) / len(aprs)
     estado = "ON (cesta pagando)" if m > 5 else ("neutral (marginal)" if m > 0 else "OFF (funding negativo = oso)")
-    # dial lead-lag (validado 2026-07-19l): Binance lidera el funding de otros venues.
-    # Percentil del funding BTC de Binance vs sus 180d: alto = buen momento para abrir/rebalancear.
+    # dial de PERSISTENCIA de funding (recalificado en auditoria r6): el funding es autocorrelado,
+    # percentil alto del funding PROPIO del venue predice funding alto proximo (el lead-lag
+    # cross-venue existe pero no añade nada sobre esto). Cesta en Binance -> percentil de Binance.
     pct = None
     try:
         import time as _t
@@ -95,7 +96,7 @@ def main():
         print(f"CARRY (4a luz): funding cesta {apr:+.1f}% APR -> {carry_est}")
         if pct_lider is not None:
             dial = "FAVORABLE para abrir/rebalancear" if pct_lider >= 75 else ("neutro" if pct_lider >= 25 else "desfavorable (esperar)")
-            print(f"  dial lead-lag: funding Binance en percentil {pct_lider:.0f} de sus 180d -> {dial}")
+            print(f"  dial persistencia: funding del venue en percentil {pct_lider:.0f} de sus 180d -> {dial}")
     print(f"FINDE: {'SÍ → intradía OFF hoy' if finde else 'no (laborable)'}")
 
     # dirección rolling 30d (ganadoras)

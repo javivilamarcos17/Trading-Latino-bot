@@ -116,6 +116,20 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19o** — ⚖️ AUDITORIA RONDA 6 (4 veredictos, todos aplicados):
+  (1) Dial de fase MATIZADO: la familia de ventanas aguanta (5/10/15/20d, mismos episodios nucleo,
+  +121-138% vs +33% base) pero la regla "esperar al 2o disparo" es post-hoc con n=2 pares
+  (P(azar)=0.25 y ni se sostiene en 2020) → RETRACTADA; el dial queda como contexto sin regla de
+  disparo. (2) Lead-lag: estadistica CONFIRMADA (sobrevive control de precio, p=0.001) pero dial
+  REFUTADO por redundante — condicionar por el funding PROPIO del venue da lo mismo o mas (Q3
+  propio +22.8% vs Q3 Binance +21.7%); recalificado como dial de PERSISTENCIA (autocorrelacion
+  propia), semaforo y monitor_carry relabelados. (3) be05: decision CONFIRMADA (dif +0.099R/op
+  p=0.003, resolucion intrabarra no sesga) pero "todos los años" era falso — son 4/6 (2021 gano
+  be05); corregido. (4) Relevo de regimen REFUTADO como señal: ventanas 14d como la actual ocurren
+  el 60-71% del tiempo bajo el mismo regimen (percentil 60-71 = martes cualquiera); el kill-switch
+  actua igual pero NO hay "validacion en directo" de nada. Meta-leccion del auditor registrada:
+  no convertir episodios sueltos en leyes ni ruido de quincena en regimenes observados.
+
 - **2026-07-19n** — 🔄 RELEVO DE REGIMEN OBSERVADO EN VIVO (primera validacion en directo de la
   arquitectura): el cluster Asia (estrellas del oso) en deterioro sostenido 2 semanas
   (fvg_ob_asia +0.56→-0.15R, fvg_ob +0.23→-0.17R) EXACTAMENTE cuando ciclo maduro + carry

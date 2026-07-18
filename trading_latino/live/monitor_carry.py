@@ -4,7 +4,9 @@ NO opera: informa. Dice si procede montar/mantener/desmontar la cesta y con qué
 
 Reglas (validadas en STATUS 2026-07-19e/j/l):
   - ENCENDIDO solo si: funding medio cesta > 5% APR (4ª luz ON) — el carry duerme en oso.
-  - Timing de apertura/rebalanceo: dial lead-lag — Binance (líder) en percentil >= 75 de sus 180d.
+  - Timing de apertura/rebalanceo: dial de PERSISTENCIA — funding del venue de la cesta en
+    percentil >= 75 de sus 180d (auditoría r6: la autocorrelación propia es la señal efectiva;
+    el lead-lag cross-venue existe pero no añade nada incremental).
   - Composición: top monedas líquidas por funding APR actual (equiponderada, delta-neutral
     corto perp + largo spot), máx. 15.
   - TRIGGERS DE DESMONTAJE (manual carry, informe investigador 2026-07-19j):
@@ -45,7 +47,7 @@ def main():
     media = sum(a for _, a in filas) / len(filas)          # luz de régimen: universo completo
     cesta = [(c, a) for c, a in filas if a > 2.0][:TOP_N]  # cesta: solo monedas que PAGAN (>2% APR)
 
-    # dial lead-lag: percentil del funding BTC de Binance vs 180d
+    # dial de persistencia: percentil del funding BTC del venue (Binance) vs sus 180d
     pct = None
     try:
         since = int((time.time() - 180 * 86400) * 1000)
@@ -66,7 +68,7 @@ def main():
           f"{'🟢 ZONA ON' if media > UMBRAL_ON else ('🟡 marginal' if media > 0 else '🔴 OFF (oso)')}")
     print(f"cesta candidata (solo pagan >2% APR): {len(cesta)} monedas")
     if pct is not None:
-        print(f"dial lead-lag: Binance percentil {pct:.0f}/180d → "
+        print(f"dial persistencia: funding del venue percentil {pct:.0f}/180d → "
               f"{'🟢 abrir/rebalancear' if pct >= PCT_DIAL else '⏳ esperar mejor momento'}")
     print(f"\n{'moneda':<8}{'APR%':>8}   (corto perp + largo spot, equiponderada)")
     for c, a in cesta:

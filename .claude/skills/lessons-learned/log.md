@@ -231,3 +231,12 @@ en silencio a mitad de la 2ª temporalidad al cerrarse una sesión; se perdieron
 notifica su muerte.
 **Lección:** todo cómputo >10 min se lanza con run_in_background del harness (notifica al
 terminar y su muerte es visible), nunca con `&` suelto. Verificar procesos vivos al retomar sesión.
+
+## 2026-07-18 — No convertir episodios en leyes ni ruido de quincena en regimen
+**Qué pasó:** en la misma sesión narré "el 2º disparo caza el suelo" (n=2 pares, P(azar)=0.25) y
+"relevo de régimen observado en vivo" (una ventana de 14d que ocurre el 60-71% del tiempo bajo el
+mismo régimen). El auditor tumbó ambas: datos válidos, narrativa inventada encima.
+**Causa raíz:** tendencia a rematar hallazgos válidos con una historia más fuerte que los datos.
+**Lección:** toda afirmación sobre <5 episodios es decoración, no hallazgo; antes de narrar un
+"cambio de régimen" en vivo, calcular el percentil histórico de esa misma ventana bajo la misma
+condición — si no es extremo (<10 o >90), es un martes cualquiera.
