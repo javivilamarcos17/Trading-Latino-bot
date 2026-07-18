@@ -54,4 +54,7 @@ Claude creará el archivo con el formato correcto.
 
 ## ADRs de este proyecto
 
-*[Se añaden aquí cuando se crean]*
+- [ADR-001 — Sistema de 3 motores por régimen](001-sistema-tres-motores.md)
+- [ADR-002 — Tope de riesgo abierto agregado del 5%](002-tope-riesgo-abierto.md)
+- [ADR-003 — Taker en rupturas, maker solo en salidas](003-ejecucion-taker-en-rupturas.md)
+- [ADR-004 — Tribunal de 6 leyes de validación](004-tribunal-de-validacion.md)
