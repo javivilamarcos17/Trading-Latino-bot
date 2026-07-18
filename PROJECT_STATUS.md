@@ -98,6 +98,14 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19s** — 🔥 ICHIMOKU: OUT-OF-SAMPLE TEMPORAL 2017-2020 SUPERADO con nota (Binance 4h
+  BTC+ETH, datos que el hallazgo nunca vio): 9/26 n=257 +0.471R p_semanal=0.001; 12/30 n=223
+  +0.378R p=0.005. Positivo en 9/10 años de 2017-2026 (unica celda roja: BTC-2018 -0.09).
+  Patron de decaimiento de alfa clasico (mas fuerte antes, positivo hoy) — coherente, no
+  sospechoso. Con esto: familia+significancia+n+sin-2023+causalidad+episodio+OOS temporal, la
+  candidata historica mas fuerte del proyecto. Falta SOLO el veredicto del auditor (r7 en curso;
+  vector critico: redundancia vs nucleo trend 4h). Si sobrevive -> arena en papel.
+
 - **2026-07-19r** — 🌩️ CANDIDATA SERIA: ICHIMOKU 4h CON NUBE (script oficial
   research/ichimoku_test.py). Pasa las 6 leyes a la primera: familia coherente (6/6 celdas
   positivas solo el bloque 4h+nube; sin nube y 1D = ruido), mejor config 12/30 3R n=655 +0.178R,
