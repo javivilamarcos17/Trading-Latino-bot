@@ -116,6 +116,16 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-18 (tarde)** — 🔬 CAMPAÑA AUTÓNOMA: investigación externa × datos propios.
+  1. **Estacionalidad horaria (papers Quantpedia):** la anomalía 21-23h UTC EXISTE en nuestros datos
+     pero muere a costes como estrategia. CRÍTICA ORIGINAL: para nuestro sistema corto-sesgado esas
+     horas son las PEORES (vivo -0.365R) — el paper AL REVÉS es nuestra ventaja.
+  2. **⭐ FILTRO NUEVO doble-validado: fvg_ob SIN entradas 18-23h UTC** → histórico +0.003→+0.019R
+     (n=10k) y VIVO +0.068→+0.232R (n=916, ×3.4). Solo para fvg_ob (no mejora trend_rider ni Asia).
+     Regla de despliegue del semáforo.
+  3. Barrido de TEMPORALIDADES INÉDITAS 30m/2h (7 estrategias × 3 monedas × 5.5 años): computando.
+
+
 - **2026-07-18** — 🏆 **PORTFOLIO MAESTRO v2: POSITIVO TODOS LOS AÑOS 2021-2026.**
   Composición: columna 4h (atr_break_trend + merino 4h, siempre) + FVG-Asia y ob_asia_close-largos
   (SOLO oso maduro: >250d desde ATH y dd>40%) + planbtc (1%). Presupuesto POR estrategia (tope
