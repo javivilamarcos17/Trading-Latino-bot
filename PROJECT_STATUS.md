@@ -116,6 +116,14 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19f** — 🔺 ARMA DE TECHO descartada (familia 8/9 negativa, p=0.90) + hallazgo de
+  asimetría: en cripto los SUELOS son eventos operables (la V) y los TECHOS son procesos ruidosos
+  (los breakdowns tras euforia se recompran). El techo se gestiona con defensas (no-largos en
+  euforia, vol-targeting, carry cobrando), no con un arma corta. Semáforo con 4ª luz (carry)
+  operativa: primera lectura +3.0% APR neutral — funding despertando desde negativo, coherente
+  con la triple convergencia (ciclo maduro + giro a largo + funding cruzando) = posible fin de oso.
+  Cola de propuestas: detector de transición de fase, ejecución maker, riesgo de cola carry, fixing-window.
+
 - **2026-07-19e** — 🔄 EL TERCER MOTOR: carry como pata de régimen opuesto.
   1. Carry selectivo p90 (propuesta del investigador): REFUTADO con datos (pierde vs siempre-dentro:
      2024 +4.9% vs +11.9% — los picos no compensan perderse la acumulación).
