@@ -55,10 +55,29 @@ def carry_hoy():
             if fr is not None: aprs.append(fr * 3 * 365 * 100)
         except Exception:
             pass
-    if not aprs: return None, "sin datos"
+    if not aprs: return None, "sin datos", None
     m = sum(aprs) / len(aprs)
     estado = "ON (cesta pagando)" if m > 5 else ("neutral (marginal)" if m > 0 else "OFF (funding negativo = oso)")
-    return m, estado
+    # dial lead-lag (validado 2026-07-19l): Binance lidera el funding de otros venues.
+    # Percentil del funding BTC de Binance vs sus 180d: alto = buen momento para abrir/rebalancear.
+    pct = None
+    try:
+        import time as _t
+        since = int((_t.time() - 180 * 86400) * 1000)
+        hist = []
+        s = since
+        for _ in range(3):
+            h = ex.fetch_funding_rate_history("BTC/USDT:USDT", since=s, limit=500)
+            if not h: break
+            hist += [x["fundingRate"] for x in h]
+            s = h[-1]["timestamp"] + 1
+        if len(hist) > 100:
+            actual = ex.fetch_funding_rate("BTC/USDT:USDT").get("fundingRate")
+            if actual is not None:
+                pct = 100 * sum(1 for x in hist if x < actual) / len(hist)
+    except Exception:
+        pass
+    return m, estado, pct
 
 def main():
     hoy = dt.datetime.now(dt.timezone.utc)
@@ -71,9 +90,12 @@ def main():
     print(f"CICLO BTC: {dias_ath}d desde ATH · caída {dd_pct:.0f}%  → "
           f"{'PROFUNDO (Asia/planbtc habilitadas)' if ciclo_or else 'NO profundo (Asia OFF)'}"
           f"{' [estricto: SÍ]' if ciclo_strict else ' [estricto: NO]'}")
-    apr, carry_est = carry_hoy()
+    apr, carry_est, pct_lider = carry_hoy()
     if apr is not None:
         print(f"CARRY (4a luz): funding cesta {apr:+.1f}% APR -> {carry_est}")
+        if pct_lider is not None:
+            dial = "FAVORABLE para abrir/rebalancear" if pct_lider >= 75 else ("neutro" if pct_lider >= 25 else "desfavorable (esperar)")
+            print(f"  dial lead-lag: funding Binance en percentil {pct_lider:.0f} de sus 180d -> {dial}")
     print(f"FINDE: {'SÍ → intradía OFF hoy' if finde else 'no (laborable)'}")
 
     # dirección rolling 30d (ganadoras)
