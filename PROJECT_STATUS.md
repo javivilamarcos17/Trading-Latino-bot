@@ -116,6 +116,15 @@ ciega**). Con él hemos hecho una **búsqueda exhaustiva** de estrategias. **Con
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19k** — 🕐 ESTACIONALIDAD HORARIA re-testeada en era-ETF (BTC+ETH, bootstrap por dia):
+  DESCARTADA. Las ventanas publicadas (22-23h UTC Quantpedia, lunes-Asia Concretum) estan muertas
+  o son ruido en 2024-26 (p 0.21-0.97, ninguna significativa); los signos por hora se invierten
+  entre eras = no estacionario. Unica celda estable en las 4 combinaciones: goteo +3-7 bps/h en
+  21-22h UTC (cierre NYSE), inoperable en solitario (costes 8+ bps) y seleccionarla post-hoc
+  seria snooping → solo observacion. Familia estacionalidad-intradia CERRADA (se suma a
+  finde-edge y hour-filter ya descartadas). Siguiente de la cola: lead-lag de funding entre
+  exchanges (el candidato mas virgen del informe).
+
 - **2026-07-19j** — 📚 INFORME DEL INVESTIGADOR (con fuentes): (1) CORRECCION a 19i: la evidencia
   publicada (232k ordenes maker REALES en Binance, arXiv 2502.18625; arXiv 2407.16527; arXiv
   2607.01550) mide seleccion adversa real que mi simulacion a 15m no puede ver (cola, precio debe
