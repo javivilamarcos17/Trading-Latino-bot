@@ -257,3 +257,19 @@ DENTRO de cada moneda, el efecto cae a ruido (p=0.66 por episodio).
 **Lección:** cualquier corte en terciles/cuartiles de una métrica con escala estructuralmente
 distinta por activo (volatilidad, spread, liquidez) debe calcularse POR ACTIVO (percentil propio
 expanding/rolling), nunca agrupando activos y cortando el pool conjunto.
+
+## 2026-07-19 — Cuando aparece una hipótesis prometedora, RALENTIZAR (no acelerar)
+**Qué pasó:** en una sola sesión generé ~15 tests (volatilidad, OI, RSI-MTF, merinox, adrig,
+confluencia, 6h/8h, HTF premium, cost-threshold, MICRO-01A...). Un auditor externo señaló que la
+capacidad de correr 100 tests en una tarde es "una ventaja de ingeniería y una amenaza científica
+a la vez": se producen resultados nuevos más rápido de lo que se puede preservar la independencia
+estadística (data snooping — Bailey/López de Prado sobre backtest overfitting).
+**Causa raíz:** la velocidad de ejecución me empujaba a encadenar tests; cada uno erosiona la
+independencia del siguiente aunque cada test parezca limpio en aislamiento.
+**Lección:** cuando un test da algo prometedor, el proyecto debe IR MÁS DESPACIO: (1) CONGELAR la
+hipótesis + código + commit; (2) AUDITAR la genealogía de datos (¿qué se vio durante el
+desarrollo?); (3) definir UNA sola pregunta primaria + un estimando + criterios de muerte; (4)
+abrir el holdout UNA vez; (5) aceptar el resultado. La disciplina de preservar independencia vale
+más que cualquier indicador nuevo. Además: el freeze NO borra la selección previa sobre datos de
+desarrollo (elegir "la más simple" tras ver los números sigue siendo selección) — por eso el
+holdout virgen es lo único que valida.

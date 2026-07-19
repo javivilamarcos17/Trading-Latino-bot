@@ -27,21 +27,43 @@ det_ob_trend_r3 (1244), det_ob_asia_close (1271), det_ob_asia_close_L (1283), de
 (order block en sesión asiática) — tiene expectancy neta positiva ESPECÍFICAMENTE durante un
 estado BEAR causal y pre-registrado, y ese efecto se replica en episodios bajistas independientes.
 
-- **Definición de BEAR (congelada, SIN tuning, externa a OB):** cierre diario < EMA200 diaria.
-  Es la convención de tendencia más estándar, cero parámetros elegidos por nosotros. Causal.
-- **Variable estadística:** episodio bajista (`bear_episode_id` = cada entrada/salida del estado),
-  NO la operación. Bootstrap por episodio.
-- **Representante PRIMARIA:** `ob_asia` (la más simple). **Familia de robustez (2 vecinas
-  pre-registradas):** `ob_regime_asia` (añade filtro de régimen), `fvg_ob_asia` (añade FVG).
-  NO se juzgan las 13 variantes como 13 hipótesis (eso reabriría data-snooping).
+- **Definición de BEAR (congelada, elegida EX ANTE, externa a OB):** cierre diario D-1 < EMA200
+  diaria D-1 (siempre la última vela COMPLETADA → sin look-ahead). Corrección (auditoría IA): NO es
+  "la definición correcta de bear" ni "cero tuning porque es estándar" — es una regla elegida ex
+  ante y congelada PARA ESTE experimento. Que sea popular no la hace correcta; solo la hace no-tuneada
+  por nosotros. La hipótesis es "¿hay comportamiento diferencial de OB/Asia bajo la EMA200?", no
+  "hemos descubierto el verdadero régimen bear".
+- **Estimando PRIMARIO ÚNICO:** ΔR = E[R | BEAR] − E[R | NON-BEAR], con criterio obligatorio
+  E[R | BEAR] > 0 neto. Un solo estadístico primario (la tesis es "edge condicionado a régimen",
+  no "OB funciona"). Todo lo demás es exploratorio.
+- **Unidad estadística (corrección IA): NO usar "cada cruce EMA200 = episodio"** (fabrica
+  pseudo-independencia: un rebote de 2 días parte un mismo fenómeno económico en 2). Y NO poner
+  duración mínima (retrospectivo). En su lugar: **block bootstrap por SEMANA**, manteniendo
+  BTC/ETH/SOL de la misma semana juntos en el resampling (un crash en 3 monedas ≈ 1 evento, no 3).
+- **Representante PRIMARIA:** `ob_asia`. ⚠️ HONESTIDAD (auditoría IA): elegirla "por ser la más
+  simple" SIGUE siendo selección — conocíamos los números de 2026 (ob_asia +0.106R, ob_regime
+  +0.545R...) ANTES de elegir. El freeze NO borra esa selección previa sobre datos de desarrollo;
+  por eso el holdout virgen vale tanto. **Familia de robustez:** `ob_regime_asia`, `fvg_ob_asia`.
+  NO se juzgan las 13 como 13 hipótesis.
 
-## Datasets del holdout
-- **2018 (BTC/ETH):** descargable gratis de Binance public data (verificado: 15m desde 2018-01-01).
-  Holdout temporal — NO participó en el diseño.
-- **2022 (BTC/ETH/SOL):** en caché 15m (2021-26). Holdout — NO tocar hasta abrir.
-- **CONTROL NEGATIVO:** estado NON-BEAR (cierre > EMA200). Si OB/Asia también gana ahí, NO es un
-  edge de régimen, es otra cosa (probablemente sesgo).
-- **2026 forward:** por FECHA REAL de despliegue de cada variante (detectar decay backtest→live).
+## AUDITORÍA DE GENEALOGÍA DE DATOS (hecha ANTES de abrir — hallazgo que cambia el diseño)
+Toda la familia OB/Asia (ob_asia, ob_regime_asia, fvg_ob_asia incluidas) está DEFINIDA en
+`backtest_ganadoras.py`, que corre sobre la caché de 15m que empieza en 2021-01-01 e INCLUYE 2022.
+→ **2022 NO es holdout virgen: es dato de desarrollo** (estos detectores ya corrieron sobre él).
+Usarlo como validación sería circular. Etiquetas honestas de cada dataset:
+
+- **2018 (BTC/ETH):** ✅ HOLDOUT VIRGEN temporal — ese dato NUNCA estuvo en la caché durante el
+  desarrollo (verificado: descargable gratis de Binance, 15m desde 2018-01-01). Es la ÚNICA prueba
+  temporal genuinamente limpia que tenemos. ⚠️ Auditar antes: exchange, spot vs perp, timezone,
+  huecos — si 2018 es spot y el live es perp, valida la ESTRUCTURA DE SEÑAL OHLC, no la ejecución.
+- **2022 (BTC/ETH/SOL):** ⚠️ PARCIALMENTE INFORMADO / desarrollo (la caché con 2022 estuvo
+  disponible y los detectores corrieron sobre ella). Evidencia DÉBIL, no confirmatoria limpia.
+- **CONTROL NEGATIVO:** NON-BEAR (cierre > EMA200). Si OB/Asia también gana ahí = no es edge de régimen.
+- **post-freeze 2026 (>6400d9a):** ✅ TRUE FORWARD — la única evidencia verdaderamente nueva del
+  live. Todo lo anterior a este commit es DEVELOPMENT.
+
+Jerarquía de evidencia resultante: 2018 BTC/ETH (virgen temporal) > post-freeze forward (nuevo) >
+2022 (parcialmente informado, solo coherencia) > 2026 pre-freeze (desarrollo, NO validación).
 
 ## Criterios de MUERTE (pre-registrados)
 La hipótesis H15-01 MUERE si en el holdout:
