@@ -98,6 +98,19 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19-AF** — ❌ HOLDOUT VIRGEN 2018: OB/ASIA FALSIFICADA (el momento clave de la sesión).
+  Tras firmar el árbol de decisión (commit e1b7c9d) y descargar 2018 spot BTC/ETH con manifiesto
+  (data_store/holdout_2018/, 34.778 velas/moneda, 262 huecos, hash registrado), se abrió el holdout
+  UNA vez con el código congelado. RESULTADO: ob_asia E[R|BEAR]=-0.238R pooled (p≤0=1.000), ambos
+  activos NEGATIVOS en bear (BTC -0.268, ETH -0.194), ΔR=-0.038 (BEAR no > NON-BEAR). Familia de
+  robustez también negativa. Cumple 3 criterios de muerte → FAIL inequívoco. La familia OB/Asia que
+  en vivo 2026 daba +0.1 a +0.5R es net-negativa en el único oso virgen que teníamos = edge
+  específico de régimen/periodo 2026 o sesgo de diseño, NO motor de oso general. 2018 NO se
+  reoptimiza (quemado). Las variantes OB en la arena quedan como EXPERIMENTO forward, sin etiqueta
+  de validado. LECCIÓN VIVA: el vivo lucía espectacular, el holdout virgen lo mató — exactamente
+  por esto se hace. La disciplina (freeze + genealogía + pre-registro + abrir una vez) funcionó.
+  Contraste con ichimoku: ichimoku SÍ pasó su OOS temporal (2017-20); OB/Asia NO pasó el suyo (2018).
+
 - **2026-07-19-AE** — 🔬 MICRO-01A ejecutado (solo datos VIVOS, familia OB/Asia congelada, 4.837
   ops): PRIMARIA NULA. El ΔOI por si solo NO aporta informacion incremental dentro de OB/Asia:
   OI-contrae +0.035R vs OI-expande +0.015R, diferencia +0.019R p=0.70 (bootstrap por dia). La

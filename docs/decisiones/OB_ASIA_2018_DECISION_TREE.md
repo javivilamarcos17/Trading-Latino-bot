@@ -42,3 +42,25 @@ spot Binance), no la ejecución/economics de Hyperliquid.
 ## Regla absoluta post-apertura
 Si tras ver 2018 se nos ocurre una mejora (p.ej. añadir ADX), NO salva el holdout: 2018 queda
 quemado. Se crea OB_ASIA_v2 y se confirma con FORWARD futuro, nunca con 2018 de nuevo.
+
+---
+
+## RESULTADO (abierto UNA vez, 2026-07-19, tras firmar) — ❌ FAIL
+
+`ob_asia` PRIMARIA, 2018 BTC+ETH (spot Binance, manifiesto en data_store/holdout_2018/):
+- E[R|BEAR] pooled = **-0.238R** (n=7087) → viola el requisito obligatorio E[R|BEAR]>0.
+  block-bootstrap semanal p(≤0)=1.000. Sin top-3 semanas: -0.272R (no mejora).
+- ΔR pooled = -0.038 (BEAR NO > NON-BEAR). BTC ΔR=-0.157, ETH ΔR=+0.085.
+- Ambos activos NEGATIVOS en BEAR: BTC -0.268R, ETH -0.194R.
+- Robustez: ob_regime_asia E[R|BEAR]=-0.243, fvg_ob_asia=-0.279 (coherente, todas negativas).
+
+**VEREDICTO: FAIL.** Cumple 3 condiciones de muerte (E[R|BEAR]≤0, ambos activos negativos, NON-BEAR≥BEAR).
+La tesis "motor OB/Asia condicionado a bear" queda FALSIFICADA en el holdout virgen. El edge vivo de
+2026 (+0.1 a +0.5R) es muy probablemente específico del régimen/periodo de 2026 o sesgo de diseño,
+NO un edge general de oso. Caveat: 2018 es SPOT = valida estructura de SEÑAL; pero la señal es
+net-negativa, así que no es un problema de ejecución.
+
+**Consecuencias:** (1) OB/Asia NO es un motor intradía validado. Las variantes vivas en la arena
+siguen siendo un EXPERIMENTO forward, sin etiqueta de validado. (2) NO se reoptimiza sobre 2018
+(quemado). Cualquier OB_ASIA_v2 exigiría forward futuro. (3) 15M-BEAR-01 cerrado como falsificado.
+(4) La disciplina (congelar + holdout virgen) funcionó: mató una narrativa antes de creerla.

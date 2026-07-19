@@ -1,0 +1,37 @@
+{
+  "venue": "binance",
+  "market_type": "spot",
+  "quote_asset": "USDT",
+  "bar_interval_15m": "15m",
+  "timezone": "UTC",
+  "source": "ccxt binance spot fetch_ohlcv",
+  "fecha_descarga": "2026-07-19",
+  "instrumentos": {
+    "BTC": {
+      "symbol": "BTC/USDT",
+      "first": "2018-01-01 00:00:00",
+      "last": "2018-12-31 23:45:00",
+      "n_bars_15m": 34778,
+      "expected_15m": 35040,
+      "missing_bars": 262,
+      "internal_gaps": 262,
+      "duplicates": 0,
+      "sha256_16": "0525991508e5eabf",
+      "diario_1d_desde": "2017-08-17 00:00:00",
+      "n_diario": 502
+    },
+    "ETH": {
+      "symbol": "ETH/USDT",
+      "first": "2018-01-01 00:00:00",
+      "last": "2018-12-31 23:45:00",
+      "n_bars_15m": 34778,
+      "expected_15m": 35040,
+      "missing_bars": 262,
+      "internal_gaps": 262,
+      "duplicates": 0,
+      "sha256_16": "8c988be9e8287351",
+      "diario_1d_desde": "2017-08-17 00:00:00",
+      "n_diario": 502
+    }
+  }
+}
