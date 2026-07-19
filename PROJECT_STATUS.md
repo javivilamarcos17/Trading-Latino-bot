@@ -98,6 +98,19 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19x** — 🔀 REFUERZO MTF SOBRE PILARES YA RENTABLES (redirección del dueño: dejar de
+  cazar indicadores sueltos, reforzar adrig/Merino/PlanBTC con multi-temporalidad de verdad, no
+  proxies de la misma TF). Dos resultados: (1) RSI-divergencia+MTF como filtro de confirmación en
+  turtle_ciclo: INCONCLUYENTE, solo 6 disparos con divergencia de 132 triggers (~7 episodios
+  reales) — n insuficiente, no se cuenta como hallazgo. (2) MERINOX 4h + tendencia 1D REAL (no el
+  proxy EMA200 que ya lleva dentro): CONTRAINTUITIVO — las señales que CONTRADICEN al 1D rinden
+  MEJOR que las que confirman (+0.294R vs +0.067R, dif sobrevive sin-2023 y episodio p=0.056,
+  borderline). Caveat importante: **SOL no muestra el efecto** (BTC/ETH lo llevan solo) → WATCH-
+  LIST, NO desplegar. Lectura honesta: merinox en 4h caza giros de momentum que a menudo son
+  contra-tendencia del 1D (mean-reversion temprana), no confirmaciones — filtrar por alineación
+  1D naive empeoraría la estrategia, lo contrario de lo esperado. Pendiente: auditoría antes de
+  cualquier cambio en arena.py (nunca tocar merinox en producción sin veredicto).
+
 - **2026-07-19w** — 🎯 VOL-REGIMEN COMO FILTRO: DESCARTADO (autocorreccion en vivo). Primer test
   (tercil de vol30d agrupando las 3 monedas) parecia fuerte (+0.47R dif, p=0.001) pero el
   desglose por moneda revelo CONFUSION: BTC casi nunca cae en tercil "alta" (n=9) y SOL casi
