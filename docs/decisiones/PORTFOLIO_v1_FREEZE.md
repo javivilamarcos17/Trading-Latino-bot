@@ -29,3 +29,15 @@ Solo la curva de esta cartera desde 2026-07-19 en adelante. Todo lo anterior es 
 - Prohibido "seguir mejorando el simulador" (overfitting del portfolio engine). Solo se añade FUNDING
   (coste real que falta), y después se deja respirar. Factor cap: APARCADO (mejora marginal + grados
   de libertad; el global 5% ya autorregula vía escasez de capital).
+
+
+## MÉTRICAS OFICIALES NET DE FUNDING (2026-07-19 — cierra la contabilidad)
+Tras cerrar la capa de funding (ver research_north_star/FUNDING_ACCOUNTING.md), la fotografía
+económica REAL (net de fees+slippage+funding, proxy Binance perp, causal):
+- **PORTFOLIO_v1 (núcleo+turtle+ichimoku): CAGR +9.3% · DD −9.2% · Calmar 1.01.**
+- Núcleo+turtle solo: CAGR +5.3% · DD −11.6% · Calmar 0.46.
+- Δ incremental de ichimoku net funding: ΔCalmar +0.56 (su valor relativo SUBE al contar funding,
+  porque holdea ~4d vs ~70d del núcleo/turtle → paga 6% de funding vs 27%/16%).
+- Funding drag: núcleo 27% del edge bruto, turtle 16%, ichimoku 6%. Correlacionado con el hold y con
+  el edge (precio de la cola convexa, no coste que mate trades muertos → NO optimizar salidas).
+Las cifras anteriores (+63%/Calmar 1.4) quedan como "pre-funding historical baseline".
