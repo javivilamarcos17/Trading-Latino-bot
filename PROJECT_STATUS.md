@@ -98,6 +98,24 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19-AA** — 🔬 3 PRUEBAS DE LA TANDA MTF + análisis de IA externa (sesión Opus):
+  (1) HTF premium/descuento del RANGO DIARIO (método "real" de Merino, no proxy) como filtro de
+  adrig/merinox: NULO — adrig +0.073 en zona vs +0.056 fuera (p_ep=0.10, no sig), merinox sin
+  muestra. Ni la version correcta del multiframe rescata estas piezas.
+  (2) ⭐ PUNTO DULCE 6H-8H (hipotesis de preprint arXiv 2602.11708 via IA externa): REFUTADO para
+  nuestras estrategias. Esperanza neta por op: trend_rider 4h+0.10/6h+0.09/8h+0.06/1D+0.27;
+  atr_break_trend 4h+0.16/6h+0.07/8h+0.05/1D+0.23; ichimoku pico en 4h+0.31. 6h/8h son MINIMOS
+  locales. Explicacion: el preprint mide SHARPE (premia frecuencia) sobre 150 monedas, no
+  esperanza/op en majors. CONFIRMA que nuestras TFs (nucleo 1D, ichimoku 4h) YA son optimas.
+  (3) FILTRO DE UMBRAL DE COSTE (no operar señales de stop estrecho = alto coste en R): matizado —
+  en 4h SI ayuda (quitar 40% de stops mas estrechos: +0.122->+0.156, mecanicamente solido:
+  esos pagan 2x coste); en 1D HACE DAÑO (ahi el stop estrecho = mejor señal, +0.606R). WATCH-LIST
+  solo para 4h, pendiente tribunal+auditor. VEREDICTO GLOBAL de la IA externa: su framework
+  CONVERGE fuerte con el nuestro (su nº1 "trend 4H-8H" = nuestro nucleo+ichimoku; su arquitectura
+  4-motores = nuestros 3-motores; su metodologia = nuestro tribunal). No aporta fuente de edge
+  nueva; su unico terreno virgen real es ORDER FLOW / microestructura L2 (no tenemos ese dato =
+  decision de infraestructura, no prueba rapida).
+
 - **2026-07-19z** — 🔗 CONFLUENCIA ENTRE ESTRATEGIAS (adrig+merinox) explorada, INCONCLUYENTE:
   (1) misma vela 4h exacta: n=1 (gatillos demasiado distintos — barrido+reclaim vs giro de
   squeeze — casi nunca coinciden; dato en si mismo: NO son redundantes entre si, complementan
