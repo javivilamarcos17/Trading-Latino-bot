@@ -98,6 +98,16 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19-AE** — 🔬 MICRO-01A ejecutado (solo datos VIVOS, familia OB/Asia congelada, 4.837
+  ops): PRIMARIA NULA. El ΔOI por si solo NO aporta informacion incremental dentro de OB/Asia:
+  OI-contrae +0.035R vs OI-expande +0.015R, diferencia +0.019R p=0.70 (bootstrap por dia). La
+  hipotesis "OI flush = continuacion" NO se sostiene aqui. PISTA EXPLORATORIA (no primaria, NO es
+  hallazgo hasta su propio pre-registro): interaccion ΔOI×direccion — OI-expande perjudica cortos
+  (-0.396R) y beneficia largos (+0.493R); PERO puede ser solo "OI confirma direccion del precio"
+  (confundido con el propio movimiento) → requiere controlar por el retorno concurrente antes de
+  creerlo. Recordatorio del dueño aplicado: los datos vivos entran SIEMPRE en el analisis (son la
+  fuente mas real). Descargando 2018 BTC/ETH 15m para desbloquear el holdout de 15M-BEAR-01.
+
 - **2026-07-19-AD** — ✅ PRIORIDAD A CERRADA + OB/ASIA CONGELADA + correccion de 2 errores mios.
   (1) Motor order-independent (Test D arreglado: desempate por contenido, no orden de entrada) +
   Test E compounding OK (+21.00% exacto). SENSIBILIDAD a la politica de simultaneidad: el Calmar de
