@@ -98,6 +98,18 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19z** — 🔗 CONFLUENCIA ENTRE ESTRATEGIAS (adrig+merinox) explorada, INCONCLUYENTE:
+  (1) misma vela 4h exacta: n=1 (gatillos demasiado distintos — barrido+reclaim vs giro de
+  squeeze — casi nunca coinciden; dato en si mismo: NO son redundantes entre si, complementan
+  bien). (2) mismo dia, misma direccion: n=31 (14 episodios), confluencia +0.213R vs solo +0.091R
+  — direccionalmente a favor pero MUY por debajo de n≥100, no significativo (p=0.27-0.37), y SOL
+  invierte el signo (-0.54R) mientras BTC lo lleva (+0.75R). WATCH-LIST, no desplegar; revisar
+  cuando ambas acumulen mas historia en vivo. ⚠️ Nota tecnica: primer intento de este test tenia
+  un BUG (stop generico de merinox aplicado a señales de adrig, que necesita su propio swing de
+  20 velas) — detectado por discrepancia con el test aislado (+0.065R esperado vs -0.81R obtenido)
+  y corregido antes de reportar nada. Pausa de caza de indicadores sueltos: esperando informe del
+  investigador externo (metodologia SMC/ICT + Merino real) para las siguientes hipotesis.
+
 - **2026-07-19y** — ADRIG + estructura 1D real (HH/HL vs LH/LL, no proxy EMA): DESCARTE LIMPIO.
   n=534, confirma=+0.066R vs contradice=+0.066R — CERO diferencia, sin patron por moneda (BTC
   favorece contradice, SOL favorece confirma, se cancelan). A diferencia de merinox (que si
