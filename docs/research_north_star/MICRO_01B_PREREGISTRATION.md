@@ -1,6 +1,9 @@
 # MICRO-01B — PRE-REGISTRO (Positioning Information Test: ¿ΔOI añade info sobre price-only?)
 
 **Fecha:** 2026-07-19 · **hypothesis_id:** HYP-MICRO-01B · **Estado:** PREREGISTERED (NO ejecutar sin RUN_APPROVED)
+**Código congelado:** commit `47dd0a3` — `trading_latino/research/micro01b/` (gate `data_gate.py`,
+run packet `run_packet.py`, downloaders). Reproducibilidad = código(47dd0a3) + config(en run_packet.py)
++ hashes de datos (DATA_FREEZE.json, generados por el gate al PASS).
 **Origen:** Mr GON / positioning. Primera incursión en información que el PRECIO por sí solo no contiene.
 
 ## Naturaleza
