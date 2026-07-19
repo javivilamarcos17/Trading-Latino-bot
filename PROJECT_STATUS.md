@@ -98,6 +98,16 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19v** — 🔍 OPEN INTEREST explorado, INCONCLUYENTE (nueva linea, sesion Sonnet):
+  (a) OI historico via API gratuita de Binance limitado a 30 dias (limitacion de la API, no del
+  proyecto) -> imposible testear multi-año/tribunal completo con datos gratuitos. (b) Alternativa:
+  usar el ΔOI real que la arena YA registra como contexto en cada operacion viva del nucleo
+  (trend_rider/atr_break_trend, 63 dias de vida, pre-backfill). Test "OI confirma la direccion
+  (posiciones nuevas) vs OI contradice (cierre del lado contrario)": diferencia -0.23R a favor de
+  CONTRADICE, pero n=31/50 — muy por debajo de n≥100, p=0.84/0.33 (ninguno significativo).
+  VEREDICTO: sin conclusion, no desplegar nada. Revisar cuando el nucleo acumule mas señales
+  vivas (~6 meses mas al ritmo actual). Registrado como pista honesta, no como hallazgo.
+
 - **2026-07-19u** — ✅ ICHIMOKU DESPLEGADA en arena y semáforo (tarea del traspaso 19t completada,
   sesión con Sonnet 5). `det_ichimoku` en arena.py: cruce tenkan(12)/kijun(30) + filtro de nube,
   stop swing-10, target 3R — implementación calcada del script auditado (research/ichimoku_test.py).
