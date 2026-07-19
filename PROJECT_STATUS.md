@@ -98,6 +98,16 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19y** — ADRIG + estructura 1D real (HH/HL vs LH/LL, no proxy EMA): DESCARTE LIMPIO.
+  n=534, confirma=+0.066R vs contradice=+0.066R — CERO diferencia, sin patron por moneda (BTC
+  favorece contradice, SOL favorece confirma, se cancelan). A diferencia de merinox (que si
+  mostro señal), aqui el filtro de estructura 1D no aporta nada: adrig ya captura lo que necesita
+  con su propio EMA200+premium/descuento. Con esto quedan las 3 piezas evaluadas para refuerzo
+  MTF: planbtc inconcluyente (n bajo), merinox contraintuitivo (watch-list), adrig nulo (descarte).
+  Siguiente hipotesis propia (sin que se pida): CONFLUENCIA ENTRE estrategias — cuando adrig Y
+  merinox coinciden en la misma vela/moneda/direccion, ¿la señal combinada es mejor que cualquiera
+  sola? Es la extension natural de "mezclar estrategias" (directiva original de la sesion).
+
 - **2026-07-19x** — 🔀 REFUERZO MTF SOBRE PILARES YA RENTABLES (redirección del dueño: dejar de
   cazar indicadores sueltos, reforzar adrig/Merino/PlanBTC con multi-temporalidad de verdad, no
   proxies de la misma TF). Dos resultados: (1) RSI-divergencia+MTF como filtro de confirmación en
