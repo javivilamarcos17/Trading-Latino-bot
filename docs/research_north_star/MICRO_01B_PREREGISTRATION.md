@@ -39,8 +39,12 @@ Los 4 cuadrantes (price↑/↓ × OI↑/↓) son solo INTERPRETACIÓN simple al 
    (evita confundir asset×regime disfrazado de OI).
 5. **Extra columns firewall**: la descarga solo conserva sum_open_interest + value (ratios long/short
    y taker NO descargados por construcción). MICRO-01B = price + OI y nada más.
-6. **Resampling (OI es STATE, no FLOW)**: nivel = último snapshot válido del intervalo; ΔOI = fin vs
-   inicio del intervalo. NUNCA sum(OI). Precio agregado sobre la MISMA ventana. Unit tests de resampling.
+6. **Resampling (OI es STATE, no FLOW)**: OI_level(intervalo) = ÚLTIMO snapshot válido del intervalo.
+   NUNCA sum(OI). Precio agregado sobre la MISMA ventana. Unit tests de resampling.
+   **VARIABLE PRIMARIA (definitiva, = código): Δlog(OI_level) sobre M barras = log(OI_level_t) −
+   log(OI_level_{t−M}), intra-activo.** El cambio absoluto intra-intervalo (fin−inicio) queda SOLO
+   como diagnóstico, nunca primario (unidades de OI no comparables entre BTC/ETH/SOL ni estables
+   ante el crecimiento estructural del mercado → siempre log-cambio intra-activo).
 7. **Data quality report**: cobertura %, mayores gaps, distribución de ΔOI, valores imposibles/cero,
    saltos extremos, timestamps duplicados, diferencias BTC/ETH/SOL. Reglas de limpieza fijadas ANTES
    (nunca mirando outcomes).
