@@ -248,3 +248,12 @@ retirarlos. El único número que sobrevivió fue el del script publicado en dis
 **Lección:** todo resultado que entre en PROJECT_STATUS debe nacer de un script GUARDADO
 (scratchpad/ o research/) y nombrado en la entrada. Los heredocs inline valen para explorar,
 nunca para números de cabecera.
+
+## 2026-07-19 — Terciles de un regimen deben normalizarse POR MONEDA
+**Qué pasó:** un filtro de "régimen de volatilidad" (tercil bajo/alto) sobre 3 monedas pooled
+parecía significativo (p=0.001) pero BTC casi nunca caía en el tercil alto y SOL casi nunca en el
+bajo — el filtro medía identidad de moneda, no régimen real. Corregido con percentil expanding
+DENTRO de cada moneda, el efecto cae a ruido (p=0.66 por episodio).
+**Lección:** cualquier corte en terciles/cuartiles de una métrica con escala estructuralmente
+distinta por activo (volatilidad, spread, liquidez) debe calcularse POR ACTIVO (percentil propio
+expanding/rolling), nunca agrupando activos y cortando el pool conjunto.

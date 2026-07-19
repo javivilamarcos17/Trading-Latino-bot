@@ -98,6 +98,16 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19w** — 🎯 VOL-REGIMEN COMO FILTRO: DESCARTADO (autocorreccion en vivo). Primer test
+  (tercil de vol30d agrupando las 3 monedas) parecia fuerte (+0.47R dif, p=0.001) pero el
+  desglose por moneda revelo CONFUSION: BTC casi nunca cae en tercil "alta" (n=9) y SOL casi
+  nunca en "baja" (n=9) — el filtro medía "moneda", no volatilidad. Corregido con percentil DENTRO
+  de cada moneda (expanding causal): la diferencia cae a +0.21R agrupado (p=0.159, no
+  significativo) y a p~0.66 por bootstrap de EPISODIO (dia) — ruido. DESCARTE. Leccion: cualquier
+  filtro/regimen que se calcule agrupando monedas de volatilidad estructural distinta DEBE
+  normalizarse por moneda antes de repartir en terciles, o el "regimen" es un disfraz de la
+  identidad del activo.
+
 - **2026-07-19v** — 🔍 OPEN INTEREST explorado, INCONCLUYENTE (nueva linea, sesion Sonnet):
   (a) OI historico via API gratuita de Binance limitado a 30 dias (limitacion de la API, no del
   proyecto) -> imposible testear multi-año/tribunal completo con datos gratuitos. (b) Alternativa:
