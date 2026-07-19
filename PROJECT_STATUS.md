@@ -98,6 +98,18 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19t** — ✅ VEREDICTO AUDITOR r7 SOBRE ICHIMOKU: "DESPLEGAR EN ARENA" con matices
+  obligatorios. Reproducido n=652 +0.186; implementacion LIMPIA (sin leak); intrabarra
+  irrelevante; robusta a stops (swing20 +0.197, kijun +0.117); 2024-26 +0.180 (n=312); PRIMERA
+  candidata que supera bootstrap por episodios (43 episodios, p=0.024). MATICES: (a) BTC FUERA
+  (-0.047R lastre; el edge es ETH +0.232 / SOL +0.403) — desplegar SOLO ETH/SOL; (b) etiqueta de
+  semi-redundancia (corr 0.35-0.38 con nucleo 1D, solape 23% → adicion legitima pero dimensionar
+  como MEDIA posicion del nucleo; si la columna 4h vieja volviera, ichimoku seria su clon parcial
+  61%/0.49); (c) colas: top-5 episodios ~106% del R — bajo el tope 5% global.
+  ➡️ PENDIENTE PROXIMA SESION: implementar det_ichimoku en arena.py (12/30, nube, stop swing-10,
+  3R, SOLO ETH/SOL, etiqueta honesta del auditor) + añadir al semaforo. Matriz relanzada como
+  proceso Windows DESACOPLADO: log en data_store/matriz_total.log (sintesis cuando termine).
+
 - **2026-07-19s** — 🔥 ICHIMOKU: OUT-OF-SAMPLE TEMPORAL 2017-2020 SUPERADO con nota (Binance 4h
   BTC+ETH, datos que el hallazgo nunca vio): 9/26 n=257 +0.471R p_semanal=0.001; 12/30 n=223
   +0.378R p=0.005. Positivo en 9/10 años de 2017-2026 (unica celda roja: BTC-2018 -0.09).
