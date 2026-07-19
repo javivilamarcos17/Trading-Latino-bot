@@ -44,6 +44,21 @@ Los 4 cuadrantes (price↑/↓ × OI↑/↓) son solo INTERPRETACIÓN simple al 
 7. **Data quality report**: cobertura %, mayores gaps, distribución de ΔOI, valores imposibles/cero,
    saltos extremos, timestamps duplicados, diferencias BTC/ETH/SOL. Reglas de limpieza fijadas ANTES
    (nunca mirando outcomes).
+8. **Normalización intra-activo**: Δlog(OI) SIEMPRE por activo. El pooled compara Δlog normalizados,
+   NUNCA niveles de OI entre monedas (unidades no comparables BTC/ETH/SOL).
+9. **Política de gaps (NO forward-fill silencioso)**: si falta un endpoint necesario del intervalo o
+   el gap supera la tolerancia preregistrada (>2 bins de 5m) → observación INVÁLIDA/missing, NO se
+   interpola OI para fabricar continuidad. Reportar % intervalos descartados por moneda y TF.
+10. **Sanity check temporal negativo (control de pipeline, NO variante)**: comparar OI correctamente
+   alineado vs OI groseramente desplazado. Si una relación aparentemente fuerte permanece idéntica
+   tras romper la alineación → ALARMA (régimen común / tendencia lenta / leakage / autocorrelación
+   mal controlada). Se corre DENTRO de MICRO-01B como guard, no como hipótesis.
+
+## Estándar para un resultado POSITIVO (evitar "una celda")
+Si aparece información, NO basta "Price↓+OI↓ = +0.18 ATR, p<0.001". Se exige **geografía coherente**
+del efecto: relación continua ΔOI→outcome + estabilidad por bloques temporales + presencia en
+BTC/ETH/SOL + coherencia en 5m/15m/1h. No todos idénticos, pero sí un patrón reconocible. Si solo
+aparece en "SOL / 15m / 2023 / segundo cuartil de OI" = celda, no descubrimiento.
 
 ## Outcomes
 forward_ret (primario), MFE, MAE, holding-time decay del edge informacional. MFE/MAE = outcomes, nunca features.
