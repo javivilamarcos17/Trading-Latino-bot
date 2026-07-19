@@ -98,6 +98,20 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19-AC** — ⚠️ CORRECCION DE CAUSALIDAD (bug cazado por auditoría IA externa, importante):
+  el portfolio_sim V1 (y el baseline concilia_portfolio.py del que heredó) acreditaban el PnL en la
+  fecha de ENTRADA, no de salida = look-ahead contable. CORREGIDO: motor por eventos entry/exit,
+  PnL realizado a la SALIDA, sizing sobre equity de entrada (portfolio_sim causal=True por defecto).
+  IMPACTO: el NUMERO OFICIAL del portfolio BAJA. Baseline nucleo+turtle +44.5% (inflado) → **+36.7%
+  causal**. ⚠️ Corrige el titular documentado en 19p (+44.5% era look-ahead). Nota sobre DD: el
+  causal mide DD sobre equity REALIZADA (escalonada) = subestima el DD real; el no-causal (-12.4%)
+  tenia look-ahead; el DD verdadero necesita mark-to-market (V2). Ninguno es el DD final exacto.
+  PERO el hallazgo de valor incremental de ichimoku SOBREVIVE Y SE REFUERZA causalmente:
+  baseline +36.7%/Calmar0.68 → +ichimoku 0.25% **+66.8%/DD-7.2%/Calmar1.61** (ΔCalmar +0.92, mayor
+  que el +0.70 no-causal). La hipotesis "el tope 5% filtra saturacion" NO se confirma limpiamente
+  (gradiente ruidoso, 311/418 señales disparan con budget casi lleno); el corte aprobadas>bloqueadas
+  si es real. Pendiente V2: mark-to-market DD, event-driven full, signal-batch (Test D order-dep).
+
 - **2026-07-19-AB** — 🏗️ PORTFOLIO SIMULATOR V1 CONSTRUIDO Y VALIDADO (research/portfolio_sim.py,
   convergencia con IA externa). Motor determinista que separa alpha-generation de capital-allocation,
   jerarquía de 4 topes (global/asset/factor/strategy). TEST 0 PASA: reproduce el baseline
