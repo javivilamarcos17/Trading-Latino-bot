@@ -46,3 +46,36 @@ Munición confirmatoria disponible, en orden de fuerza:
 3. **18 monedas cross-asset** (replicación, supportive; ya en disco).
 No es escasez extrema, pero tampoco infinito: cada periodo virgen se gasta UNA vez por hipótesis.
 Regla: no descargar 2019-2020 hasta tener una hipótesis congelada que lo vaya a usar como holdout.
+
+---
+
+# VALIDATION CUBE (2026-07-19 — corrección tras auditoría de genealogía)
+
+No todo OOS prueba lo mismo. Tres dimensiones DISTINTAS, cada dataset con VIRGINITY + SUITABILITY + ROLE:
+
+## A. TEMPORAL (¿el edge existía en otro periodo?)
+- **2019 BTC/ETH, 2020 BTC/ETH** (15m, descargables, NUNCA en caché): potencialmente VIRGIN.
+  ROLE = TEMPORAL_OOS. SUITABLE: estructura OHLC de señal SÍ; ejecución Hyperliquid moderna NO
+  (mercado antiguo, derivados inmaduros). ⚠️ SIGNAL generalization ≠ DEPLOYMENT generalization.
+  ➡️ NO fusionar 2019 y 2020 por defecto: mantener 2019=OOS-A, 2020=OOS-B como piezas separadas
+  si el N del fenómeno lo permite (más valioso que pooled).
+- 2018 BTC/ETH: BURNED (OB/Asia).
+
+## B. CROSS-ASSET (¿generaliza a otras monedas?) — CORRECCIÓN IMPORTANTE
+- Las **18 altcoins NO son vírgenes**: todas aparecen en scripts de research (carry_pro, btc_lidera,
+  confluencia, estructura_mtf, estudio_smc, cartera_edges...). Etiqueta = **PARTIALLY INFORMED**.
+- ❌ NO se fabrica una "partición sellada OOS A/B/reserve" con ellas — sería fingir independencia
+  que no existe (misma lección que 2022). ROLE = **CROSS-ASSET ROBUSTNESS / heterogeneidad /
+  falsificación / stress**, NO evidencia confirmatoria fuerte.
+- Sí se pueden AGRUPAR por metadata ex-ante (listing age, history length, liquidez/madurez) como
+  "PARTIALLY-INFORMED ROBUSTNESS GROUPS" — pero etiquetados como tales, nunca como "sealed OOS".
+- ⚠️ 18 monedas ≠ 18 observaciones independientes (factor cripto común → market-time block bootstrap).
+
+## C. FORWARD (¿sigue existiendo tras descubrirlo?)
+- Arena post-freeze (desde 2026-07-19): la evidencia más limpia a largo plazo. Se acumula sola.
+
+## Estructura de validación para toda candidata futura
+DEVELOPMENT (BTC/ETH/SOL 2021-26, visto, uso intensivo) → si sobrevive → EXTERNAL VALIDATION A
+(temporal virgin 2019/2020 O cross-asset robustness) → si sobrevive → EXTERNAL VALIDATION B (otra
+dimensión) → TRUE FORWARD. Objetivo: sobrevivir a DOS EJES de generalización distintos, no dos
+tests del mismo periodo.
