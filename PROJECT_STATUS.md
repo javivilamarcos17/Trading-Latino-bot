@@ -98,6 +98,22 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19-AD** — ✅ PRIORIDAD A CERRADA + OB/ASIA CONGELADA + correccion de 2 errores mios.
+  (1) Motor order-independent (Test D arreglado: desempate por contenido, no orden de entrada) +
+  Test E compounding OK (+21.00% exacto). SENSIBILIDAD a la politica de simultaneidad: el Calmar de
+  ichimoku se mueve solo 1.41-1.57 (contenido/nucleo-primero/ichimoku-primero) vs baseline 0.65 =
+  el hallazgo NO depende de la politica de asignacion (la IA temia fragilidad tipo 1.37 vs 0.74; no
+  la hay). Valor incremental de ichimoku CONFIRMADO robusto: Calmar 0.65 → 1.41-1.57.
+  (2) OB_ASIA_FREEZE_v1 (docs/decisiones/): pre-registro Ley 7 congelado @6400d9a. Primaria=ob_asia,
+  BEAR=cierre<EMA200 (sin tuning), familia robustez ob_regime_asia+fvg_ob_asia, criterios de muerte
+  definidos, control NON-BEAR. NO tocar hasta abrir holdout.
+  (3) DOS ERRORES MIOS corregidos por auditoria IA: "2018 imposible" era FALSO (Binance sirve 15m
+  desde 2018-01-01 para BTC/ETH, verificado — descargable gratis; SOL desde ago-2020). Y "el oso
+  esta terminando/firma de suelo" era STORYTELLING → reformulado a "el semaforo clasifica como
+  posible transicion segun sus reglas"; las perdidas actuales del nucleo NO validan cambio de
+  regimen (whipsaws normales de un trend-follower). Siguiente: descargar 2018 BTC/ETH + abrir
+  holdout de 15M-BEAR-01; MICRO-01A (¿ΔOI aporta info incremental dentro de OB?) en paralelo.
+
 - **2026-07-19-AC** — ⚠️ CORRECCION DE CAUSALIDAD (bug cazado por auditoría IA externa, importante):
   el portfolio_sim V1 (y el baseline concilia_portfolio.py del que heredó) acreditaban el PnL en la
   fecha de ENTRADA, no de salida = look-ahead contable. CORREGIDO: motor por eventos entry/exit,

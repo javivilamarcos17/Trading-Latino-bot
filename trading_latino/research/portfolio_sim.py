@@ -56,11 +56,11 @@ def _metricas(equity, capital0, maxdd, curva, contribs, decisiones, rechazos, ri
 
 
 def simular(trades, cap_global=0.05, cap_asset=None, cap_factor=None, cap_strategy=None,
-            capital0=1.0, causal=True):
+            capital0=1.0, causal=True, prioridad=None):
     caps = dict(cap_global=cap_global, cap_asset=cap_asset, cap_factor=cap_factor, cap_strategy=cap_strategy)
     if not causal:
         return _simular_no_causal(trades, capital0=capital0, **caps)
-    return _simular_causal(trades, capital0=capital0, **caps)
+    return _simular_causal(trades, capital0=capital0, prioridad=prioridad, **caps)
 
 
 def _viola(caps, uso_g, uso_a, uso_f, uso_s, risk):
@@ -71,20 +71,27 @@ def _viola(caps, uso_g, uso_a, uso_f, uso_s, risk):
     return None
 
 
-def _simular_causal(trades, cap_global, cap_asset, cap_factor, cap_strategy, capital0):
-    """Motor por eventos: el riesgo se reserva en ENTRY, el PnL se realiza en EXIT (causal)."""
+def _simular_causal(trades, cap_global, cap_asset, cap_factor, cap_strategy, capital0, prioridad=None):
+    """Motor por eventos: el riesgo se reserva en ENTRY, el PnL se realiza en EXIT (causal).
+    prioridad: dict {strategy: rank} opcional; en empates del mismo instante, menor rank entra
+    primero (para test de sensibilidad de la política de simultaneidad). None = solo por contenido."""
     caps = dict(cap_global=cap_global, cap_asset=cap_asset, cap_factor=cap_factor, cap_strategy=cap_strategy)
+    pri = prioridad or {}
     ev = []
     for i, t in enumerate(trades):
         fin = t["dt"] + pd.Timedelta(days=max(int(t["dur"]), 1))
-        ev.append((t["dt"], 1, i))    # 1 = entry
-        ev.append((fin, 0, i))        # 0 = exit (se procesa ANTES que las entradas del mismo instante)
-    ev.sort(key=lambda e: (e[0], e[1]))
+        # desempate DETERMINISTA: primero prioridad de estrategia (si se da), luego contenido del
+        # trade (no el orden de entrada) -> Test D order-independent.
+        rank = pri.get(t["strategy"], 999)
+        tb = (rank, str(t["asset"]), str(t["strategy"]), str(t["direction"]), round(float(t["r"]), 6))
+        ev.append((t["dt"], 1, tb, i))    # 1 = entry
+        ev.append((fin, 0, tb, i))        # 0 = exit (antes que las entradas del mismo instante)
+    ev.sort(key=lambda e: (e[0], e[1], e[2]))
     equity = capital0; pico = capital0; maxdd = 0.0
     abiertos = {}   # i -> {risk, asset, strategy, direction, pnl_realizar}
     curva = []; contribs = []; decisiones = []
     rechazos = {"global": 0, "asset": 0, "factor": 0, "strategy": 0}; riesgo_rechazado = 0.0
-    for (tiempo, kind, i) in ev:
+    for (tiempo, kind, _tb, i) in ev:
         t = trades[i]
         if kind == 0:
             pos = abiertos.pop(i, None)
