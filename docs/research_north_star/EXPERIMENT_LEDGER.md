@@ -22,3 +22,14 @@ para DSR/PBO futuro). Cada experimento termina en un VEREDICTO explícito, nunca
 ## Throughput científico (la métrica real de esta fase)
 Hipótesis atacadas: 2 confirmatorias (OB/Asia, S3-A) → 2 muertas. 0 holdouts vírgenes consumidos en
 S3-A. 0 estrategias construidas sobre features sin información. KILL FAST · LEARN · MOVE ON.
+
+## Incidentes de integridad de datos (protección permanente)
+- **2026-07-19 — corrupción de timestamps OI**: `create_time` (string "2024-01-01 00:00:00")
+  parseado por pandas 2.x a resolución de SEGUNDOS → fechas 1970-01-19 tras la conversión a ms.
+  Root cause: mismatch de resolución/unidad datetime. Fix: conversión robusta
+  `datetime64[ms]`. Datos corruptos BORRADOS y regenerados DESDE SOURCE (no parche post-hoc de
+  timestamps). **Datos experimentales expuestos: NO · MICRO-01B status: NOT RUN** → la virginidad
+  experimental de MICRO-01B NO se vio afectada. Protección permanente añadida al DATA GATE:
+  5 invariantes temporales (range sanity, monotonicidad, duplicados, cadencia 5m, UTC/boundary,
+  todos FAIL duro) + ingestion unit test reutilizable (1704067200000 ↔ 2024-01-01 00:00:00 UTC).
+  Política confirmada: ante corrupción estructural de ingesta → regenerar desde source, nunca parchear.
