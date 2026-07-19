@@ -98,6 +98,22 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19-AB** — 🏗️ PORTFOLIO SIMULATOR V1 CONSTRUIDO Y VALIDADO (research/portfolio_sim.py,
+  convergencia con IA externa). Motor determinista que separa alpha-generation de capital-allocation,
+  jerarquía de 4 topes (global/asset/factor/strategy). TEST 0 PASA: reproduce el baseline
+  nucleo+turtle exacto (+44.5%/-12.4%). Primeros resultados de portfolio REALES (Ley 8):
+  (1) VALOR INCREMENTAL de ichimoku sobre nucleo-solo (mismo tope 5%): nucleo +37.3%/DD-12.1%/
+  Calmar0.59 → +ichimoku 0.25% +75.6%/DD-9.2%/Calmar1.17. Sube retorno Y BAJA drawdown =
+  ESCENARIO 1 (diversificador real, no redundante). ΔCalmar +0.58.
+  (2) 🎯 HALLAZGO CONTRAINTUITIVO (refuta hipotesis de la IA): el tope 5% actua como FILTRO DE
+  CALIDAD sobre ichimoku. De 418 señales, se aprueban 58% (R medio +0.426) y se BLOQUEAN 42%
+  (R medio solo +0.158). Las bloqueadas son las PEORES, no las mejores: ocurren cuando el global
+  esta lleno (5.00%) = episodios tendenciales donde ichimoku duplicaria la beta del nucleo. El cap
+  tira justo las señales redundantes de baja calidad y queda con las diversificadoras (aprobadas
+  con global en 3.19%). Esto responde a la vez a Ley 8 (aporta) y al miedo a "duplicar beta"
+  (el cap ya lo mitiga solo). Adoptada la nomenclatura "presupuesto de riesgo asignado" (no "open
+  risk"); pendientes V2: event-driven, virtual/actual book, signal-batch para timestamps exactos.
+
 - **2026-07-19-AA** — 🔬 3 PRUEBAS DE LA TANDA MTF + análisis de IA externa (sesión Opus):
   (1) HTF premium/descuento del RANGO DIARIO (método "real" de Merino, no proxy) como filtro de
   adrig/merinox: NULO — adrig +0.073 en zona vs +0.056 fuera (p_ep=0.10, no sig), merinox sin
