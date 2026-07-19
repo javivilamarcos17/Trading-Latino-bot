@@ -18,7 +18,8 @@ import numpy as np, pandas as pd, ccxt
 REG = "data_store/paper_arena"
 # universo desplegable: ganadoras vivas + columna alta + planbtc
 UNIVERSO = ["fvg_ob_asia", "ob_asia_close", "ob_asia_close_L", "fvg_ob", "ob_regime_asia",
-            "trend_rider", "trend_rider_f", "atr_break_trend", "atr_break", "scalp_break", "planbtc", "turtle_ciclo"]
+            "trend_rider", "trend_rider_f", "atr_break_trend", "atr_break", "scalp_break", "planbtc",
+            "turtle_ciclo", "ichimoku"]
 
 def ops_vivas():
     rows = []

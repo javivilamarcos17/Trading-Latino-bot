@@ -98,6 +98,17 @@ cementerio del §5. El conocimiento negativo es el mayor activo del proyecto.
 
 ## 5. 🔚 Última decisión / hallazgo
 
+- **2026-07-19u** — ✅ ICHIMOKU DESPLEGADA en arena y semáforo (tarea del traspaso 19t completada,
+  sesión con Sonnet 5). `det_ichimoku` en arena.py: cruce tenkan(12)/kijun(30) + filtro de nube,
+  stop swing-10, target 3R — implementación calcada del script auditado (research/ichimoku_test.py).
+  Restricción del auditor aplicada en el dispatch: `coin in ("ETH","SOL")` (mismo patrón que
+  planbtc→BTC-only), BTC excluido por ser lastre (-0.047R). Añadida a UNIVERSO del semáforo — cae
+  en la rama genérica de kill-switch (no es arma de ciclo, no necesita gate). Nota de sizing
+  (media posición del núcleo por semi-redundancia) documentada en el docstring para cuando se
+  construya el portfolio; la arena mide R puro, no dimensiona en $. Compilado y probado en vivo
+  (banquillo por falta de muestra, correcto — recién desplegada). Pendiente: acumular ops reales
+  para el primer forward de ichimoku.
+
 - **2026-07-19t** — ✅ VEREDICTO AUDITOR r7 SOBRE ICHIMOKU: "DESPLEGAR EN ARENA" con matices
   obligatorios. Reproducido n=652 +0.186; implementacion LIMPIA (sin leak); intrabarra
   irrelevante; robusta a stops (swing20 +0.197, kijun +0.117); 2024-26 +0.180 (n=312); PRIMERA

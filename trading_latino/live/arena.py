@@ -172,6 +172,13 @@ ESTRATEGIAS_TF = {
     "planbtc": ["1d"],
     # turtle_ciclo: 2026-07-18 auditada (INFLADO-PERO-REAL, arma de ciclo). Ventana ACTIVA hoy.
     "turtle_ciclo": ["1d"],
+    # ichimoku: 2026-07-19 auditada ronda 7 — VEREDICTO "DESPLEGAR" con matices. Cruce tenkan/kijun
+    # 12/30 + filtro de nube (solo a favor), stop swing-10, target 3R. n=655 (2021-26) +0.178R,
+    # 6/6 años positivos, sin-2023 +0.151R, OOS temporal 2017-20 +0.38/+0.47R (p<0.01), 43
+    # episodios p=0.024 — primera candidata que supera bootstrap por episodios. MATIZ OBLIGATORIO
+    # del auditor: BTC es lastre (-0.047R) — SOLO ETH/SOL. Semi-redundante con el núcleo 1D
+    # (corr semanal 0.35-0.38): dimensionar como MEDIA posición del núcleo, no motor nuevo.
+    "ichimoku": ["4h"],
     "orf": ["5m", "15m"],
     "fvg_ob": ["15m", "1h"],     # RETIRADO 5m (6 ops -1.40R); 15m +1.83R 100%win es el star
     # breaker RETIRADA 2026-06-23: n=104, hasta su MEJOR salida = -0.05R. 104 ops sin edge y sin
@@ -706,6 +713,42 @@ def det_turtle_ciclo(d):
         if cl[j] > stop:
             return _setup("largo", cl[j], stop, 3.0)
     return None
+
+
+def det_ichimoku(d):
+    """ICHIMOKU 4h CON NUBE (SOLO ETH/SOL) — auditada ronda 7 (2026-07-19): VEREDICTO "DESPLEGAR".
+    Cruce tenkan(12)/kijun(30) confirmado por la nube (solo señales a favor de la nube). Historico
+    2021-26: n=655 +0.178R, 6/6 años positivos, sin-2023 +0.151R; OOS TEMPORAL 2017-20 (datos
+    nunca vistos): +0.38/+0.47R p<0.01. 43 episodios, p_episodio=0.024 — primera candidata del
+    proyecto que supera el bootstrap por episodios. MATIZ DEL AUDITOR (obligatorio, aplicado en el
+    dispatch): BTC es lastre (-0.047R) -> excluido, solo ETH/SOL (+0.232/+0.403R). Semi-correlacionada
+    con el núcleo 1D (corr semanal 0.35-0.38) -> dimensionar como MEDIA posición del núcleo."""
+    TK, KJ = 12, 30
+    hi = d["maximo"].to_numpy(); lo = d["minimo"].to_numpy(); cl = d["cierre"].to_numpy(); j = len(cl) - 1
+    if j < 2 * KJ + 2:
+        return None
+    H = d["maximo"]; L = d["minimo"]
+    ten = ((H.rolling(TK).max() + L.rolling(TK).min()) / 2).to_numpy()
+    kij = ((H.rolling(KJ).max() + L.rolling(KJ).min()) / 2).to_numpy()
+    spanA = np.roll((ten + kij) / 2, KJ)
+    spanB = np.roll(((H.rolling(2 * KJ).max() + L.rolling(2 * KJ).min()) / 2).to_numpy(), KJ)
+    spanA[:KJ] = np.nan; spanB[:KJ] = np.nan
+    cruz_up = ten[j] > kij[j] and ten[j - 1] <= kij[j - 1]
+    cruz_dn = ten[j] < kij[j] and ten[j - 1] >= kij[j - 1]
+    if not (cruz_up or cruz_dn):
+        return None
+    nube_hi = max(spanA[j], spanB[j]); nube_lo = min(spanA[j], spanB[j])
+    if np.isnan(nube_hi) or np.isnan(nube_lo):
+        return None
+    largo = cruz_up
+    if largo and not cl[j] > nube_hi:
+        return None
+    if not largo and not cl[j] < nube_lo:
+        return None
+    stop = lo[j - 10:j].min() if largo else hi[j - 10:j].max()
+    if (largo and cl[j] <= stop) or (not largo and cl[j] >= stop):
+        return None
+    return _setup("largo" if largo else "corto", cl[j], stop, 3.0)
 
 
 def det_planbtc(d):
@@ -1795,6 +1838,9 @@ def detectar_cerr(estr, cerr, coin):
         return det_turtle_ciclo(cerr)
     if estr == "planbtc":
         return det_planbtc(cerr) if coin == "BTC" else None   # sistema nativo de BTC (ciclo/ATH)
+    if estr == "ichimoku":
+        # auditoría r7: BTC es lastre (-0.047R) — SOLO ETH/SOL
+        return det_ichimoku(cerr) if coin in ("ETH", "SOL") else None
     if estr == "elliott":
         return det_elliott(cerr)
     if estr == "adrig":
