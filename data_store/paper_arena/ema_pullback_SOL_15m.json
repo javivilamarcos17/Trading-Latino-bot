@@ -6454,7 +6454,7 @@
     "entry": 75.727,
     "stop": 75.854,
     "target": 75.47300000000001,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784871900000,
     "estr": "ema_pullback",
     "coin": "SOL",
@@ -6487,6 +6487,18 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 75.854,
+    "pnl": -0.0024770768682239536,
+    "mfe_R": 0.29,
+    "mae_R": 1.0,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.477,
+      "be05": -1.477,
+      "be10": -1.477,
+      "t125": -1.477,
+      "trail": -1.186
+    }
   }
 ]
