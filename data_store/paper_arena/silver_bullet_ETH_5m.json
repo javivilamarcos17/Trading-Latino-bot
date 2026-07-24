@@ -6598,7 +6598,7 @@
     "entry": 1894.8,
     "stop": 1892.3058,
     "target": 1899.7883999999997,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784880300000,
     "estr": "silver_bullet",
     "coin": "ETH",
@@ -6635,6 +6635,18 @@
     "london_dir": "alcista",
     "ses_ant": "asia",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 4.22
+    "ses_ant_rango_%": 4.22,
+    "exit": 1892.3058,
+    "pnl": -0.002116339455351417,
+    "mfe_R": 0.0,
+    "mae_R": 1.0,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.608,
+      "be05": -1.608,
+      "be10": -1.608,
+      "t125": -1.608,
+      "trail": -1.608
+    }
   }
 ]
