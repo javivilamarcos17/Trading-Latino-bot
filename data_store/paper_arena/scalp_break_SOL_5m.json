@@ -18280,7 +18280,7 @@
     "entry": 76.055,
     "stop": 75.747,
     "target": 76.51700000000002,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784876700000,
     "estr": "scalp_break",
     "coin": "SOL",
@@ -18313,14 +18313,26 @@
     "px_vs_asia": "dentro",
     "ses_ant": "asia",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 4.15
+    "ses_ant_rango_%": 4.15,
+    "exit": 75.747,
+    "pnl": -0.004849700874367325,
+    "mfe_R": 1.18,
+    "mae_R": 1.04,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.198,
+      "be05": -0.198,
+      "be10": -0.198,
+      "t125": -1.198,
+      "trail": -0.022
+    }
   },
   {
     "dir": "largo",
     "entry": 76.362,
     "stop": 75.747,
     "target": 77.28449999999998,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784877000000,
     "estr": "scalp_break",
     "coin": "SOL",
@@ -18357,6 +18369,18 @@
     "london_dir": "alcista",
     "ses_ant": "asia",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 4.15
+    "ses_ant_rango_%": 4.15,
+    "exit": 75.747,
+    "pnl": -0.008853744008800122,
+    "mfe_R": 0.09,
+    "mae_R": 1.02,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.099,
+      "be05": -1.099,
+      "be10": -1.099,
+      "t125": -1.099,
+      "trail": -1.01
+    }
   }
 ]
