@@ -6771,7 +6771,7 @@
     "entry": 75.938,
     "stop": 76.03595999999999,
     "target": 75.74208000000003,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784880000000,
     "estr": "silver_bullet",
     "coin": "SOL",
@@ -6808,7 +6808,19 @@
     "london_dir": "alcista",
     "ses_ant": "asia",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 4.15
+    "ses_ant_rango_%": 4.15,
+    "exit": 75.74208000000003,
+    "pnl": 0.0017799994732541355,
+    "mfe_R": 2.08,
+    "mae_R": 0.93,
+    "res": "1m",
+    "exits": {
+      "fixed": 1.38,
+      "be05": 1.38,
+      "be10": 1.38,
+      "t125": 0.63,
+      "trail": 1.38
+    }
   },
   {
     "dir": "corto",
