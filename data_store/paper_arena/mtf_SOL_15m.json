@@ -5388,7 +5388,7 @@
     "entry": 75.605,
     "stop": 76.413,
     "target": 73.98900000000002,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784828700000,
     "estr": "mtf",
     "coin": "SOL",
@@ -5425,6 +5425,18 @@
     "london_dir": "bajista",
     "ses_ant": "londres",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.24
+    "ses_ant_rango_%": 4.24,
+    "exit": 76.413,
+    "pnl": -0.011487123867468986,
+    "mfe_R": 0.45,
+    "mae_R": 1.0,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.075,
+      "be05": -1.075,
+      "be10": -1.075,
+      "t125": -1.075,
+      "trail": -0.783
+    }
   }
 ]
