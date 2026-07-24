@@ -3429,7 +3429,7 @@
     "entry": 1870.6,
     "stop": 1885.5837,
     "target": 1840.6326,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784852100000,
     "estr": "choch",
     "coin": "ETH",
@@ -3458,6 +3458,18 @@
     "m5_vol_rel": 0.08,
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 5.54
+    "ses_ant_rango_%": 5.54,
+    "exit": 1885.5837,
+    "pnl": -0.00881010371003956,
+    "mfe_R": 0.75,
+    "mae_R": 1.01,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.1,
+      "be05": -0.1,
+      "be10": -1.1,
+      "t125": -1.1,
+      "trail": -0.352
+    }
   }
 ]
