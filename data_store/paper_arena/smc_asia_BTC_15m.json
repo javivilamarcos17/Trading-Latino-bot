@@ -5496,7 +5496,7 @@
     "entry": 64900.0,
     "stop": 65547.8514,
     "target": 63604.2972,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784850300000,
     "estr": "smc_asia",
     "coin": "BTC",
@@ -5525,7 +5525,19 @@
     "m5_vol_rel": 1.46,
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.47
+    "ses_ant_rango_%": 4.47,
+    "exit": 65547.8514,
+    "pnl": -0.010782302003081657,
+    "mfe_R": 0.28,
+    "mae_R": 1.04,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.08,
+      "be05": -1.08,
+      "be10": -1.08,
+      "t125": -1.08,
+      "trail": -0.804
+    }
   },
   {
     "dir": "largo",

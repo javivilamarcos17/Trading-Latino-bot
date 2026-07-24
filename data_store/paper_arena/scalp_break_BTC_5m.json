@@ -14228,7 +14228,7 @@
     "entry": 65130.0,
     "stop": 65566.0,
     "target": 64476.0,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784810100000,
     "estr": "scalp_break",
     "coin": "BTC",
@@ -14265,14 +14265,26 @@
     "london_dir": "bajista",
     "ses_ant": "asia",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 1.76
+    "ses_ant_rango_%": 1.76,
+    "exit": 65566.0,
+    "pnl": -0.007494303700291725,
+    "mfe_R": 1.13,
+    "mae_R": 1.02,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.12,
+      "be05": -0.12,
+      "be10": -0.12,
+      "t125": -1.12,
+      "trail": 0.011
+    }
   },
   {
     "dir": "corto",
     "entry": 65088.0,
     "stop": 65566.0,
     "target": 64371.0,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784810400000,
     "estr": "scalp_break",
     "coin": "BTC",
@@ -14309,7 +14321,19 @@
     "london_dir": "bajista",
     "ses_ant": "asia",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 1.76
+    "ses_ant_rango_%": 1.76,
+    "exit": 65566.0,
+    "pnl": -0.008143903638151425,
+    "mfe_R": 0.94,
+    "mae_R": 1.02,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.109,
+      "be05": -0.109,
+      "be10": -1.109,
+      "t125": -1.109,
+      "trail": -0.165
+    }
   },
   {
     "dir": "corto",
@@ -14932,7 +14956,7 @@
     "entry": 65020.0,
     "stop": 64675.0,
     "target": 65537.5,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784837100000,
     "estr": "scalp_break",
     "coin": "BTC",
@@ -14969,7 +14993,19 @@
     "london_dir": "bajista",
     "ses_ant": "londres",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 1.78
+    "ses_ant_rango_%": 1.78,
+    "exit": 65537.5,
+    "pnl": 0.007159089510919717,
+    "mfe_R": 1.61,
+    "mae_R": 0.87,
+    "res": "1m",
+    "exits": {
+      "fixed": 1.349,
+      "be05": 1.349,
+      "be10": 1.349,
+      "t125": 1.099,
+      "trail": -0.667
+    }
   },
   {
     "dir": "largo",
@@ -15540,7 +15576,7 @@
     "entry": 65055.0,
     "stop": 64721.0,
     "target": 65556.0,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784854800000,
     "estr": "scalp_break",
     "coin": "BTC",
@@ -15573,7 +15609,19 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 2.62
+    "ses_ant_rango_%": 2.62,
+    "exit": 65556.0,
+    "pnl": 0.006901175928060871,
+    "mfe_R": 1.56,
+    "mae_R": 0.5,
+    "res": "1m",
+    "exits": {
+      "fixed": 1.344,
+      "be05": 1.344,
+      "be10": 1.344,
+      "t125": 1.094,
+      "trail": 1.344
+    }
   },
   {
     "dir": "largo",
@@ -15844,7 +15892,7 @@
     "entry": 65359.0,
     "stop": 65239.0,
     "target": 65539.0,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784873400000,
     "estr": "scalp_break",
     "coin": "BTC",
@@ -15877,7 +15925,19 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 2.62
+    "ses_ant_rango_%": 2.62,
+    "exit": 65539.0,
+    "pnl": 0.001954020104346762,
+    "mfe_R": 1.8,
+    "mae_R": 0.38,
+    "res": "1m",
+    "exits": {
+      "fixed": 1.064,
+      "be05": 1.064,
+      "be10": 1.064,
+      "t125": 0.814,
+      "trail": 1.064
+    }
   },
   {
     "dir": "largo",
@@ -15918,5 +15978,45 @@
     "ses_ant": "ny",
     "ses_ant_dir": "bajista",
     "ses_ant_rango_%": 2.62
+  },
+  {
+    "dir": "largo",
+    "entry": 65534.0,
+    "stop": 65374.0,
+    "target": 65774.0,
+    "status": "abierta",
+    "ts": 1784876400000,
+    "estr": "scalp_break",
+    "coin": "BTC",
+    "tf": "5m",
+    "fecha": "2026-07-24 07:00:00",
+    "sesion": "londres",
+    "sub_sesion": "london_open",
+    "funding": 1.25e-05,
+    "oi": 37792.21974,
+    "d_oi_%": 1.13,
+    "fng": 28,
+    "pos_rango": 0.95,
+    "liq_arriba_%": 0.06,
+    "liq_abajo_%": 0.12,
+    "atr_%": 0.093,
+    "adx": 23.8,
+    "adx_dir": "subiendo",
+    "regimen": "rango",
+    "vol_rel": 5.53,
+    "ema200_dist_%": 0.5,
+    "sobre_ema200": true,
+    "rsi_1h": 57.0,
+    "ema50_1h_dist_%": 0.18,
+    "m5_trend": "up",
+    "m5_rsi": 69.5,
+    "m5_vol_rel": 0.33,
+    "asia_hi": 65500.0,
+    "asia_lo": 64721.0,
+    "asia_rango_%": 1.2,
+    "px_vs_asia": "premium",
+    "ses_ant": "asia",
+    "ses_ant_dir": "bajista",
+    "ses_ant_rango_%": 2.38
   }
 ]

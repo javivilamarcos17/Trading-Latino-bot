@@ -3607,7 +3607,7 @@
     "entry": 75.657,
     "stop": 75.981,
     "target": 75.009,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784865600000,
     "estr": "merino",
     "coin": "SOL",
@@ -3640,7 +3640,19 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 75.981,
+    "pnl": -0.005082485427653728,
+    "mfe_R": 0.3,
+    "mae_R": 1.01,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.187,
+      "be05": -1.187,
+      "be10": -1.187,
+      "t125": -1.187,
+      "trail": -0.884
+    }
   },
   {
     "dir": "corto",
