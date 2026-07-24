@@ -3375,7 +3375,7 @@
     "entry": 75.691,
     "stop": 76.28620999999998,
     "target": 74.50058000000004,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784851200000,
     "estr": "choch",
     "coin": "SOL",
@@ -3404,6 +3404,18 @@
     "m5_vol_rel": 0.03,
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.81
+    "ses_ant_rango_%": 4.81,
+    "exit": 76.28620999999998,
+    "pnl": -0.008663682604272374,
+    "mfe_R": 0.75,
+    "mae_R": 1.02,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.102,
+      "be05": -0.102,
+      "be10": -1.102,
+      "t125": -1.102,
+      "trail": -0.347
+    }
   }
 ]

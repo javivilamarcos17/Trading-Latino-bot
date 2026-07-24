@@ -7021,7 +7021,7 @@
     "entry": 64860.0,
     "stop": 65694.0,
     "target": 63192.0,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784814300000,
     "estr": "atr_break",
     "coin": "BTC",
@@ -7058,7 +7058,19 @@
     "london_dir": "bajista",
     "ses_ant": "londres",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.4
+    "ses_ant_rango_%": 4.4,
+    "exit": 65694.0,
+    "pnl": -0.013658464384828862,
+    "mfe_R": 0.27,
+    "mae_R": 1.02,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.062,
+      "be05": -1.062,
+      "be10": -1.062,
+      "t125": -1.062,
+      "trail": -0.795
+    }
   },
   {
     "dir": "corto",

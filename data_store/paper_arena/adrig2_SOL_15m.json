@@ -16685,7 +16685,7 @@
     "entry": 75.653,
     "stop": 76.12304699999999,
     "target": 74.71290600000005,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784857500000,
     "estr": "adrig2",
     "coin": "SOL",
@@ -16718,14 +16718,26 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 76.12304699999999,
+    "pnl": -0.007013197097272807,
+    "mfe_R": 0.87,
+    "mae_R": 1.28,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.129,
+      "be05": -0.129,
+      "be10": -1.129,
+      "t125": -1.129,
+      "trail": -0.254
+    }
   },
   {
     "dir": "corto",
     "entry": 75.748,
     "stop": 76.12304699999999,
     "target": 74.99790600000004,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784859300000,
     "estr": "adrig2",
     "coin": "SOL",
@@ -16758,14 +16770,26 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 76.12304699999999,
+    "pnl": -0.00575124623752417,
+    "mfe_R": 1.35,
+    "mae_R": 1.36,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.162,
+      "be05": -0.162,
+      "be10": -0.162,
+      "t125": 1.088,
+      "trail": 0.188
+    }
   },
   {
     "dir": "corto",
     "entry": 75.843,
     "stop": 76.12304699999999,
     "target": 75.28290600000004,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784862900000,
     "estr": "adrig2",
     "coin": "SOL",
@@ -16798,14 +16822,26 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 76.12304699999999,
+    "pnl": -0.004492456785728175,
+    "mfe_R": 1.01,
+    "mae_R": 1.48,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.217,
+      "be05": -0.217,
+      "be10": -0.217,
+      "t125": -1.217,
+      "trail": -0.203
+    }
   },
   {
     "dir": "corto",
     "entry": 75.827,
     "stop": 76.12304699999999,
     "target": 75.23490600000002,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784863800000,
     "estr": "adrig2",
     "coin": "SOL",
@@ -16838,6 +16874,18 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 76.12304699999999,
+    "pnl": -0.004704242552125065,
+    "mfe_R": 0.91,
+    "mae_R": 1.45,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.205,
+      "be05": -0.205,
+      "be10": -1.205,
+      "t125": -1.205,
+      "trail": -0.3
+    }
   }
 ]

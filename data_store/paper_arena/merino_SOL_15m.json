@@ -3531,7 +3531,7 @@
     "entry": 75.842,
     "stop": 76.209,
     "target": 75.10799999999999,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784850300000,
     "estr": "merino",
     "coin": "SOL",
@@ -3560,14 +3560,26 @@
     "m5_vol_rel": 0.78,
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.83
+    "ses_ant_rango_%": 4.83,
+    "exit": 76.209,
+    "pnl": -0.005639007410142197,
+    "mfe_R": 1.63,
+    "mae_R": 1.13,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.165,
+      "be05": -0.165,
+      "be10": -0.165,
+      "t125": 1.085,
+      "trail": -0.233
+    }
   },
   {
     "dir": "corto",
     "entry": 75.882,
     "stop": 76.209,
     "target": 75.22800000000001,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784856600000,
     "estr": "merino",
     "coin": "SOL",
@@ -3600,7 +3612,19 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 76.209,
+    "pnl": -0.005109322368941227,
+    "mfe_R": 1.96,
+    "mae_R": 1.15,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.186,
+      "be05": -0.186,
+      "be10": -0.186,
+      "t125": 1.064,
+      "trail": 0.772
+    }
   },
   {
     "dir": "corto",
