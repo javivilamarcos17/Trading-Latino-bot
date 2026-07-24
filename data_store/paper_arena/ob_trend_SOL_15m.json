@@ -37236,7 +37236,7 @@
     "entry": 75.524,
     "stop": 75.918843,
     "target": 74.73431400000001,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784860200000,
     "estr": "ob_trend",
     "coin": "SOL",
@@ -37269,14 +37269,26 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 75.918843,
+    "pnl": -0.006028046713627383,
+    "mfe_R": 0.71,
+    "mae_R": 1.14,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.153,
+      "be05": -0.153,
+      "be10": -1.153,
+      "t125": -1.153,
+      "trail": -0.439
+    }
   },
   {
     "dir": "corto",
     "entry": 75.759,
     "stop": 75.918843,
     "target": 75.43931400000001,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784862000000,
     "estr": "ob_trend",
     "coin": "SOL",
@@ -37309,14 +37321,26 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 75.918843,
+    "pnl": -0.0029098879341067736,
+    "mfe_R": 1.75,
+    "mae_R": 1.35,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.379,
+      "be05": -0.379,
+      "be10": -0.379,
+      "t125": 0.871,
+      "trail": 0.373
+    }
   },
   {
     "dir": "corto",
     "entry": 75.657,
     "stop": 75.918843,
     "target": 75.133314,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784865600000,
     "estr": "ob_trend",
     "coin": "SOL",
@@ -37349,14 +37373,26 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 75.918843,
+    "pnl": -0.004260922320472646,
+    "mfe_R": 0.37,
+    "mae_R": 1.21,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.231,
+      "be05": -1.231,
+      "be10": -1.231,
+      "t125": -1.231,
+      "trail": -0.857
+    }
   },
   {
     "dir": "corto",
     "entry": 75.768,
     "stop": 75.918843,
     "target": 75.46631400000001,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784866500000,
     "estr": "ob_trend",
     "coin": "SOL",
@@ -37389,14 +37425,26 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 75.918843,
+    "pnl": -0.002790853658536516,
+    "mfe_R": 1.39,
+    "mae_R": 1.37,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.402,
+      "be05": -0.402,
+      "be10": -0.402,
+      "t125": 0.848,
+      "trail": -0.354
+    }
   },
   {
     "dir": "corto",
     "entry": 75.681,
     "stop": 75.918843,
     "target": 75.205314,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784867400000,
     "estr": "ob_trend",
     "coin": "SOL",
@@ -37429,14 +37477,26 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 75.918843,
+    "pnl": -0.0039427042454512765,
+    "mfe_R": 0.51,
+    "mae_R": 1.24,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.255,
+      "be05": -0.255,
+      "be10": -1.255,
+      "t125": -1.255,
+      "trail": -0.742
+    }
   },
   {
     "dir": "corto",
     "entry": 75.607,
     "stop": 75.918843,
     "target": 74.98331400000001,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784868300000,
     "estr": "ob_trend",
     "coin": "SOL",
@@ -37469,14 +37529,26 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 75.918843,
+    "pnl": -0.004924525506897458,
+    "mfe_R": 0.15,
+    "mae_R": 1.18,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.194,
+      "be05": -1.194,
+      "be10": -1.194,
+      "t125": -1.194,
+      "trail": -1.04
+    }
   },
   {
     "dir": "corto",
     "entry": 75.74,
     "stop": 75.918843,
     "target": 75.382314,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784869200000,
     "estr": "ob_trend",
     "coin": "SOL",
@@ -37509,6 +37581,18 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 75.918843,
+    "pnl": -0.003161275415896495,
+    "mfe_R": 1.01,
+    "mae_R": 1.31,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.339,
+      "be05": -0.339,
+      "be10": -0.339,
+      "t125": -1.339,
+      "trail": -0.327
+    }
   }
 ]

@@ -1465,7 +1465,7 @@
     "entry": 1870.6,
     "stop": 1883.7,
     "target": 1837.8499999999995,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784852100000,
     "estr": "elliott_ob",
     "coin": "ETH",
@@ -1494,6 +1494,18 @@
     "m5_vol_rel": 0.08,
     "ses_ant": "ny",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 5.54
+    "ses_ant_rango_%": 5.54,
+    "exit": 1883.7,
+    "pnl": -0.007803100609430203,
+    "mfe_R": 0.85,
+    "mae_R": 1.1,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.114,
+      "be05": -0.114,
+      "be10": -1.114,
+      "t125": -1.114,
+      "trail": -0.259
+    }
   }
 ]
