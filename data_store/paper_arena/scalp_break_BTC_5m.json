@@ -15580,7 +15580,7 @@
     "entry": 65113.0,
     "stop": 64866.0,
     "target": 65483.5,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784856900000,
     "estr": "scalp_break",
     "coin": "BTC",
@@ -15613,7 +15613,19 @@
     "px_vs_asia": "dentro",
     "ses_ant": "ny",
     "ses_ant_dir": "bajista",
-    "ses_ant_rango_%": 2.62
+    "ses_ant_rango_%": 2.62,
+    "exit": 65483.5,
+    "pnl": 0.004890107966151152,
+    "mfe_R": 1.57,
+    "mae_R": 0.91,
+    "res": "1m",
+    "exits": {
+      "fixed": 1.289,
+      "be05": 1.289,
+      "be10": 1.289,
+      "t125": 1.039,
+      "trail": -1.029
+    }
   },
   {
     "dir": "corto",
