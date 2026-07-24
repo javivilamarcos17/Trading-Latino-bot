@@ -14670,7 +14670,7 @@
     "entry": 65483.0,
     "stop": 65393.541,
     "target": 65661.918,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784879100000,
     "estr": "adrig2",
     "coin": "BTC",
@@ -14707,6 +14707,18 @@
     "london_dir": "bajista",
     "ses_ant": "asia",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.62
+    "ses_ant_rango_%": 4.62,
+    "exit": 65393.541,
+    "pnl": -0.002166140830444582,
+    "mfe_R": 0.0,
+    "mae_R": 1.44,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.586,
+      "be05": -1.586,
+      "be10": -1.586,
+      "t125": -1.586,
+      "trail": -1.586
+    }
   }
 ]
