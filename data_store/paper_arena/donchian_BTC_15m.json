@@ -15023,7 +15023,7 @@
     "entry": 64754.0,
     "stop": 65397.0,
     "target": 63468.0,
-    "status": "abierta",
+    "status": "cerrada",
     "ts": 1784818800000,
     "estr": "donchian",
     "coin": "BTC",
@@ -15060,7 +15060,19 @@
     "london_dir": "bajista",
     "ses_ant": "londres",
     "ses_ant_dir": "alcista",
-    "ses_ant_rango_%": 4.39
+    "ses_ant_rango_%": 4.39,
+    "exit": 65397.0,
+    "pnl": -0.010729888501096458,
+    "mfe_R": 0.18,
+    "mae_R": 1.07,
+    "res": "1m",
+    "exits": {
+      "fixed": -1.081,
+      "be05": -1.081,
+      "be10": -1.081,
+      "t125": -1.081,
+      "trail": -0.899
+    }
   },
   {
     "dir": "corto",
